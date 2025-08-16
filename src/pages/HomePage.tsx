@@ -11,7 +11,6 @@ import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import AuthModal from '../components/ui/AuthModal'
 import DemoModeBanner from '../components/ui/DemoModeBanner'
-import DebugInfo from '../components/debug/DebugInfo'
 import MobileBottomNav from '../components/layout/MobileBottomNav'
 
 const HomePage: React.FC = () => {
@@ -534,9 +533,6 @@ const HomePage: React.FC = () => {
 
         {/* Mobile Bottom Navigation */}
         <MobileBottomNav onAuthRequired={() => setShowAuthModal(true)} />
-        
-        {/* Debug Info - Only in development */}
-        <DebugInfo />
       </div>
     </div>
   )

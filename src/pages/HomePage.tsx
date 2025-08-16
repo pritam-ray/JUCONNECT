@@ -10,6 +10,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner'
 import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import AuthModal from '../components/ui/AuthModal'
+import DemoModeBanner from '../components/ui/DemoModeBanner'
 import MobileBottomNav from '../components/layout/MobileBottomNav'
 
 const HomePage: React.FC = () => {
@@ -217,6 +218,9 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-white to-primary-50 mesh-bg mobile-padding">
+      {/* Demo Mode Banner */}
+      {!isSupabaseConfigured() && <DemoModeBanner />}
+      
       {/* Hero Section */}
       <div
         className="hero-gradient text-white relative overflow-hidden min-h-[28vh] flex items-center"

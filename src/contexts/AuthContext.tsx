@@ -52,16 +52,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    if (supabase) {
+      await supabase.auth.signOut()
+    }
     setIsGuest(false)
   }
 
   useEffect(() => {
+    // Check if Supabase is available
+    if (!supabase) {
+      console.warn('Supabase not configured, running in demo mode')
+      setLoading(false)
+      setIsGuest(true)
+      return
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
+    }).catch((error) => {
+      console.error('Error getting session:', error)
+      setLoading(false)
+      setIsGuest(true)
     })
 
     // Listen for auth changes
@@ -80,7 +94,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe()
+      }
+    }
   }, [])
 
   useEffect(() => {

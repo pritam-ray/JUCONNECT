@@ -29,7 +29,9 @@ export const supabase = createSupabaseClient()
 
 // Helper function to check if Supabase is configured
 export const isSupabaseConfigured = (): boolean => {
-  return !!(supabaseUrl && supabaseAnonKey && supabase)
+  const url = import.meta.env.VITE_SUPABASE_URL
+  const key = import.meta.env.VITE_SUPABASE_ANON_KEY
+  return !!(url && key && supabase)
 }
 
 // Helper function to check if user is admin

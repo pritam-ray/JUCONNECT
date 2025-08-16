@@ -154,26 +154,8 @@
   }
 
   /* Mobile Bottom Navigation */
-  .mobile-nav {
-    @apply fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-white/20;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1);
-  }
-
-  .mobile-nav-item {
-    @apply flex flex-col items-center justify-center py-2 px-3 text-xs font-medium text-secondary-500 transition-all duration-300;
-  }
-
-  .mobile-nav-item.active {
-    @apply text-primary-600;
-  }
-
-  .mobile-nav-item:hover {
-    @apply text-primary-500 transform scale-105;
-  }
-
-  /* Floating Action Button */
-  .fab {
-    @apply fixed bottom-20 right-6 w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-600 text-white rounded-full shadow-2xl shadow-primary-500/40 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 z-40;
+  .mobile-nav-safe-area {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   /* Hero Gradient */
@@ -304,28 +286,57 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
-  .mobile-only {
-    @apply block;
+@media (max-width: 767px) {
+  /* Mobile-specific adjustments */
+  .card-premium {
+    @apply rounded-2xl;
   }
   
-  .desktop-only {
-    @apply hidden;
+  .hero-gradient {
+    min-height: 50vh;
   }
   
-  /* Adjust padding for mobile bottom nav */
-  .mobile-padding {
-    @apply pb-20;
+  .glass {
+    @apply bg-white/20 backdrop-blur-sm;
+  }
+  
+  /* Ensure proper spacing for mobile bottom nav */
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Mobile text sizing */
+  .text-gradient {
+    background-size: 200% 200%;
+  }
+  
+  /* Mobile button adjustments */
+  .btn-premium {
+    @apply px-6 py-3 text-sm;
+  }
+  
+  /* Mobile modal adjustments */
+  .modal-premium {
+    @apply mx-4 max-h-[90vh] overflow-y-auto;
+  }
+  
+  /* Mobile input adjustments */
+  .input-premium {
+    @apply text-base; /* Prevent zoom on iOS */
   }
 }
 
-@media (min-width: 769px) {
-  .mobile-only {
-    @apply hidden;
+@media (min-width: 768px) {
+  /* Desktop-specific styles */
+  .hero-gradient {
+    min-height: 28vh;
   }
-  
-  .desktop-only {
-    @apply block;
+}
+
+/* Safe area adjustments for devices with notches */
+@supports (padding: max(0px)) {
+  .mobile-nav-safe-area {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
 }
 

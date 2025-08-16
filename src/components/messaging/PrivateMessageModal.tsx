@@ -173,15 +173,15 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
-      <div className="flex h-96">
+      <div className="flex flex-col md:flex-row h-80 md:h-96">
         {/* Conversations Sidebar */}
-        <div className="w-1/3 border-r border-gray-200 flex flex-col">
-          <div className="p-4 border-b border-gray-200">
+        <div className="w-full md:w-1/3 border-b md:border-b-0 md:border-r border-gray-200 flex flex-col max-h-40 md:max-h-none">
+          <div className="p-3 md:p-4 border-b border-gray-200">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-gray-900">Messages</h3>
+              <h3 className="font-semibold text-gray-900 text-sm md:text-base">Messages</h3>
               <button
                 onClick={() => setShowSearch(!showSearch)}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                className="text-blue-600 hover:text-blue-700 text-xs md:text-sm font-medium"
               >
                 New Chat
               </button>
@@ -190,7 +190,7 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
             {showSearch && (
               <div className="space-y-2">
                 <div className="relative">
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-2 md:top-2.5 h-4 w-4 text-gray-400" />
                   <input
                     type="text"
                     placeholder="Search users..."
@@ -201,7 +201,7 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
                 </div>
                 
                 {searchResults.length > 0 && (
-                  <div className="max-h-32 overflow-y-auto space-y-1">
+                  <div className="max-h-24 md:max-h-32 overflow-y-auto space-y-1">
                     {searchResults.map(user => (
                       <button
                         key={user.id}
@@ -210,7 +210,7 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
                       >
                         <User className="h-4 w-4 text-gray-400" />
                         <div>
-                          <div className="text-sm font-medium">@{user.username}</div>
+                          <div className="text-xs md:text-sm font-medium">@{user.username}</div>
                           <div className="text-xs text-gray-500">{user.full_name}</div>
                         </div>
                       </button>
@@ -223,7 +223,7 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
           
           <div className="flex-1 overflow-y-auto">
             {conversations.length === 0 ? (
-              <div className="p-4 text-center text-gray-500 text-sm">
+              <div className="p-3 md:p-4 text-center text-gray-500 text-xs md:text-sm">
                 No conversations yet
               </div>
             ) : (
@@ -240,13 +240,13 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <div className="relative">
-                        <User className="h-8 w-8 text-gray-400" />
+                        <User className="h-6 w-6 md:h-8 md:w-8 text-gray-400" />
                         {conversation.otherUser.is_online && (
-                          <Circle className="absolute -bottom-1 -right-1 h-3 w-3 text-green-500 fill-current" />
+                          <Circle className="absolute -bottom-1 -right-1 h-2 w-2 md:h-3 md:w-3 text-green-500 fill-current" />
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium text-gray-900 truncate">
+                        <div className="text-xs md:text-sm font-medium text-gray-900 truncate">
                           @{conversation.otherUser.username}
                         </div>
                         <div className="text-xs text-gray-500 truncate">
@@ -257,12 +257,12 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
                     
                     <div className="flex flex-col items-end space-y-1">
                       {conversation.unreadCount > 0 && (
-                        <span className="bg-blue-600 text-white text-xs rounded-full px-2 py-0.5 min-w-[1.25rem] text-center">
+                        <span className="bg-blue-600 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[1rem] text-center">
                           {conversation.unreadCount}
                         </span>
                       )}
                       {conversation.lastMessage && (
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-gray-400 hidden md:block">
                           {formatDistanceToNow(new Date(conversation.lastMessage.created_at), { addSuffix: true })}
                         </span>
                       )}
@@ -275,16 +275,16 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-0">
           {selectedConversation ? (
             <>
               {/* Chat Header */}
-              <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+              <div className="p-3 md:p-4 border-b border-gray-200 flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <User className="h-6 w-6 text-gray-400" />
+                  <User className="h-5 w-5 md:h-6 md:w-6 text-gray-400" />
                   <div>
-                    <div className="font-medium">@{selectedConversation.otherUser.username}</div>
-                    <div className="text-sm text-gray-500">
+                    <div className="font-medium text-sm md:text-base">@{selectedConversation.otherUser.username}</div>
+                    <div className="text-xs md:text-sm text-gray-500">
                       {selectedConversation.otherUser.is_online ? (
                         <span className="text-green-600">Online</span>
                       ) : (
@@ -300,7 +300,7 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 min-h-0">
                 {loading ? (
                   <div className="flex justify-center">
                     <LoadingSpinner />
@@ -313,17 +313,17 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
                   messages.map(message => (
                     <div
                       key={message.id}
-                      className={`flex ${message.sender_id === user.id ? 'justify-end' : 'justify-start'}`}
+                      className={`flex ${message.sender_id === user.id ? 'justify-end' : 'justify-start'} px-1`}
                     >
                       <div
-                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                        className={`max-w-xs px-3 md:px-4 py-2 rounded-lg ${
                           message.sender_id === user.id
                             ? 'bg-blue-600 text-white'
                             : 'bg-gray-100 text-gray-900'
                         }`}
                       >
                         <p className="text-sm break-words">{message.message}</p>
-                        <p className="text-xs opacity-75 mt-1">
+                        <p className="text-xs opacity-75 mt-1 hidden sm:block">
                           {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
                         </p>
                       </div>
@@ -334,14 +334,14 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
               </div>
 
               {/* Message Input */}
-              <div className="border-t border-gray-200 p-4">
-                <form onSubmit={handleSendMessage} className="flex space-x-3">
+              <div className="border-t border-gray-200 p-3 md:p-4">
+                <form onSubmit={handleSendMessage} className="flex space-x-2 md:space-x-3">
                   <input
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Type your message..."
-                    className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 min-w-0"
                     disabled={sending}
                     maxLength={500}
                   />
@@ -350,6 +350,7 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
                     disabled={!newMessage.trim() || sending}
                     loading={sending}
                     size="sm"
+                    className="flex-shrink-0"
                   >
                     <Send className="h-4 w-4" />
                   </Button>

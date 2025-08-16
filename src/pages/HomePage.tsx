@@ -11,7 +11,6 @@ import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import AuthModal from '../components/ui/AuthModal'
 import DemoModeBanner from '../components/ui/DemoModeBanner'
-import MobileBottomNav from '../components/layout/MobileBottomNav'
 
 const HomePage: React.FC = () => {
   const { user, isGuest } = useAuth()
@@ -217,13 +216,13 @@ const HomePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-white to-primary-50 mesh-bg mobile-padding">
+    <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-white to-primary-50 mesh-bg">
       {/* Demo Mode Banner */}
       {!isSupabaseConfigured() && <DemoModeBanner />}
       
       {/* Hero Section */}
       <div
-        className="hero-gradient text-white relative overflow-hidden min-h-[28vh] flex items-center"
+        className="hero-gradient text-white relative overflow-hidden min-h-[40vh] md:min-h-[28vh] flex items-center"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
@@ -260,7 +259,7 @@ const HomePage: React.FC = () => {
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
 
         {/* Overlay Content (text/buttons) */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 lg:py-8 w-full">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-5 lg:py-8 w-full">
           <div className="text-center space-y-8">
             <div className="flex items-center justify-center space-x-3 mb-6">
               <Sparkles className="h-8 w-8 text-accent-400 animate-bounce-subtle" />
@@ -270,39 +269,39 @@ const HomePage: React.FC = () => {
               <Sparkles className="h-8 w-8 text-accent-400 animate-bounce-subtle" />
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-display font-bold mb-8 animate-fade-in-up">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold mb-8 animate-fade-in-up">
               <span className="block text-white text-shadow-lg">JU CONNECT</span>
-              <span className="block text-2xl md:text-3xl font-medium text-white/90 mt-4">
+              <span className="block text-lg sm:text-2xl md:text-3xl font-medium text-white/90 mt-4">
                 Resource Hub
               </span>
             </h1>
             
-            <p className="text-xl md:text-2xl mb-12 max-w-4xl mx-auto text-white/90 leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <p className="text-lg sm:text-xl md:text-2xl mb-8 md:mb-12 max-w-4xl mx-auto text-white/90 leading-relaxed animate-fade-in-up px-4" style={{ animationDelay: '0.2s' }}>
               Access all the study materials, PYQ'S, Notes and many more. Connect with fellow students, 
               and elevate your academic journey with this platform
             </p>
             
             {/* Stats */}
             {stats && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto animate-fade-in-up px-4" style={{ animationDelay: '0.4s' }}>
                 {[
                   { label: 'Resources Available', value: stats.approved, icon: BookOpen },
                   { label: 'Question Papers', value: stats.byType.question_paper, icon: FileText },
                   { label: 'Study Notes', value: stats.byType.notes, icon: TrendingUp },
                   { label: 'Subject Areas', value: categories.length, icon: Users },
                 ].map((stat) => (
-                  <div key={stat.label} className="glass p-6 rounded-2xl text-center group hover:scale-105 transition-all duration-300">
+                  <div key={stat.label} className="glass p-4 md:p-6 rounded-2xl text-center group hover:scale-105 transition-all duration-300">
                     <stat.icon className="h-8 w-8 text-accent-400 mx-auto mb-3 group-hover:scale-110 transition-transform duration-300" />
-                    <div className="text-3xl font-bold text-white mb-2">{stat.value}</div>
-                    <div className="text-sm text-white/80 font-medium">{stat.label}</div>
+                    <div className="text-2xl md:text-3xl font-bold text-white mb-2">{stat.value}</div>
+                    <div className="text-xs md:text-sm text-white/80 font-medium">{stat.label}</div>
                   </div>
                 ))}
               </div>
             )}
             
-            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 animate-fade-in-up px-4" style={{ animationDelay: '0.6s' }}>
               <Button 
-                size="xl" 
+                size="lg"
                 variant="secondary"
                 className="bg-white/30 backdrop-blur-none border-white/30 text-white hover:bg-white/40"
                 onClick={() => document.getElementById('content-section')?.scrollIntoView({ behavior: 'smooth' })}
@@ -313,7 +312,7 @@ const HomePage: React.FC = () => {
               
               {(!user || isGuest) && (
                 <Button 
-                  size="xl" 
+                  size="lg"
                   variant="outline"
                   className="border-white/50 text-white hover:bg-white hover:text-primary-600"
                   onClick={() => setShowAuthModal(true)}
@@ -362,7 +361,7 @@ const HomePage: React.FC = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" id="content-section">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12" id="content-section">
         <div className="card-premium p-8 mb-12 animate-fade-in-up">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-secondary-900 mb-2 text-gradient">
@@ -373,8 +372,8 @@ const HomePage: React.FC = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="md:col-span-2">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
+            <div className="md:col-span-2 order-1">
               <div className="relative group">
                 <Search className="absolute left-4 top-4 h-5 w-5 text-secondary-400 group-focus-within:text-primary-500 transition-colors duration-300" />
                 <input
@@ -388,7 +387,7 @@ const HomePage: React.FC = () => {
               </div>
             </div>
             
-            <div>
+            <div className="order-2">
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
@@ -399,7 +398,7 @@ const HomePage: React.FC = () => {
               </select>
             </div>
             
-            <div>
+            <div className="order-3">
               <select
                 value={selectedContentType}
                 onChange={(e) => setSelectedContentType(e.target.value)}
@@ -416,9 +415,9 @@ const HomePage: React.FC = () => {
         </div>
 
         {/* Content Grid */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
           <div className="space-y-2">
-            <h2 className="text-3xl font-bold text-secondary-900 text-gradient">
+            <h2 className="text-2xl md:text-3xl font-bold text-secondary-900 text-gradient">
               All Resources
             </h2>
             <p className="text-secondary-600">
@@ -435,7 +434,7 @@ const HomePage: React.FC = () => {
         </div>
 
         {content.length === 0 ? (
-          <div className="text-center py-20">
+          <div className="text-center py-12 md:py-20">
             <div className="card-premium p-12 max-w-md mx-auto">
               <BookOpen className="h-20 w-20 text-secondary-300 mx-auto mb-6 animate-bounce-subtle" />
               <h3 className="text-xl font-semibold text-secondary-900 mb-4">No resources found</h3>
@@ -455,7 +454,7 @@ const HomePage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in-up">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 animate-fade-in-up">
             {content.map((item, index) => (
               <div 
                 key={item.id} 
@@ -473,17 +472,17 @@ const HomePage: React.FC = () => {
         )}
 
         {/* Quick Access Categories */}
-        <div className="mt-20">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-secondary-900 mb-4 text-gradient">
+        <div className="mt-12 md:mt-20">
+          <div className="text-center mb-8 md:mb-12">
+            <h3 className="text-2xl md:text-3xl font-bold text-secondary-900 mb-4 text-gradient">
               Browse by Subject
             </h3>
-            <p className="text-secondary-600 text-lg">
+            <p className="text-secondary-600 text-base md:text-lg">
               Explore our carefully organized subject categories
             </p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {categories.slice(0, 8).map((category, index) => (
               <button
                 key={category.id}
@@ -491,16 +490,16 @@ const HomePage: React.FC = () => {
                 className="card-premium p-6 text-left group hover:scale-105 transition-all duration-300 animate-fade-in-up"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <FileText className="h-6 w-6 text-white" />
+                <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-semibold text-secondary-900 group-hover:text-primary-600 transition-colors duration-300">
+                    <div className="font-semibold text-sm sm:text-base text-secondary-900 group-hover:text-primary-600 transition-colors duration-300 text-center sm:text-left">
                       {category.name}
                     </div>
                     {category.description && (
-                      <div className="text-xs text-secondary-500 mt-1 line-clamp-2">
+                      <div className="text-xs text-secondary-500 mt-1 line-clamp-2 hidden sm:block">
                         {category.description}
                       </div>
                     )}
@@ -530,9 +529,6 @@ const HomePage: React.FC = () => {
           onClose={() => setShowAuthModal(false)}
           onSuccess={() => setShowAuthModal(false)}
         />
-
-        {/* Mobile Bottom Navigation */}
-        <MobileBottomNav onAuthRequired={() => setShowAuthModal(true)} />
       </div>
     </div>
   )

@@ -139,13 +139,13 @@ const MyRequestsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-gray-50 py-6 md:py-12 px-4 md:px-0">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 space-y-4 sm:space-y-0">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">My Update Requests</h1>
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900">My Update Requests</h1>
               <p className="text-gray-600 mt-1">
                 Submit requests to update or correct existing content
               </p>

@@ -93,16 +93,16 @@ const ContentCard: React.FC<ContentCardProps> = ({
     }
   }
   return (
-    <div className="card-premium p-6 cursor-pointer group relative overflow-hidden" onClick={onClick}>
+    <div className="card-premium p-4 md:p-6 cursor-pointer group relative overflow-hidden" onClick={onClick}>
       {/* Premium indicator */}
       <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <Sparkles className="h-4 w-4 text-accent-500 animate-bounce-subtle" />
       </div>
       
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-4 md:mb-6">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
             {getContentTypeIcon(content.content_type)}
           </div>
           <Badge variant={getContentTypeBadgeVariant(content.content_type) as any} glow>
@@ -110,40 +110,40 @@ const ContentCard: React.FC<ContentCardProps> = ({
           </Badge>
         </div>
         
-        <div className="flex items-center space-x-3 text-sm text-secondary-500">
+        <div className="flex items-center space-x-2 md:space-x-3 text-sm text-secondary-500">
           {showReportButton && (
             <button
               onClick={handleReport}
-              className="opacity-0 group-hover:opacity-100 transition-all duration-300 p-2 hover:text-red-600 hover:bg-red-50 rounded-lg hover:scale-110"
+              className="opacity-0 group-hover:opacity-100 transition-all duration-300 p-1 md:p-2 hover:text-red-600 hover:bg-red-50 rounded-lg hover:scale-110"
               title="Report content"
             >
-              <Flag className="h-4 w-4" />
+              <Flag className="h-3 w-3 md:h-4 md:w-4" />
             </button>
           )}
           
           {content.view_count > 0 && (
-            <div className="flex items-center space-x-1 px-2 py-1 bg-secondary-100 rounded-lg">
-              <Eye className="h-4 w-4" />
-              <span>{content.view_count}</span>
+            <div className="flex items-center space-x-1 px-2 py-1 bg-secondary-100 rounded-lg text-xs">
+              <Eye className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="hidden sm:inline">{content.view_count}</span>
             </div>
           )}
         </div>
       </div>
 
       {/* Title and Description */}
-      <div className="mb-6">
-        <h3 className="font-bold text-secondary-900 text-xl mb-3 group-hover:text-primary-600 transition-colors duration-300 line-clamp-2">
+      <div className="mb-4 md:mb-6">
+        <h3 className="font-bold text-secondary-900 text-lg md:text-xl mb-2 md:mb-3 group-hover:text-primary-600 transition-colors duration-300 line-clamp-2">
           {content.title}
         </h3>
         {content.description && (
-          <p className="text-secondary-600 text-sm line-clamp-3 leading-relaxed">
+          <p className="text-secondary-600 text-xs md:text-sm line-clamp-2 md:line-clamp-3 leading-relaxed">
             {content.description}
           </p>
         )}
       </div>
 
       {/* Metadata */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
         {content.categories && (
           <Badge variant="neutral" size="sm">
             {content.categories.name}
@@ -165,17 +165,17 @@ const ContentCard: React.FC<ContentCardProps> = ({
 
       {/* Tags */}
       {content.tags && content.tags.length > 0 && (
-        <div className="mb-6">
+        <div className="mb-4 md:mb-6">
           <div className="flex items-center space-x-2 flex-wrap gap-2">
-            <Tag className="h-3 w-3 text-secondary-400" />
-            {content.tags.slice(0, 3).map((tag, index) => (
-              <span key={index} className="text-xs text-secondary-600 bg-secondary-100 px-2 py-1 rounded-full font-medium">
+            <Tag className="h-3 w-3 text-secondary-400 hidden sm:block" />
+            {content.tags.slice(0, 2).map((tag, index) => (
+              <span key={index} className="text-xs text-secondary-600 bg-secondary-100 px-2 py-1 rounded-full font-medium truncate max-w-20 sm:max-w-none">
                 {tag}
               </span>
             ))}
-            {content.tags.length > 3 && (
+            {content.tags.length > 2 && (
               <span className="text-xs text-gray-400">
-                +{content.tags.length - 3} more
+                +{content.tags.length - 2} more
               </span>
             )}
           </div>
@@ -183,30 +183,30 @@ const ContentCard: React.FC<ContentCardProps> = ({
       )}
 
       {/* Footer */}
-      <div className="flex items-center justify-between text-sm text-secondary-500 pt-6 border-t border-secondary-100">
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <Calendar className="h-4 w-4" />
-            <span className="font-medium">{formatDistanceToNow(new Date(content.created_at), { addSuffix: true })}</span>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-sm text-secondary-500 pt-4 md:pt-6 border-t border-secondary-100 space-y-2 sm:space-y-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+          <div className="flex items-center space-x-2 text-xs md:text-sm">
+            <Calendar className="h-3 w-3 md:h-4 md:w-4" />
+            <span className="font-medium truncate">{formatDistanceToNow(new Date(content.created_at), { addSuffix: true })}</span>
           </div>
           
           {showUploader && content.profiles && (
-            <div className="flex items-center space-x-2 px-2 py-1 bg-secondary-100 rounded-lg">
-              <User className="h-4 w-4" />
-              <span className="font-medium">@{content.profiles.username}</span>
+            <div className="flex items-center space-x-2 px-2 py-1 bg-secondary-100 rounded-lg text-xs">
+              <User className="h-3 w-3 md:h-4 md:w-4" />
+              <span className="font-medium truncate max-w-24 sm:max-w-none">@{content.profiles.username}</span>
             </div>
           )}
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 md:space-x-3 self-end sm:self-auto">
           {content.file_size && (
-            <span className="text-xs bg-secondary-100 px-2 py-1 rounded-full font-medium">
+            <span className="text-xs bg-secondary-100 px-2 py-1 rounded-full font-medium whitespace-nowrap">
               {formatFileSize(content.file_size)}
             </span>
           )}
           
           {content.file_url && (
-            <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110">
+            <div className="w-6 h-6 md:w-8 md:h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110">
               <Download className="h-4 w-4" />
             </div>
           )}

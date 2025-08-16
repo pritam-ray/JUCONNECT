@@ -48,16 +48,16 @@ const Modal: React.FC<ModalProps> = ({
   if (!isOpen) return null
 
   const sizeClasses = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
+    sm: 'max-w-md mx-4',
+    md: 'max-w-lg mx-4',
+    lg: 'max-w-2xl mx-4',
+    xl: 'max-w-4xl mx-4',
     full: 'max-w-7xl mx-4',
   }
 
   return createPortal(
     <div className="fixed inset-0 z-50 overflow-y-auto animate-fade-in">
-      <div className="flex min-h-full items-center justify-center p-4">
+      <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
         {/* Backdrop */}
         <div
           className={cn(
@@ -70,15 +70,15 @@ const Modal: React.FC<ModalProps> = ({
         {/* Modal */}
         <div
           className={cn(
-            'relative w-full transform transition-all duration-300 animate-scale-in',
+            'relative w-full transform transition-all duration-300 animate-scale-in max-h-[90vh] overflow-y-auto',
             premium ? 'modal-premium' : 'bg-white rounded-2xl shadow-2xl',
             sizeClasses[size]
           )}
         >
           {/* Header */}
           {title && (
-            <div className="flex items-center justify-between border-b border-secondary-200/50 px-6 py-4">
-              <h3 className="text-xl font-bold text-secondary-900 text-gradient">
+            <div className="flex items-center justify-between border-b border-secondary-200/50 px-4 md:px-6 py-4">
+              <h3 className="text-lg md:text-xl font-bold text-secondary-900 text-gradient">
                 {title}
               </h3>
               <button
@@ -101,7 +101,7 @@ const Modal: React.FC<ModalProps> = ({
           )}
           
           {/* Content */}
-          <div className={cn('px-6', title ? 'py-6' : 'py-8')}>
+          <div className={cn('px-4 md:px-6', title ? 'py-4 md:py-6' : 'py-6 md:py-8')}>
             {children}
           </div>
           

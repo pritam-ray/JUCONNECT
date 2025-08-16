@@ -73,7 +73,7 @@ const Navbar: React.FC = () => {
               {/* Desktop Navigation */}
               <div className="hidden md:ml-8 md:flex md:space-x-2">
                 {navigation.map((item) => {
-                  const requiresAuth = ['upload', 'my-requests'].includes(item.href.slice(1))
+                  const requiresAuth = ['/upload', '/my-requests'].includes(item.href)
                   
                   return (
                     <Link

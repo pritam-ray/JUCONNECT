@@ -136,7 +136,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose} size="md" premium>
       <div className="space-y-8">
         {/* Header */}
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-3 md:space-y-4">
           <div className="flex items-center justify-center space-x-2">
             <Sparkles className="h-6 w-6 text-primary-500 animate-bounce-subtle" />
             <Badge variant="premium" glow pulse>
@@ -145,11 +145,11 @@ const AuthModal: React.FC<AuthModalProps> = ({
             <Sparkles className="h-6 w-6 text-primary-500 animate-bounce-subtle" />
           </div>
           
-          <h2 className="text-3xl font-display font-bold text-secondary-900 text-gradient">
+          <h2 className="text-2xl md:text-3xl font-display font-bold text-secondary-900 text-gradient">
             {mode === 'signup' ? 'Join JU CONNECT' : 'Welcome Back'}
           </h2>
           
-          <p className="text-secondary-600 text-lg">
+          <p className="text-secondary-600 text-base md:text-lg">
             {mode === 'signup' 
               ? 'Create your JU CONNECT account and unlock exclusive features'
               : 'Sign in to access your JU CONNECT dashboard'
@@ -157,20 +157,20 @@ const AuthModal: React.FC<AuthModalProps> = ({
           </p>
           
           {mode === 'signup' && (
-            <div className="flex items-center justify-center space-x-4 text-sm text-secondary-500">
-              <div className="flex items-center space-x-1">
+            <div className="grid grid-cols-2 md:flex md:items-center md:justify-center gap-2 md:space-x-4 text-xs md:text-sm text-secondary-500">
+              <div className="flex items-center space-x-1 justify-center">
                 <Star className="h-4 w-4 text-accent-500" />
                 <span>Upload Files</span>
               </div>
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1 justify-center">
                 <Star className="h-4 w-4 text-accent-500" />
                 <span>Chat globally</span>
               </div>
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1 justify-center">
                 <Star className="h-4 w-4 text-accent-500" />
                 <span>Private Messaging</span>
               </div>
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1 justify-center">
                 <Star className="h-4 w-4 text-accent-500" />
                 <span>Personalized support</span>
               </div>
@@ -178,7 +178,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
           {error && (
             <div className="p-4 text-sm text-red-600 bg-red-50 rounded-xl border border-red-200 flex items-center space-x-2 animate-fade-in">
               <div className="w-2 h-2 bg-red-500 rounded-full" />
@@ -187,7 +187,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
           )}
 
           {mode === 'signup' && (
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               <Input
                 name="fullName"
                 label="Full Name"
@@ -292,25 +292,25 @@ const AuthModal: React.FC<AuthModalProps> = ({
         
         {/* Premium features highlight */}
         {mode === 'signup' && (
-          <div className="border-t border-secondary-200 pt-6">
+          <div className="border-t border-secondary-200 pt-4 md:pt-6">
             <div className="text-center text-sm text-secondary-600">
               <p className="mb-3 font-medium">What you get with Membership:</p>
-              <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="grid grid-cols-2 gap-2 md:gap-3 text-xs">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-primary-500 rounded-full" />
-                  <span>Unlimited Downloads</span>
+                  <span className="truncate">Unlimited Downloads</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-primary-500 rounded-full" />
-                  <span>Private Messaging</span>
+                  <span className="truncate">Private Messaging</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-primary-500 rounded-full" />
-                  <span>Upload Content</span>
+                  <span className="truncate">Upload Content</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-primary-500 rounded-full" />
-                  <span>Priority Support</span>
+                  <span className="truncate">Priority Support</span>
                 </div>
               </div>
             </div>

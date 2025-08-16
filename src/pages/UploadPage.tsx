@@ -20,7 +20,7 @@ const UploadPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-gray-50 py-6 md:py-12 px-4 md:px-0">
       <FileUploadForm />
     </div>
   )

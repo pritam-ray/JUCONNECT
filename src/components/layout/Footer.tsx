@@ -1,9 +1,16 @@
 import React from 'react'
 import { BookOpen, Github, Mail, Heart, Sparkles, Star } from 'lucide-react'
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  className?: string
+}
+
+const Footer: React.FC<FooterProps> = ({ className }) => {
   return (
-    <footer className="relative bg-gradient-to-br from-secondary-900 via-secondary-800 to-primary-900 text-white overflow-hidden">
+    <footer className={cn(
+      "relative bg-gradient-to-br from-secondary-900 via-secondary-800 to-primary-900 text-white overflow-hidden",
+      className
+    )}>
       {/* Background decorations */}
       <div className="absolute inset-0 bg-gradient-to-r from-primary-500/10 via-transparent to-primary-500/10" />
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl" />

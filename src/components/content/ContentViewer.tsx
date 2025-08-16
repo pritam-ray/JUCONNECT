@@ -84,7 +84,7 @@ const ContentViewer: React.FC<ContentViewerProps> = ({ content, isOpen, onClose 
     <Modal isOpen={isOpen} onClose={onClose} size="lg">
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col md:flex-row items-start justify-between space-y-4 md:space-y-0">
           <div className="flex-1">
             <div className="flex items-center space-x-2 mb-2">
               <Badge variant={getContentTypeBadgeVariant(content.content_type) as any}>
@@ -96,11 +96,11 @@ const ContentViewer: React.FC<ContentViewerProps> = ({ content, isOpen, onClose 
                 </Badge>
               )}
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
               {content.title}
             </h1>
             {content.description && (
-              <p className="text-gray-600">
+              <p className="text-sm md:text-base text-gray-600">
                 {content.description}
               </p>
             )}
@@ -108,26 +108,26 @@ const ContentViewer: React.FC<ContentViewerProps> = ({ content, isOpen, onClose 
         </div>
 
         {/* Metadata */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 p-3 md:p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center space-x-2 text-xs md:text-sm text-gray-600">
             <Calendar className="h-4 w-4" />
-            <span>{formatDistanceToNow(new Date(content.created_at), { addSuffix: true })}</span>
+            <span className="truncate">{formatDistanceToNow(new Date(content.created_at), { addSuffix: true })}</span>
           </div>
           
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
+          <div className="flex items-center space-x-2 text-xs md:text-sm text-gray-600">
             <Eye className="h-4 w-4" />
             <span>{content.view_count} views</span>
           </div>
           
           {content.profiles && (
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <div className="flex items-center space-x-2 text-xs md:text-sm text-gray-600 col-span-2 lg:col-span-1">
               <User className="h-4 w-4" />
-              <span>@{content.profiles.username}</span>
+              <span className="truncate">@{content.profiles.username}</span>
             </div>
           )}
           
           {content.file_size && (
-            <div className="text-sm text-gray-600">
+            <div className="text-xs md:text-sm text-gray-600">
               Size: {formatFileSize(content.file_size)}
             </div>
           )}
@@ -172,17 +172,18 @@ const ContentViewer: React.FC<ContentViewerProps> = ({ content, isOpen, onClose 
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-          <div className="text-sm text-gray-500">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-gray-200 space-y-3 sm:space-y-0">
+          <div className="text-xs md:text-sm text-gray-500">
             Content ID: {content.id.split('-')[0]}...
           </div>
           
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
             {content.external_url && (
               <Button
                 onClick={handleExternalLink}
                 variant="outline"
-                className="flex items-center space-x-2"
+                size="sm"
+                className="flex items-center justify-center space-x-2 w-full sm:w-auto"
               >
                 <ExternalLink className="h-4 w-4" />
                 <span>Open Link</span>
@@ -192,7 +193,8 @@ const ContentViewer: React.FC<ContentViewerProps> = ({ content, isOpen, onClose 
             {(content.file_data || content.file_url) && (
               <Button
                 onClick={handleDownload}
-                className="flex items-center space-x-2"
+                size="sm"
+                className="flex items-center justify-center space-x-2 w-full sm:w-auto"
               >
                 <Download className="h-4 w-4" />
                 <span>Download</span>
@@ -203,11 +205,11 @@ const ContentViewer: React.FC<ContentViewerProps> = ({ content, isOpen, onClose 
 
         {/* File Preview for images */}
         {content.file_data && content.file_type && ['jpg', 'png'].includes(content.file_type) && (
-          <div className="border rounded-lg overflow-hidden">
+          <div className="border rounded-lg overflow-hidden mt-4">
             <img 
               src={content.file_data} 
               alt={content.title}
-              className="w-full h-auto max-h-96 object-contain"
+              className="w-full h-auto max-h-64 md:max-h-96 object-contain"
             />
           </div>
         )}

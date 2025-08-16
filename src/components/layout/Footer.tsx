@@ -111,7 +111,7 @@ const Footer: React.FC = () => {
             
             <div className="flex items-center space-x-6">
               <a
-                href="https://github.com"
+                href="https://github.com/pritam-ray/JUCONNECT"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-secondary-400 hover:text-primary-400 transition-all duration-300 hover:scale-110"

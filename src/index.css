@@ -47,12 +47,12 @@
 @layer components {
   /* Glass Morphism */
   .glass {
-    @apply backdrop-blur-xl bg-white/10 border border-white/20;
+    @apply backdrop-blur-sm bg-white/10 border border-white/20;
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
   }
 
   .glass-dark {
-    @apply backdrop-blur-xl bg-black/10 border border-white/10;
+    @apply backdrop-blur-sm bg-black/10 border border-white/10;
   }
 
   /* Neumorphism */
@@ -96,7 +96,7 @@
 
   /* Premium Cards */
   .card-premium {
-    @apply relative bg-white/80 backdrop-blur-sm rounded-3xl border border-white/50 transition-all duration-500 hover:shadow-2xl hover:shadow-primary-500/10 hover:-translate-y-2;
+    @apply relative bg-white/85 backdrop-blur-none rounded-3xl border border-white/50 transition-all duration-500 hover:shadow-2xl hover:shadow-primary-500/10 hover:-translate-y-2;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
@@ -115,7 +115,7 @@
 
   /* Input Styles */
   .input-premium {
-    @apply w-full px-4 py-3 rounded-xl border border-secondary-200 bg-white/80 backdrop-blur-sm text-secondary-900 placeholder-secondary-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply w-full px-4 py-3 rounded-xl border border-secondary-200 bg-white/90 backdrop-blur-none text-secondary-900 placeholder-secondary-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
   }
 
   .input-premium:focus {
@@ -155,7 +155,7 @@
 
   /* Mobile Bottom Navigation */
   .mobile-nav {
-    @apply fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-white/20;
+    @apply fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-white/20;
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1);
   }
 
@@ -230,7 +230,7 @@
 
   /* Premium Modal */
   .modal-premium {
-    @apply bg-white/95 backdrop-blur-xl rounded-3xl border border-white/50 shadow-2xl;
+    @apply bg-white/95 backdrop-blur-sm rounded-3xl border border-white/50 shadow-2xl;
   }
 
   /* Chat Bubble */

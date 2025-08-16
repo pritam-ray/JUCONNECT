@@ -304,7 +304,7 @@ const HomePage: React.FC = () => {
               <Button 
                 size="xl" 
                 variant="secondary"
-                className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30"
+                className="bg-white/30 backdrop-blur-none border-white/30 text-white hover:bg-white/40"
                 onClick={() => document.getElementById('content-section')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 <Zap className="mr-2 h-5 w-5" />
@@ -332,14 +332,14 @@ const HomePage: React.FC = () => {
             <button
               aria-label="Previous"
               onClick={prev}
-              className="absolute left-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-sm"
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-none"
             >
               ‹
             </button>
             <button
               aria-label="Next"
               onClick={next}
-              className="absolute right-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-sm"
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-none"
             >
               ›
             </button>

@@ -1,5 +1,7 @@
 import React from 'react'
 import { BookOpen, Github, Mail, Heart, Sparkles, Star } from 'lucide-react'
+import { cn } from "@/lib/utils"
+
 
 interface FooterProps {
   className?: string

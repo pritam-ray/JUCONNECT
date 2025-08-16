@@ -28,8 +28,12 @@ const HomePage: React.FC = () => {
 
   // Dynamically load all images from src/assets/hero
   const heroImages = React.useMemo(() => {
-    const files = import.meta.glob('../assets/hero/*.{png,jpg,jpeg,webp,svg}', { eager: true, as: 'url' })
-    return Object.values(files) as string[]
+    const files = import.meta.glob('../assets/hero/*.{png,jpg,jpeg,webp,svg}', { 
+      eager: true, 
+      query: '?url', 
+      import: 'default' 
+    }) as Record<string, string>
+    return Object.values(files)
   }, [])
 
   // Slider state
@@ -275,7 +279,7 @@ const HomePage: React.FC = () => {
                   { label: 'Question Papers', value: stats.byType.question_paper, icon: FileText },
                   { label: 'Study Notes', value: stats.byType.notes, icon: TrendingUp },
                   { label: 'Subject Areas', value: categories.length, icon: Users },
-                ].map((stat, index) => (
+                ].map((stat) => (
                   <div key={stat.label} className="glass p-6 rounded-2xl text-center group hover:scale-105 transition-all duration-300">
                     <stat.icon className="h-8 w-8 text-accent-400 mx-auto mb-3 group-hover:scale-110 transition-transform duration-300" />
                     <div className="text-3xl font-bold text-white mb-2">{stat.value}</div>

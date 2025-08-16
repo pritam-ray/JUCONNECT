@@ -28,12 +28,19 @@ const HomePage: React.FC = () => {
 
   // Dynamically load all images from src/assets/hero
   const heroImages = React.useMemo(() => {
-    const files = import.meta.glob('../assets/hero/*.{png,jpg,jpeg,webp,svg}', { 
-      eager: true, 
-      query: '?url', 
-      import: 'default' 
-    }) as Record<string, string>
-    return Object.values(files)
+    try {
+      const files = import.meta.glob('../assets/hero/*.{png,jpg,jpeg,webp,svg}', { 
+        eager: true, 
+        query: '?url', 
+        import: 'default' 
+      }) as Record<string, string>
+      const images = Object.values(files)
+      // Return at least the fallback if no images found
+      return images.length > 0 ? images : []
+    } catch (error) {
+      console.warn('Failed to load hero images:', error)
+      return []
+    }
   }, [])
 
   // Slider state

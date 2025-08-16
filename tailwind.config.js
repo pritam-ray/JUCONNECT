@@ -67,6 +67,7 @@ export default {
       },
       fontSize: {
         '2xs': ['0.625rem', { lineHeight: '0.75rem' }],
+        '3xs': ['0.5rem', { lineHeight: '0.625rem' }],
         '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
         '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
         '5xl': ['3rem', { lineHeight: '1' }],
@@ -74,6 +75,7 @@ export default {
       },
       spacing: {
         '18': '4.5rem',
+        '20': '5rem',
         '88': '22rem',
         '128': '32rem',
       },
@@ -151,11 +153,15 @@ export default {
           '100%': { transform: 'translateX(100%)' },
         },
       },
+        'xs': '475px',
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
         'mesh-gradient': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+        'mobile': { 'max': '767px' },
+        'tablet': { 'min': '768px', 'max': '1023px' },
+        'desktop': { 'min': '1024px' },
       },
     },
   },

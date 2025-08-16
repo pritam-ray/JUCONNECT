@@ -149,7 +149,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Tabs */}
-        <div className="flex space-x-4 mb-6 border-b border-gray-200">
+        <div className="flex space-x-2 md:space-x-4 mb-6 border-b border-gray-200 overflow-x-auto">
           <button
             onClick={() => setActiveTab('overview')}
             className={`pb-2 px-1 font-medium text-sm ${
@@ -159,7 +159,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             }`}
           >
             <BarChart3 className="h-4 w-4 inline mr-1" />
-            Overview
+            <span className="hidden sm:inline">Overview</span>
           </button>
           <button
             onClick={() => setActiveTab('content')}
@@ -170,7 +170,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             }`}
           >
             <FileText className="h-4 w-4 inline mr-1" />
-            Content Reports ({contentReports.filter(r => r.status === 'pending').length})
+            <span className="hidden sm:inline">Content Reports</span>
+            <span className="sm:hidden">Content</span>
+            <span className="ml-1">({contentReports.filter(r => r.status === 'pending').length})</span>
           </button>
           <button
             onClick={() => setActiveTab('chat')}
@@ -181,7 +183,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             }`}
           >
             <MessageCircle className="h-4 w-4 inline mr-1" />
-            Chat Reports ({chatReports.filter(r => r.status === 'pending').length})
+            <span className="hidden sm:inline">Chat Reports</span>
+            <span className="sm:hidden">Chat</span>
+            <span className="ml-1">({chatReports.filter(r => r.status === 'pending').length})</span>
           </button>
         </div>
 
@@ -190,10 +194,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             <LoadingSpinner size="lg" />
           </div>
         ) : (
-          <div className="max-h-96 overflow-y-auto">
+          <div className="max-h-64 md:max-h-96 overflow-y-auto">
             {activeTab === 'overview' && statistics && (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-orange-50 p-4 rounded-lg">
                     <div className="flex items-center space-x-2">
                       <AlertTriangle className="h-5 w-5 text-orange-600" />
@@ -239,8 +243,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                   </div>
                 ) : (
                   contentReports.map(report => (
-                    <div key={report.id} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex items-start justify-between">
+                    <div key={report.id} className="border border-gray-200 rounded-lg p-3 md:p-4">
+                      <div className="flex flex-col md:flex-row items-start justify-between space-y-3 md:space-y-0">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-2">
                             <Badge variant={getStatusBadgeVariant(report.status) as any}>
@@ -251,15 +255,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                             </span>
                           </div>
                           
-                          <h4 className="font-medium text-gray-900 mb-1">
+                          <h4 className="font-medium text-gray-900 mb-1 text-sm md:text-base">
                             {report.content?.title || 'Content Title'}
                           </h4>
                           
-                          <p className="text-sm text-gray-600 mb-2">
+                          <p className="text-xs md:text-sm text-gray-600 mb-2">
                             {report.description}
                           </p>
                           
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-gray-500 truncate">
                             Reported by @{report.reporter?.username} • {' '}
                             {formatDistanceToNow(new Date(report.created_at), { addSuffix: true })}
                           </div>
@@ -268,6 +272,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                         <Button
                           size="sm"
                           variant="outline"
+                          className="w-full md:w-auto"
                           onClick={() => setSelectedReport(report)}
                         >
                           Review

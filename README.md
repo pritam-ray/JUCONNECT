@@ -2,6 +2,8 @@
 
 A modern web application for JECRC University students to access study materials, share resources, and connect with fellow students.
 
+🌟 **Live Demo**: [https://pritam-ray.github.io/JUCONNECT/](https://pritam-ray.github.io/JUCONNECT/)
+
 ## Features
 
 - 📚 **Resource Sharing** - Access study materials, PYQs, notes, and more

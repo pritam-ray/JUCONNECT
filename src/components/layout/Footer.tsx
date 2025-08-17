@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import React from 'react'
 import { BookOpen, Github, Mail, Heart, Sparkles, Star } from 'lucide-react'
 import { cn } from '../../utils/cn'
@@ -57,19 +58,31 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
             </h3>
             <ul className="space-y-3">
               {[
-                { name: 'Browse Content', href: '/' },
-                { name: 'Categories', href: '/categories' },
-                { name: 'Upload Content', href: '/upload' },
-                { name: 'Student Chat', href: '/chat' },
+                { name: 'Browse Content', href: '/', external: false },
+                { name: 'Categories', href: '/categories', external: false },
+                { name: 'Upload Content', href: '/upload', external: false },
+                { name: 'Student Chat', href: '/chat', external: false },
               ].map((link) => (
                 <li key={link.name}>
-                  <a 
-                    href={link.href} 
-                    className="text-secondary-300 hover:text-primary-400 transition-all duration-300 flex items-center space-x-2 group"
-                  >
-                    <div className="w-1 h-1 bg-primary-500 rounded-full group-hover:w-2 transition-all duration-300" />
-                    <span className="group-hover:translate-x-1 transition-transform duration-300">{link.name}</span>
-                  </a>
+                  {link.external ? (
+                    <a 
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-secondary-300 hover:text-primary-400 transition-all duration-300 flex items-center space-x-2 group"
+                    >
+                      <div className="w-1 h-1 bg-primary-500 rounded-full group-hover:w-2 transition-all duration-300" />
+                      <span className="group-hover:translate-x-1 transition-transform duration-300">{link.name}</span>
+                    </a>
+                  ) : (
+                    <Link 
+                      to={link.href} 
+                      className="text-secondary-300 hover:text-primary-400 transition-all duration-300 flex items-center space-x-2 group"
+                    >
+                      <div className="w-1 h-1 bg-primary-500 rounded-full group-hover:w-2 transition-all duration-300" />
+                      <span className="group-hover:translate-x-1 transition-transform duration-300">{link.name}</span>
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -83,18 +96,30 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
             </h3>
             <ul className="space-y-3">
               {[
-                { name: 'Help Center', href: '/help' },
-                { name: 'Privacy Policy', href: '/privacy' },
-                { name: 'Terms of Service', href: '/terms' },
+                { name: 'Help Center', href: 'https://github.com/pritam-ray/JUCONNECT/wiki', external: true },
+                { name: 'Privacy Policy', href: 'https://github.com/pritam-ray/JUCONNECT/blob/main/PRIVACY.md', external: true },
+                { name: 'Terms of Service', href: 'https://github.com/pritam-ray/JUCONNECT/blob/main/TERMS.md', external: true },
               ].map((link) => (
                 <li key={link.name}>
-                  <a 
-                    href={link.href} 
-                    className="text-secondary-300 hover:text-primary-400 transition-all duration-300 flex items-center space-x-2 group"
-                  >
-                    <div className="w-1 h-1 bg-primary-500 rounded-full group-hover:w-2 transition-all duration-300" />
-                    <span className="group-hover:translate-x-1 transition-transform duration-300">{link.name}</span>
-                  </a>
+                  {link.external ? (
+                    <a 
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-secondary-300 hover:text-primary-400 transition-all duration-300 flex items-center space-x-2 group"
+                    >
+                      <div className="w-1 h-1 bg-primary-500 rounded-full group-hover:w-2 transition-all duration-300" />
+                      <span className="group-hover:translate-x-1 transition-transform duration-300">{link.name}</span>
+                    </a>
+                  ) : (
+                    <Link 
+                      to={link.href} 
+                      className="text-secondary-300 hover:text-primary-400 transition-all duration-300 flex items-center space-x-2 group"
+                    >
+                      <div className="w-1 h-1 bg-primary-500 rounded-full group-hover:w-2 transition-all duration-300" />
+                      <span className="group-hover:translate-x-1 transition-transform duration-300">{link.name}</span>
+                    </Link>
+                  )}
                 </li>
               ))}
               <li>

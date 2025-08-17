@@ -1,5 +1,6 @@
+import { Link } from 'react-router-dom'
 import React, { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { BookOpen, Menu, X, User, LogOut, Upload, MessageCircle, Settings, FileText, Shield, Mail, Sparkles } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { cn } from '../../utils/cn'
@@ -151,12 +152,15 @@ const Navbar: React.FC = () => {
                       <User className="h-5 w-5 text-secondary-600" />
                       <div className="status-online absolute -bottom-1 -right-1" />
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-secondary-700">@{profile.username}</span>
+                    <Link 
+                      to={`/profile/${user.id}`}
+                      className="flex flex-col hover:text-primary-600 transition-colors duration-300"
+                    >
+                      <span className="text-sm font-semibold text-secondary-700 hover:text-primary-600">@{profile.username}</span>
                       {profile.is_admin && (
                         <span className="text-xs text-primary-600 font-medium">Admin</span>
                       )}
-                    </div>
+                    </Link>
                   </div>
                   
                   <button
@@ -253,12 +257,16 @@ const Navbar: React.FC = () => {
                         <User className="h-6 w-6 text-secondary-600" />
                         <div className="status-online absolute -bottom-1 -right-1" />
                       </div>
-                      <div className="flex flex-col">
-                        <span className="text-base font-semibold text-secondary-700">@{profile.username}</span>
+                      <Link 
+                        to={`/profile/${user.id}`}
+                        className="flex flex-col hover:text-primary-600 transition-colors duration-300"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <span className="text-base font-semibold text-secondary-700 hover:text-primary-600">@{profile.username}</span>
                         {profile.is_admin && (
                           <span className="text-sm text-primary-600 font-medium">Admin</span>
                         )}
-                      </div>
+                      </Link>
                     </div>
                     
                     <button

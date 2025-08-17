@@ -107,6 +107,90 @@ export const subscribeToChatMessages = (
   }
 }
 
+// Real-time subscription for all chat updates
+export const subscribeToAllChatUpdates = (callbacks: {
+  onInsert?: (message: ChatMessageWithProfile) => void
+  onUpdate?: (message: ChatMessageWithProfile) => void
+  onDelete?: (messageId: string) => void
+}) => {
+  const channel = supabase
+    .channel('chat_updates')
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'chat_messages',
+      },
+      async (payload) => {
+        if (callbacks.onInsert) {
+          const { data } = await supabase
+            .from('chat_messages')
+            .select(`
+              *,
+              profiles (
+                id,
+                username,
+                full_name
+              )
+            `)
+            .eq('id', payload.new.id)
+            .single()
+
+          if (data && !data.is_reported) {
+            callbacks.onInsert(data)
+          }
+        }
+      }
+    )
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'chat_messages',
+      },
+      async (payload) => {
+        if (callbacks.onUpdate) {
+          const { data } = await supabase
+            .from('chat_messages')
+            .select(`
+              *,
+              profiles (
+                id,
+                username,
+                full_name
+              )
+            `)
+            .eq('id', payload.new.id)
+            .single()
+
+          if (data) {
+            callbacks.onUpdate(data)
+          }
+        }
+      }
+    )
+    .on(
+      'postgres_changes',
+      {
+        event: 'DELETE',
+        schema: 'public',
+        table: 'chat_messages',
+      },
+      (payload) => {
+        if (callbacks.onDelete) {
+          callbacks.onDelete(payload.old.id)
+        }
+      }
+    )
+    .subscribe()
+
+  return () => {
+    supabase.removeChannel(channel)
+  }
+}
+
 export const cleanupOldMessages = async (): Promise<void> => {
   const { error } = await supabase.rpc('delete_old_chat_messages')
   if (error) throw error

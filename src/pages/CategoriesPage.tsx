@@ -1,13 +1,18 @@
+import { Plus } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 import { FileText, ChevronRight, Book } from 'lucide-react'
 import { getAllCategories, getCategoriesWithContentCount, CategoryWithChildren } from '../services/categoryService'
 import { getApprovedContent, ContentWithCategory } from '../services/contentService'
+import { useAuth } from '../contexts/AuthContext'
 import ContentCard from '../components/content/ContentCard'
 import ContentViewer from '../components/content/ContentViewer'
+import AddCategoryModal from '../components/ui/AddCategoryModal'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
+import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 
 const CategoriesPage: React.FC = () => {
+  const { user, isGuest } = useAuth()
   const [categories, setCategories] = useState<CategoryWithChildren[]>([])
   const [selectedCategory, setSelectedCategory] = useState<CategoryWithChildren | null>(null)
   const [categoryContent, setCategoryContent] = useState<ContentWithCategory[]>([])
@@ -15,6 +20,7 @@ const CategoriesPage: React.FC = () => {
   const [contentLoading, setContentLoading] = useState(false)
   const [selectedContent, setSelectedContent] = useState<ContentWithCategory | null>(null)
   const [showViewer, setShowViewer] = useState(false)
+  const [showAddCategoryModal, setShowAddCategoryModal] = useState(false)
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -30,6 +36,15 @@ const CategoriesPage: React.FC = () => {
 
     fetchCategories()
   }, [])
+
+  const handleCategoryAdded = async () => {
+    try {
+      const data = await getCategoriesWithContentCount()
+      setCategories(data)
+    } catch (error) {
+      console.error('Failed to refresh categories:', error)
+    }
+  }
 
   const handleCategoryClick = async (category: CategoryWithChildren) => {
     setSelectedCategory(category)
@@ -101,12 +116,24 @@ const CategoriesPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 pb-4 md:pb-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
-        <div className="text-center mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Browse by Categories</h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Explore our organized collection of study materials, question papers, and resources 
-            categorized by subject areas
-          </p>
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 md:mb-8 space-y-4 md:space-y-0">
+          <div className="text-center md:text-left">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Browse by Categories</h1>
+            <p className="text-gray-600 max-w-2xl">
+              Explore our organized collection of study materials, question papers, and resources 
+              categorized by subject areas
+            </p>
+          </div>
+          
+          {user && !isGuest && (
+            <Button
+              onClick={() => setShowAddCategoryModal(true)}
+              className="flex items-center space-x-2"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Category</span>
+            </Button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
@@ -186,6 +213,14 @@ const CategoriesPage: React.FC = () => {
             setShowViewer(false)
             setSelectedContent(null)
           }}
+        />
+        
+        {/* Add Category Modal */}
+        <AddCategoryModal
+          isOpen={showAddCategoryModal}
+          onClose={() => setShowAddCategoryModal(false)}
+          onSuccess={handleCategoryAdded}
+          categories={categories}
         />
       </div>
     </div>

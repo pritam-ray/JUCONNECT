@@ -24,7 +24,7 @@ const MyRequestsPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false)
 
   const [newRequest, setNewRequest] = useState({
-    contentType: 'notes' as 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'other',
+    contentType: 'notes' as 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'assignments' | 'other',
     contentId: '',
     issueDescription: '',
     suggestedChanges: '',
@@ -119,6 +119,8 @@ const MyRequestsPage: React.FC = () => {
         return 'Syllabus'
       case 'educational_link':
         return 'Educational Link'
+      case 'assignments':
+        return 'Assignments'
       case 'other':
         return 'Other'
       default:
@@ -269,6 +271,7 @@ const MyRequestsPage: React.FC = () => {
                 <option value="question_paper">Question Paper</option>
                 <option value="syllabus">Syllabus</option>
                 <option value="educational_link">Educational Link</option>
+               <option value="assignments">Assignments</option>
                <option value="other">Other</option>
               </select>
             </div>

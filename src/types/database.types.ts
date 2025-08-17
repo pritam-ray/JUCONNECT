@@ -230,7 +230,7 @@ export interface Database {
           id: string
           title: string
           description: string | null
-          content_type: 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'other'
+          content_type: 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'assignments' | 'other'
           category_id: string | null
           uploaded_by: string | null
           file_url: string | null
@@ -249,7 +249,7 @@ export interface Database {
           id?: string
           title: string
           description?: string | null
-          content_type: 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'other'
+          content_type: 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'assignments' | 'other'
           category_id?: string | null
           uploaded_by?: string | null
           file_url?: string | null
@@ -268,7 +268,7 @@ export interface Database {
           id?: string
           title?: string
           description?: string | null
-          content_type?: 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'other'
+          content_type?: 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'assignments' | 'other'
           category_id?: string | null
           uploaded_by?: string | null
           file_url?: string | null
@@ -352,7 +352,7 @@ export interface Database {
         Row: {
           id: string
           user_id: string | null
-          content_type: 'question_paper' | 'notes' | 'syllabus' | 'educational_link'
+          content_type: 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'assignments'
           content_id: string | null
           issue_description: string
           suggested_changes: string | null
@@ -365,7 +365,7 @@ export interface Database {
         Insert: {
           id?: string
           user_id?: string | null
-          content_type: 'question_paper' | 'notes' | 'syllabus' | 'educational_link'
+          content_type: 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'assignments'
           content_id?: string | null
           issue_description: string
           suggested_changes?: string | null
@@ -378,7 +378,7 @@ export interface Database {
         Update: {
           id?: string
           user_id?: string | null
-          content_type?: 'question_paper' | 'notes' | 'syllabus' | 'educational_link'
+          content_type?: 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'assignments'
           content_id?: string | null
           issue_description?: string
           suggested_changes?: string | null
@@ -435,7 +435,7 @@ export interface Database {
       }
     }
     Enums: {
-      content_type: 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'other'
+      content_type: 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'assignments' | 'other'
       request_status: 'pending' | 'approved' | 'rejected'
       file_type: 'pdf' | 'doc' | 'docx' | 'txt' | 'jpg' | 'png'
     }

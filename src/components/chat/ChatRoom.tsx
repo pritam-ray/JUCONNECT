@@ -3,7 +3,7 @@ import { Send, Flag, Trash2, User, MessageCircle } from 'lucide-react'
 import { 
   getChatMessages, 
   sendChatMessage, 
-  subscribeToChatMessages,
+  subscribeToAllChatUpdates,
   deleteChatMessage,
   ChatMessageWithProfile 
 } from '../../services/chatService'
@@ -42,13 +42,29 @@ const ChatRoom: React.FC = () => {
 
     fetchMessages()
 
-    // Subscribe to new messages
-    const unsubscribe = subscribeToChatMessages((newMessage) => {
-      setMessages(prev => [...prev, newMessage])
+    // Subscribe to real-time chat updates
+    const unsubscribe = subscribeToAllChatUpdates({
+      onInsert: (newMessage) => {
+        setMessages(prev => {
+          // Avoid duplicates
+          if (prev.some(msg => msg.id === newMessage.id)) {
+            return prev
+          }
+          return [...prev, newMessage]
+        })
+      },
+      onUpdate: (updatedMessage) => {
+        setMessages(prev => prev.map(msg => 
+          msg.id === updatedMessage.id ? updatedMessage : msg
+        ))
+      },
+      onDelete: (messageId) => {
+        setMessages(prev => prev.filter(msg => msg.id !== messageId))
+      }
     })
 
     return unsubscribe
-  }, []) // Remove user dependency to allow guest viewing
+  }, [])
 
   useEffect(() => {
     scrollToBottom()

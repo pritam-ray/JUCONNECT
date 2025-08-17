@@ -38,6 +38,8 @@ const ContentViewer: React.FC<ContentViewerProps> = ({ content, isOpen, onClose 
         return 'Notes'
       case 'syllabus':
         return 'Syllabus'
+      case 'assignments':
+        return 'Assignments'
       case 'other':
         return 'Other'
       default:
@@ -53,6 +55,8 @@ const ContentViewer: React.FC<ContentViewerProps> = ({ content, isOpen, onClose 
         return 'secondary'
       case 'syllabus':
         return 'warning'
+      case 'assignments':
+        return 'success'
       case 'other':
         return 'neutral'
       default:

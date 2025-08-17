@@ -42,6 +42,8 @@ const ContentCard: React.FC<ContentCardProps> = ({
         return 'Notes'
       case 'syllabus':
         return 'Syllabus'
+      case 'assignments':
+        return 'Assignments'
       case 'other':
         return 'Other'
       default:
@@ -57,6 +59,8 @@ const ContentCard: React.FC<ContentCardProps> = ({
         return 'secondary'
       case 'syllabus':
         return 'warning'
+      case 'assignments':
+        return 'success'
       case 'other':
         return 'neutral'
       default:

@@ -87,6 +87,7 @@ const HomePage: React.FC = () => {
     { value: 'question_paper', label: 'Question Papers', icon: '📝' },
     { value: 'notes', label: 'Study Notes', icon: '📖' },
     { value: 'syllabus', label: 'Syllabus', icon: '📋' },
+    { value: 'assignments', label: 'Assignments', icon: '📄' },
     { value: 'other', label: 'Other', icon: '📄' },
   ]
 
@@ -125,6 +126,7 @@ const HomePage: React.FC = () => {
     const fetchFilteredContent = async () => {
       if (!isSupabaseConfigured()) return
       
+      setLoading(true)
       try {
         const data = await getApprovedContent(
           selectedContentType as any,
@@ -135,11 +137,29 @@ const HomePage: React.FC = () => {
       } catch (error) {
         console.error('Failed to fetch filtered content:', error)
         setConnectionError(true)
+      } finally {
+        setLoading(false)
       }
     }
 
-    const debounceTimer = setTimeout(fetchFilteredContent, 300)
-    return () => clearTimeout(debounceTimer)
+    // Only fetch if we have filters or search query, or if we're clearing filters
+    if (searchQuery || selectedCategory || selectedContentType) {
+      const debounceTimer = setTimeout(fetchFilteredContent, 300)
+      return () => clearTimeout(debounceTimer)
+    } else {
+      // Reset to all content when filters are cleared
+      const fetchAllContent = async () => {
+        if (!isSupabaseConfigured()) return
+        
+        try {
+          const data = await getApprovedContent()
+          setContent(data)
+        } catch (error) {
+          console.error('Failed to fetch content:', error)
+        }
+      }
+      fetchAllContent()
+    }
   }, [searchQuery, selectedCategory, selectedContentType])
 
   const handleContentClick = (contentItem: ContentWithCategory) => {

@@ -195,6 +195,7 @@ export const getContentStats = async () => {
         notes: 0,
         syllabus: 0,
         educational_link: 0,
+        assignments: 0,
       }
     }
   }
@@ -215,6 +216,7 @@ export const getContentStats = async () => {
         notes: data.filter(item => item.content_type === 'notes').length,
         syllabus: data.filter(item => item.content_type === 'syllabus').length,
         educational_link: data.filter(item => item.content_type === 'educational_link').length,
+        assignments: data.filter(item => item.content_type === 'assignments').length,
       }
     }
 
@@ -230,6 +232,7 @@ export const getContentStats = async () => {
         notes: 0,
         syllabus: 0,
         educational_link: 0,
+        assignments: 0,
       }
     }
   }

@@ -121,6 +121,46 @@ export const deleteCategory = async (categoryId: string): Promise<void> => {
   if (error) throw error
 }
 
+export const createUserCategory = async (
+  name: string,
+  description?: string,
+  parentId?: string
+): Promise<Category> => {
+  // Generate slug from name
+  const slug = name.toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim()
+
+  // Check if slug already exists
+  const { data: existingCategory } = await supabase
+    .from('categories')
+    .select('id')
+    .eq('slug', slug)
+    .single()
+
+  if (existingCategory) {
+    throw new Error('A category with this name already exists')
+  }
+
+  const categoryData: CategoryInsert = {
+    name: name.trim(),
+    slug,
+    description: description?.trim() || null,
+    parent_id: parentId || null
+  }
+
+  const { data, error } = await supabase
+    .from('categories')
+    .insert([categoryData])
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
 export const getCategoriesWithContentCount = async (): Promise<CategoryWithChildren[]> => {
   const categories = await getAllCategories()
   

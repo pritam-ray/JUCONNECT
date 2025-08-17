@@ -309,6 +309,7 @@ const FileUploadForm: React.FC<FileUploadFormProps> = ({ onSuccess }) => {
               <option value="notes">Study Notes</option>
               <option value="question_paper">Question Paper</option>
               <option value="syllabus">Syllabus</option>
+              <option value="assignments">Assignments</option>
               <option value="other">Other</option>
               
             </select>

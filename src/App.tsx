@@ -13,6 +13,7 @@ import UploadPage from './pages/UploadPage'
 import ChatPage from './pages/ChatPage'
 import CategoriesPage from './pages/CategoriesPage'
 import MyRequestsPage from './pages/MyRequestsPage'
+import UserProfilePage from './pages/UserProfilePage'
 
 function App() {
   const [showAuthModal, setShowAuthModal] = useState(false)
@@ -32,6 +33,7 @@ function App() {
                   <Route path="/chat" element={<ChatPage />} />
                   <Route path="/categories" element={<CategoriesPage />} />
                   <Route path="/my-requests" element={<MyRequestsPage />} />
+                  <Route path="/profile/:userId" element={<UserProfilePage />} />
                 </Routes>
               </PageTransition>
             </main>

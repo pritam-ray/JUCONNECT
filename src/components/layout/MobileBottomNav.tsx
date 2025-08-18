@@ -1,10 +1,11 @@
-import { MessageSquare } from 'lucide-react'
+import { MessageSquare, Wifi, WifiOff } from 'lucide-react'
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Home, FileText, MessageCircle, Upload, Settings } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { cn } from '../../utils/cn'
-import PrivateMessageModal from '../messaging/PrivateMessageModal'
+import RealtimePrivateMessages from '../messaging/RealtimePrivateMessages'
+import { usePrivateMessages } from '../../hooks/useRealtime'
 
 interface MobileBottomNavProps {
   onAuthRequired: () => void
@@ -14,6 +15,13 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onAuthRequired }) => 
   const { user, isGuest } = useAuth()
   const location = useLocation()
   const [showMessagesModal, setShowMessagesModal] = React.useState(false)
+  
+  // Get connection status for messages
+  const { connectionStatus } = usePrivateMessages({
+    autoConnect: user && !isGuest,
+    onError: (error) => console.error('Mobile nav messages error:', error)
+  })
+  
 
   const isActive = (path: string) => location.pathname === path
 
@@ -47,11 +55,21 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onAuthRequired }) => 
         {user && !isGuest && (
           <button
             onClick={handleMessagesClick}
-            className="absolute -top-12 left-4 w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 z-10"
+            className="absolute -top-12 left-4 w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 z-10 group"
           >
-            <MessageSquare className="h-6 w-6 text-white" />
-            {/* Notification dot */}
-            <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent-500 rounded-full border-2 border-white animate-pulse" />
+            <div className="relative">
+              <MessageSquare className="h-6 w-6 text-white" />
+              {/* Connection status indicator */}
+              <div className="absolute -bottom-1 -right-1">
+                {connectionStatus.isConnected ? (
+                  <Wifi className="h-3 w-3 text-green-400" />
+                ) : (
+                  <WifiOff className="h-3 w-3 text-red-400" />
+                )}
+              </div>
+            </div>
+            {/* Notification dot for unread messages */}
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent-500 rounded-full border-2 border-white animate-pulse" />
           </button>
         )}
         
@@ -94,7 +112,7 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onAuthRequired }) => 
       </div>
       
       {/* Private Messages Modal */}
-      <PrivateMessageModal
+      <RealtimePrivateMessages
         isOpen={showMessagesModal}
         onClose={() => setShowMessagesModal(false)}
       />

@@ -5,7 +5,8 @@ import { BookOpen, Menu, X, User, LogOut, Upload, MessageCircle, Settings, FileT
 import { useAuth } from '../../contexts/AuthContext'
 import { cn } from '../../utils/cn'
 import AuthModal from '../ui/AuthModal'
-import PrivateMessageModal from '../messaging/PrivateMessageModal'
+import RealtimePrivateMessages from '../messaging/RealtimePrivateMessages'
+import { usePrivateMessages } from '../../hooks/useRealtime'
 import AdminPanel from '../admin/AdminPanel'
 import Button from '../ui/Button'
 
@@ -16,6 +17,12 @@ const Navbar: React.FC = () => {
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const { user, profile, isGuest, signInAsGuest, signOut } = useAuth()
   const location = useLocation()
+  
+  // Get connection status for messages
+  const { connectionStatus } = usePrivateMessages({
+    autoConnect: user && !isGuest,
+    onError: (error) => console.error('Navbar messages error:', error)
+  })
 
   const isActive = (path: string) => location.pathname === path
 
@@ -128,10 +135,20 @@ const Navbar: React.FC = () => {
                   {/* Messages Button */}
                   <button
                     onClick={() => handleAuthRequired(() => setShowMessagesModal(true))}
-                    className="relative p-3 text-secondary-600 hover:text-primary-600 rounded-xl hover:bg-white/50 transition-all duration-300 hover:scale-110"
+                    className="relative p-3 text-secondary-600 hover:text-primary-600 rounded-xl hover:bg-white/50 transition-all duration-300 hover:scale-110 group"
                     title="Private Messages"
                   >
-                    <Mail className="h-5 w-5" />
+                    <div className="relative">
+                      <Mail className="h-5 w-5" />
+                      {/* Connection status indicator */}
+                      <div className="absolute -bottom-1 -right-1">
+                        {connectionStatus.isConnected ? (
+                          <div className="w-2 h-2 bg-green-500 rounded-full" />
+                        ) : (
+                          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                        )}
+                      </div>
+                    </div>
                     {/* Notification dot - you can add logic to show unread count */}
                     <div className="notification-dot" />
                   </button>
@@ -336,7 +353,7 @@ const Navbar: React.FC = () => {
         onSuccess={() => setShowAuthModal(false)}
       />
       
-      <PrivateMessageModal
+      <RealtimePrivateMessages
         isOpen={showMessagesModal}
         onClose={() => setShowMessagesModal(false)}
       />

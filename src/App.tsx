@@ -18,6 +18,15 @@ import UserProfilePage from './pages/UserProfilePage'
 function App() {
   const [showAuthModal, setShowAuthModal] = useState(false)
 
+  // Debug navigation issues
+  useEffect(() => {
+    const handleRouteChange = () => {
+      console.log('Route changed to:', window.location.hash)
+    }
+    
+    window.addEventListener('hashchange', handleRouteChange)
+    return () => window.removeEventListener('hashchange', handleRouteChange)
+  }, [])
   return (
     <ErrorBoundary>
       <AuthProvider>

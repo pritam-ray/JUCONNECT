@@ -33,11 +33,13 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onAuthRequired }) => 
     { name: 'My Requests', href: '/my-requests', icon: Settings, requiresAuth: true },
   ]
 
-  const handleNavClick = (item: typeof navigation[0], e: React.MouseEvent) => {
+  const handleNavClick = (e: React.MouseEvent, item: typeof navigation[0]) => {
     if (item.requiresAuth && (!user || isGuest)) {
       e.preventDefault()
       onAuthRequired()
+      return false
     }
+    return true
   }
 
   const handleMessagesClick = () => {
@@ -56,6 +58,7 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onAuthRequired }) => 
           <button
             onClick={handleMessagesClick}
             className="absolute -top-12 left-4 w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300 z-10 group"
+            aria-label="Open private messages"
           >
             <div className="relative">
               <MessageSquare className="h-6 w-6 text-white" />
@@ -78,13 +81,14 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onAuthRequired }) => 
           <Link
             key={item.name}
             to={item.href}
-            onClick={(e) => handleNavClick(item, e)}
+            onClick={(e) => handleNavClick(e, item)}
             className={cn(
               'flex flex-col items-center justify-center py-2 px-3 rounded-xl transition-all duration-300 relative group min-w-0 flex-1',
               isActive(item.href) 
                 ? 'text-primary-600 bg-primary-50' 
                 : 'text-secondary-500 hover:text-primary-500 hover:bg-secondary-50'
             )}
+            aria-label={item.name}
           >
             <div className="relative mb-1">
               <item.icon className={cn(

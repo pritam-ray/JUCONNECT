@@ -12,7 +12,7 @@ type FileUpload = Database['public']['Tables']['file_uploads']['Row']
 type FileUploadInsert = Database['public']['Tables']['file_uploads']['Insert']
 
 // File size limits in bytes (5MB max for all file types)
-export const FILE_SIZE_LIMITS = {
+const FILE_SIZE_LIMITS = {
   pdf: 5 * 1024 * 1024,   // 5MB
   doc: 5 * 1024 * 1024,   // 5MB
   docx: 5 * 1024 * 1024,  // 5MB
@@ -21,11 +21,11 @@ export const FILE_SIZE_LIMITS = {
   png: 5 * 1024 * 1024,   // 5MB
 }
 
-export const ALLOWED_FILE_TYPES = ['pdf', 'doc', 'docx', 'txt', 'jpg', 'png'] as const
+const ALLOWED_FILE_TYPES = ['pdf', 'doc', 'docx', 'txt', 'jpg', 'png'] as const
 
 export type AllowedFileType = typeof ALLOWED_FILE_TYPES[number]
 
-export const validateFile = (file: File): { isValid: boolean; error?: string } => {
+const validateFile = (file: File): { isValid: boolean; error?: string } => {
   const fileExtension = file.name.split('.').pop()?.toLowerCase()
   
   if (!fileExtension || !ALLOWED_FILE_TYPES.includes(fileExtension as AllowedFileType)) {
@@ -158,7 +158,7 @@ export const uploadFile = async (
   }
 }
 
-export const deleteFile = async (uploadId: string, userId: string): Promise<void> => {
+const deleteFile = async (uploadId: string, userId: string): Promise<void> => {
   try {
     // Get file info first
     const { data: fileData, error: fetchError } = await supabase
@@ -193,7 +193,7 @@ export const deleteFile = async (uploadId: string, userId: string): Promise<void
   }
 }
 
-export const getUserFiles = async (userId: string): Promise<FileUpload[]> => {
+const getUserFiles = async (userId: string): Promise<FileUpload[]> => {
   const { data, error } = await supabase
     .from('file_uploads')
     .select('*')
@@ -204,7 +204,7 @@ export const getUserFiles = async (userId: string): Promise<FileUpload[]> => {
   return data || []
 }
 
-export const getFileUrl = async (uploadId: string): Promise<string | null> => {
+const getFileUrl = async (uploadId: string): Promise<string | null> => {
   const { data, error } = await supabase
     .from('file_uploads')
     .select('upload_path')

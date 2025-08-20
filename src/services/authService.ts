@@ -80,17 +80,17 @@ export const signIn = async (email: string, password: string) => {
   return data
 }
 
-export const signOut = async () => {
+const signOut = async () => {
   const { error } = await supabase.auth.signOut()
   if (error) throw error
 }
 
-export const resetPassword = async (email: string) => {
+const resetPassword = async (email: string) => {
   const { error } = await supabase.auth.resetPasswordForEmail(email)
   if (error) throw error
 }
 
-export const updateProfile = async (
+const updateProfile = async (
   userId: string,
   updates: Partial<Pick<ProfileInsert, 'username' | 'full_name' | 'mobile_number'>>
 ) => {

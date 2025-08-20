@@ -3,7 +3,7 @@ import { Database } from '../types/database.types'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
-export interface UserProfile extends Profile {
+interface UserProfile extends Profile {
   content_count?: number
   total_views?: number
   recent_uploads?: number
@@ -125,7 +125,7 @@ export const updateUserProfile = async (
   return data
 }
 
-export const searchUsers = async (
+const searchUsers = async (
   query: string,
   limit: number = 20
 ): Promise<Profile[]> => {

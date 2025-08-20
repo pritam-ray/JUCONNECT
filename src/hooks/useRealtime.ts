@@ -2,13 +2,13 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { realtimeService } from '../services/realtimeService'
 import { useAuth } from '../contexts/AuthContext'
 
-export interface UseRealtimeOptions {
+interface UseRealtimeOptions {
   onError?: (error: Error) => void
   autoConnect?: boolean
   bufferMessages?: boolean
 }
 
-export interface ConnectionStatus {
+interface ConnectionStatus {
   isConnected: boolean
   reconnectAttempts: number
   lastError?: Error

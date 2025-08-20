@@ -4,7 +4,7 @@ import { Database } from '../types/database.types'
 type PrivateMessage = Database['public']['Tables']['private_messages']['Row']
 type PrivateMessageInsert = Database['public']['Tables']['private_messages']['Insert']
 
-export interface PrivateMessageWithProfile extends PrivateMessage {
+interface PrivateMessageWithProfile extends PrivateMessage {
   sender?: {
     id: string
     username: string
@@ -21,7 +21,7 @@ export interface PrivateMessageWithProfile extends PrivateMessage {
   } | null
 }
 
-export interface Conversation {
+interface Conversation {
   otherUser: {
     id: string
     username: string
@@ -35,7 +35,7 @@ export interface Conversation {
 }
 
 // Send a private message
-export const sendPrivateMessage = async (
+const sendPrivateMessage = async (
   senderId: string,
   recipientId: string,
   message: string
@@ -84,7 +84,7 @@ export const sendPrivateMessage = async (
 }
 
 // Get conversation between two users
-export const getConversation = async (
+const getConversation = async (
   userId: string,
   otherUserId: string,
   limit: number = 50,
@@ -209,7 +209,7 @@ export const markMessagesAsRead = async (
 }
 
 // Delete message for current user
-export const deleteMessageForUser = async (
+const deleteMessageForUser = async (
   messageId: string,
   userId: string
 ): Promise<void> => {
@@ -279,7 +279,7 @@ export const searchUsers = async (
 }
 
 // Block a user
-export const blockUser = async (
+const blockUser = async (
   blockerId: string,
   blockedId: string
 ): Promise<void> => {
@@ -303,7 +303,7 @@ export const blockUser = async (
 }
 
 // Unblock a user
-export const unblockUser = async (
+const unblockUser = async (
   blockerId: string,
   blockedId: string
 ): Promise<void> => {
@@ -317,7 +317,7 @@ export const unblockUser = async (
 }
 
 // Get blocked users
-export const getBlockedUsers = async (userId: string): Promise<Array<{
+const getBlockedUsers = async (userId: string): Promise<Array<{
   id: string
   username: string
   full_name: string
@@ -347,7 +347,7 @@ export const getBlockedUsers = async (userId: string): Promise<Array<{
 }
 
 // Subscribe to new messages for a user
-export const subscribeToMessages = (
+const subscribeToMessages = (
   userId: string,
   callback: (message: PrivateMessageWithProfile) => void
 ) => {
@@ -398,7 +398,7 @@ export const subscribeToMessages = (
 }
 
 // Update user online status
-export const updateOnlineStatus = async (
+const updateOnlineStatus = async (
   userId: string,
   isOnline: boolean
 ): Promise<void> => {

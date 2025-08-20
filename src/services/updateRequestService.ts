@@ -56,7 +56,7 @@ export const getUserUpdateRequests = async (
   return data || []
 }
 
-export const getAllUpdateRequests = async (
+const getAllUpdateRequests = async (
   status?: UpdateRequest['status']
 ): Promise<UpdateRequestWithProfile[]> => {
   let query = supabase
@@ -86,7 +86,7 @@ export const getAllUpdateRequests = async (
   return data || []
 }
 
-export const updateRequestStatus = async (
+const updateRequestStatus = async (
   requestId: string,
   status: UpdateRequest['status'],
   adminNotes?: string,
@@ -110,7 +110,7 @@ export const updateRequestStatus = async (
   return data
 }
 
-export const getUpdateRequestById = async (
+const getUpdateRequestById = async (
   requestId: string
 ): Promise<UpdateRequestWithProfile | null> => {
   const { data, error } = await supabase
@@ -138,7 +138,7 @@ export const getUpdateRequestById = async (
   return data
 }
 
-export const deleteUpdateRequest = async (requestId: string): Promise<void> => {
+const deleteUpdateRequest = async (requestId: string): Promise<void> => {
   const { error } = await supabase
     .from('update_requests')
     .delete()

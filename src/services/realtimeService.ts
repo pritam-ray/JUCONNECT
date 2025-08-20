@@ -1,14 +1,14 @@
 import { supabase } from '../lib/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
 
-export interface RealtimeConnection {
+interface RealtimeConnection {
   channel: RealtimeChannel
   isConnected: boolean
   reconnectAttempts: number
   lastHeartbeat: number
 }
 
-export interface MessageEvent {
+interface MessageEvent {
   type: 'INSERT' | 'UPDATE' | 'DELETE'
   table: 'chat_messages' | 'private_messages'
   new?: any

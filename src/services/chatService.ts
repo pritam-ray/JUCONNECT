@@ -4,7 +4,7 @@ import { Database } from '../types/database.types'
 type ChatMessage = Database['public']['Tables']['chat_messages']['Row']
 type ChatMessageInsert = Database['public']['Tables']['chat_messages']['Insert']
 
-export interface ChatMessageWithProfile extends ChatMessage {
+interface ChatMessageWithProfile extends ChatMessage {
   profiles?: {
     id: string
     username: string
@@ -12,7 +12,7 @@ export interface ChatMessageWithProfile extends ChatMessage {
   } | null
 }
 
-export const getChatMessages = async (
+const getChatMessages = async (
   limit: number = 50,
   offset: number = 0
 ): Promise<ChatMessageWithProfile[]> => {
@@ -34,7 +34,7 @@ export const getChatMessages = async (
   return data || []
 }
 
-export const sendChatMessage = async (message: string, userId: string): Promise<ChatMessage> => {
+const sendChatMessage = async (message: string, userId: string): Promise<ChatMessage> => {
   const messageData: ChatMessageInsert = {
     user_id: userId,
     message: message.trim(),
@@ -50,7 +50,7 @@ export const sendChatMessage = async (message: string, userId: string): Promise<
   return data
 }
 
-export const reportChatMessage = async (messageId: string): Promise<void> => {
+const reportChatMessage = async (messageId: string): Promise<void> => {
   const { error } = await supabase
     .from('chat_messages')
     .update({ is_reported: true })
@@ -68,7 +68,7 @@ export const deleteChatMessage = async (messageId: string): Promise<void> => {
   if (error) throw error
 }
 
-export const subscribeToChatMessages = (
+const subscribeToChatMessages = (
   callback: (message: ChatMessageWithProfile) => void
 ) => {
   const channel = supabase
@@ -108,7 +108,7 @@ export const subscribeToChatMessages = (
 }
 
 // Real-time subscription for all chat updates
-export const subscribeToAllChatUpdates = (callbacks: {
+const subscribeToAllChatUpdates = (callbacks: {
   onInsert?: (message: ChatMessageWithProfile) => void
   onUpdate?: (message: ChatMessageWithProfile) => void
   onDelete?: (messageId: string) => void
@@ -191,7 +191,7 @@ export const subscribeToAllChatUpdates = (callbacks: {
   }
 }
 
-export const cleanupOldMessages = async (): Promise<void> => {
+const cleanupOldMessages = async (): Promise<void> => {
   const { error } = await supabase.rpc('delete_old_chat_messages')
   if (error) throw error
 }

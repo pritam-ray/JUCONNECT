@@ -73,8 +73,9 @@ export const validateFileName = (fileName: string): { isValid: boolean; error?: 
     return { isValid: false, error: 'File name contains invalid path characters' }
   }
 
-  // Check for null bytes and control characters
-  if (/[\x00-\x1f\x7f-\x9f]/.test(fileName)) {
+  // Check for null bytes and control characters (excluding some safe ones like tab)
+  // eslint-disable-next-line no-control-regex
+  if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/.test(fileName)) {
     return { isValid: false, error: 'File name contains invalid control characters' }
   }
 
@@ -215,6 +216,10 @@ export const storeSecurityScanResult = async (
   contentId: string,
   scanResult: SecurityScanResult
 ): Promise<void> => {
+  if (!supabase) {
+    throw new Error('Supabase client not available')
+  }
+
   const { error } = await supabase
     .from('file_security_scans')
     .insert([{

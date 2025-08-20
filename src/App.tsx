@@ -1,5 +1,5 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AuthProvider } from './contexts/AuthContext'
 import ErrorBoundary from './components/ErrorBoundary'
 import Navbar from './components/layout/Navbar'
@@ -14,10 +14,20 @@ import ChatPage from './pages/ChatPage'
 import CategoriesPage from './pages/CategoriesPage'
 import MyRequestsPage from './pages/MyRequestsPage'
 import UserProfilePage from './pages/UserProfilePage'
+import { logger } from './utils/logger'
 
 function App() {
   const [showAuthModal, setShowAuthModal] = useState(false)
 
+  // Debug navigation issues
+  useEffect(() => {
+    const handleRouteChange = () => {
+      logger.debug('Route changed to:', window.location.hash)
+    }
+    
+    window.addEventListener('hashchange', handleRouteChange)
+    return () => window.removeEventListener('hashchange', handleRouteChange)
+  }, [])
   return (
     <ErrorBoundary>
       <AuthProvider>

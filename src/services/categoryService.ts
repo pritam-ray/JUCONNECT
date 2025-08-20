@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { Database } from '../types/database.types'
+import { logger } from '../utils/logger'
 
 type Category = Database['public']['Tables']['categories']['Row']
 type CategoryInsert = Database['public']['Tables']['categories']['Insert']
@@ -13,7 +14,7 @@ export interface CategoryWithChildren extends Category {
 
 export const getAllCategories = async (): Promise<CategoryWithChildren[]> => {
   if (!isSupabaseConfigured()) {
-    console.warn('Supabase is not configured. Returning empty categories list.')
+    logger.demoMode('Supabase is not configured. Returning empty categories list.')
     return []
   }
 
@@ -50,7 +51,7 @@ export const getAllCategories = async (): Promise<CategoryWithChildren[]> => {
 
     return rootCategories
   } catch (error: any) {
-    console.error('Failed to fetch categories:', error)
+    logger.error('Failed to fetch categories:', error)
     if (error.message?.includes('Failed to fetch') || error.name === 'TypeError') {
       throw new Error('Unable to connect to the server. Please check your internet connection and try again.')
     }

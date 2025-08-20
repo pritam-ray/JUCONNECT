@@ -430,7 +430,7 @@ export interface Database {
     }
     Functions: {
       delete_old_chat_messages: {
-        Args: {}
+        Args: Record<string, never>
         Returns: undefined
       }
     }

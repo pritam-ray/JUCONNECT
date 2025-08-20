@@ -18,8 +18,8 @@ interface MessageEvent {
 
 class RealtimeService {
   private connections: Map<string, RealtimeConnection> = new Map()
-  private messageHandlers: Map<string, Function[]> = new Map()
-  private connectionListeners: Function[] = []
+  private messageHandlers: Map<string, Array<(...args: any[]) => void>> = new Map()
+  private connectionListeners: Array<(channelName: string, isConnected: boolean) => void> = []
   private heartbeatInterval: NodeJS.Timeout | null = null
   private reconnectTimeouts: Map<string, NodeJS.Timeout> = new Map()
   

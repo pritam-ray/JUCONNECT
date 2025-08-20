@@ -1,7 +1,8 @@
 import { supabase } from '../lib/supabase'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { Database } from '../types/database.types'
-import { storeSecurityScanResult } from './securityService'
+import { ensureSupabase, withSupabaseGuard } from '../utils/serviceGuards'
+import { logger } from '../utils/logger'
 
 type Content = Database['public']['Tables']['content']['Row']
 type ContentInsert = Database['public']['Tables']['content']['Insert']
@@ -28,7 +29,7 @@ export const getApprovedContent = async (
   offset: number = 0
 ): Promise<ContentWithCategory[]> => {
   if (!isSupabaseConfigured()) {
-    console.warn('Supabase is not configured. Returning empty content list.')
+    logger.demoMode('Supabase is not configured. Returning empty content list.')
     return []
   }
 
@@ -69,7 +70,7 @@ export const getApprovedContent = async (
     if (error) throw error
     return data || []
   } catch (error: any) {
-    console.error('Failed to fetch content:', error)
+    logger.error('Failed to fetch content:', error)
     if (error.message?.includes('Failed to fetch') || error.name === 'TypeError') {
       throw new Error('Unable to connect to the server. Please check your internet connection and try again.')
     }
@@ -222,18 +223,12 @@ export const getContentStats = async () => {
 
     return stats
   } catch (error: any) {
-    console.error('Failed to fetch content stats:', error)
+    logger.error('Failed to fetch content stats:', error)
     return {
-      total: 0,
-      approved: 0,
-      pending: 0,
-      byType: {
-        question_paper: 0,
-        notes: 0,
-        syllabus: 0,
-        educational_link: 0,
-        assignments: 0,
-      }
+      totalContent: 0,
+      totalCategories: 0,
+      totalUsers: 0,
+      recentUploads: 0
     }
   }
 }

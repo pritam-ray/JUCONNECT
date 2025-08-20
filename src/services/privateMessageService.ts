@@ -222,7 +222,7 @@ const deleteMessageForUser = async (
 
   if (fetchError) throw fetchError
 
-  let updateData: any = {}
+  const updateData: any = {}
 
   if (message.sender_id === userId) {
     updateData.is_deleted_by_sender = true

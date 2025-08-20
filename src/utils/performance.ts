@@ -62,7 +62,7 @@ export function initWebVitals() {
 
   try {
     observer.observe({ type: 'largest-contentful-paint', buffered: true })
-  } catch (e) {
+  } catch {
     // LCP may not be supported
     logger.debug('LCP monitoring not supported')
   }

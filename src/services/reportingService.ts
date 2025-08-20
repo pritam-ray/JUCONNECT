@@ -271,7 +271,7 @@ export const removeReportedChatMessage = async (
 }
 
 // Get user's own reports
-export const getUserReports = async (userId: string): Promise<{
+const getUserReports = async (userId: string): Promise<{
   contentReports: ContentReportWithDetails[]
   chatReports: ChatReportWithDetails[]
 }> => {

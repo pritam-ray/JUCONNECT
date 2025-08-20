@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { Database } from '../types/database.types'
+import { logger } from '../utils/logger'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -7,8 +8,8 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 // Create a fallback client configuration for development/demo mode
 const createSupabaseClient = () => {
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('Supabase environment variables not found. Running in demo mode.')
-    console.warn('Required variables: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY')
+    logger.demoMode('Supabase environment variables not found. Running in demo mode.')
+    logger.demoMode('Required variables: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY')
     return null
   }
 
@@ -20,7 +21,7 @@ const createSupabaseClient = () => {
       },
     })
   } catch (error) {
-    console.error('Failed to create Supabase client:', error)
+    logger.error('Failed to create Supabase client:', error)
     return null
   }
 }

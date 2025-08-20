@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabase'
 
 // File security validation service
-export interface SecurityScanResult {
+interface SecurityScanResult {
   isClean: boolean
   threats: string[]
   scanId: string
@@ -235,7 +235,7 @@ export const storeSecurityScanResult = async (
 }
 
 // Sanitize text input to prevent XSS and injection attacks
-export const sanitizeTextInput = (input: string): string => {
+const sanitizeTextInput = (input: string): string => {
   if (!input) return ''
   
   return input

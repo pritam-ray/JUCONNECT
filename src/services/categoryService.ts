@@ -58,7 +58,7 @@ export const getAllCategories = async (): Promise<CategoryWithChildren[]> => {
   }
 }
 
-export const getCategoryById = async (categoryId: string): Promise<Category | null> => {
+const getCategoryById = async (categoryId: string): Promise<Category | null> => {
   const { data, error } = await supabase
     .from('categories')
     .select('*')
@@ -72,7 +72,7 @@ export const getCategoryById = async (categoryId: string): Promise<Category | nu
   return data
 }
 
-export const getCategoryBySlug = async (slug: string): Promise<Category | null> => {
+const getCategoryBySlug = async (slug: string): Promise<Category | null> => {
   const { data, error } = await supabase
     .from('categories')
     .select('*')
@@ -86,7 +86,7 @@ export const getCategoryBySlug = async (slug: string): Promise<Category | null> 
   return data
 }
 
-export const createCategory = async (categoryData: CategoryInsert): Promise<Category> => {
+const createCategory = async (categoryData: CategoryInsert): Promise<Category> => {
   const { data, error } = await supabase
     .from('categories')
     .insert([categoryData])
@@ -97,7 +97,7 @@ export const createCategory = async (categoryData: CategoryInsert): Promise<Cate
   return data
 }
 
-export const updateCategory = async (
+const updateCategory = async (
   categoryId: string,
   updates: Partial<CategoryInsert>
 ): Promise<Category> => {
@@ -112,7 +112,7 @@ export const updateCategory = async (
   return data
 }
 
-export const deleteCategory = async (categoryId: string): Promise<void> => {
+const deleteCategory = async (categoryId: string): Promise<void> => {
   const { error } = await supabase
     .from('categories')
     .delete()

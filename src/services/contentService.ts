@@ -77,7 +77,7 @@ export const getApprovedContent = async (
   }
 }
 
-export const getUserContent = async (userId: string): Promise<ContentWithCategory[]> => {
+const getUserContent = async (userId: string): Promise<ContentWithCategory[]> => {
   if (!isSupabaseConfigured()) {
     return []
   }
@@ -112,7 +112,7 @@ export const createContent = async (contentData: ContentInsert): Promise<Content
   return data
 }
 
-export const updateContent = async (
+const updateContent = async (
   contentId: string,
   updates: ContentUpdate
 ): Promise<Content> => {
@@ -127,7 +127,7 @@ export const updateContent = async (
   return data
 }
 
-export const deleteContent = async (contentId: string): Promise<void> => {
+const deleteContent = async (contentId: string): Promise<void> => {
   const { error } = await supabase
     .from('content')
     .delete()
@@ -158,7 +158,7 @@ export const incrementViewCount = async (contentId: string): Promise<void> => {
   }
 }
 
-export const getContentById = async (contentId: string): Promise<ContentWithCategory | null> => {
+const getContentById = async (contentId: string): Promise<ContentWithCategory | null> => {
   const { data, error } = await supabase
     .from('content')
     .select(`

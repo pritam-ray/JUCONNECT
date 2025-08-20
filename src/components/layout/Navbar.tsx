@@ -5,7 +5,8 @@ import { BookOpen, Menu, X, User, LogOut, Upload, MessageCircle, Settings, FileT
 import { useAuth } from '../../contexts/AuthContext'
 import { cn } from '../../utils/cn'
 import AuthModal from '../ui/AuthModal'
-import PrivateMessageModal from '../messaging/PrivateMessageModal'
+import RealtimePrivateMessages from '../messaging/RealtimePrivateMessages'
+import { usePrivateMessages } from '../../hooks/useRealtime'
 import AdminPanel from '../admin/AdminPanel'
 import Button from '../ui/Button'
 
@@ -16,6 +17,12 @@ const Navbar: React.FC = () => {
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const { user, profile, isGuest, signInAsGuest, signOut } = useAuth()
   const location = useLocation()
+  
+  // Get connection status for messages
+  const { connectionStatus } = usePrivateMessages({
+    autoConnect: user && !isGuest,
+    onError: (error) => console.error('Navbar messages error:', error)
+  })
 
   const isActive = (path: string) => location.pathname === path
 
@@ -45,12 +52,16 @@ const Navbar: React.FC = () => {
     }
   }
 
-  const handleNavClick = (href: string, requiresAuth: boolean = false) => {
+  const handleNavClick = (e: React.MouseEvent, href: string, requiresAuth: boolean = false) => {
+    // Close mobile menu first
+    setIsOpen(false)
+    
     if (requiresAuth && (!user || isGuest)) {
+      e.preventDefault()
       setShowAuthModal(true)
-      return
+      return false
     }
-    // Navigation will happen naturally through Link component
+    return true
   }
 
   return (
@@ -80,12 +91,7 @@ const Navbar: React.FC = () => {
                     <Link
                       key={item.name}
                       to={item.href}
-                      onClick={(e) => {
-                        if (requiresAuth && (!user || isGuest)) {
-                          e.preventDefault()
-                          handleNavClick(item.href, true)
-                        }
-                      }}
+                      onClick={(e) => handleNavClick(e, item.href, requiresAuth)}
                       className={cn(
                         'px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center space-x-2 group relative overflow-hidden',
                         isActive(item.href)
@@ -128,10 +134,20 @@ const Navbar: React.FC = () => {
                   {/* Messages Button */}
                   <button
                     onClick={() => handleAuthRequired(() => setShowMessagesModal(true))}
-                    className="relative p-3 text-secondary-600 hover:text-primary-600 rounded-xl hover:bg-white/50 transition-all duration-300 hover:scale-110"
+                    className="relative p-3 text-secondary-600 hover:text-primary-600 rounded-xl hover:bg-white/50 transition-all duration-300 hover:scale-110 group"
                     title="Private Messages"
                   >
-                    <Mail className="h-5 w-5" />
+                    <div className="relative">
+                      <Mail className="h-5 w-5" />
+                      {/* Connection status indicator */}
+                      <div className="absolute -bottom-1 -right-1">
+                        {connectionStatus.isConnected ? (
+                          <div className="w-2 h-2 bg-green-500 rounded-full" />
+                        ) : (
+                          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                        )}
+                      </div>
+                    </div>
                     {/* Notification dot - you can add logic to show unread count */}
                     <div className="notification-dot" />
                   </button>
@@ -188,6 +204,7 @@ const Navbar: React.FC = () => {
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="p-2 rounded-xl text-secondary-600 hover:text-primary-600 hover:bg-white/50 transition-all duration-300"
+                aria-label={isOpen ? 'Close menu' : 'Open menu'}
               >
                 {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
@@ -200,19 +217,13 @@ const Navbar: React.FC = () => {
           <div className="md:hidden border-t border-white/20 bg-white/95 backdrop-blur-xl animate-fade-in-down">
             <div className="px-4 pt-4 pb-6 space-y-3">
               {navigation.map((item) => {
-                const requiresAuth = ['upload', 'my-requests'].includes(item.href.slice(1))
+                const requiresAuth = ['/upload', '/my-requests'].includes(item.href)
                 
                 return (
                   <Link
                     key={item.name}
                     to={item.href}
-                    onClick={(e) => {
-                      if (requiresAuth && (!user || isGuest)) {
-                        e.preventDefault()
-                        handleNavClick(item.href, true)
-                      }
-                      setIsOpen(false)
-                    }}
+                    onClick={(e) => handleNavClick(e, item.href, requiresAuth)}
                     className={cn(
                       'flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300 relative overflow-hidden',
                       isActive(item.href)
@@ -336,7 +347,7 @@ const Navbar: React.FC = () => {
         onSuccess={() => setShowAuthModal(false)}
       />
       
-      <PrivateMessageModal
+      <RealtimePrivateMessages
         isOpen={showMessagesModal}
         onClose={() => setShowMessagesModal(false)}
       />

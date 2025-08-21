@@ -37,7 +37,7 @@ const TermsOfServicePage: React.FC = () => {
               Agreement to Terms
             </h2>
             <p className="text-gray-600 leading-relaxed">
-              By accessing and using JU Connect ("the Platform"), you accept and agree to be bound by the terms and provision of this agreement. These Terms of Service ("Terms") govern your use of our educational content sharing platform operated by Jadavpur University Connect ("we," "us," or "our").
+              By accessing and using JU Connect ("the Platform"), you accept and agree to be bound by the terms and provision of this agreement. These Terms of Service ("Terms") govern your use of our educational content sharing platform operated by JECRC University Connect ("we," "us," or "our").
             </p>
             <div className="mt-4 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
               <p className="text-blue-700 font-medium">
@@ -56,7 +56,7 @@ const TermsOfServicePage: React.FC = () => {
               JU Connect is intended for educational purposes and is available to:
             </p>
             <ul className="list-disc list-inside text-gray-600 space-y-2">
-              <li>Current students of Jadavpur University and affiliated institutions</li>
+              <li>Current students of JECRC University and affiliated institutions</li>
               <li>Faculty members and academic staff</li>
               <li>Alumni and educational researchers</li>
               <li>Individuals aged 18 years or older</li>
@@ -266,7 +266,7 @@ const TermsOfServicePage: React.FC = () => {
             <div className="space-y-2 text-gray-600">
               <p><strong>Email:</strong> legal@juconnect.edu</p>
               <p><strong>Support:</strong> Visit our <Link to="/contact" className="text-primary-600 hover:underline">Contact Us</Link> page</p>
-              <p><strong>Address:</strong> Jadavpur University, Kolkata, West Bengal, India</p>
+              <p><strong>Address:</strong> JECRC University, Jaipur, Rajasthan 302022, India</p>
             </div>
           </section>
         </div>

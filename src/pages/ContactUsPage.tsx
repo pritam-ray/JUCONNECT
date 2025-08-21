@@ -276,7 +276,7 @@ const ContactUsPage: React.FC = () => {
               </h3>
               <div className="space-y-3 text-gray-600">
                 <p><strong>JU Connect Support Center</strong></p>
-                <p>Jadavpur University<br />188, Raja S.C. Mallick Rd<br />Kolkata, West Bengal 700032<br />India</p>
+                <p>JECRC University<br />Plot No. IS-2036 to IS-2039 Ramchandrapura Industrial Area<br />Jaipur, Sitapura, Vidhani, Rajasthan 302022<br />India</p>
                 
                 <div className="pt-4 border-t border-gray-200">
                   <div className="flex items-center gap-2 mb-2">

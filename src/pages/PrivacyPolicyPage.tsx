@@ -205,7 +205,7 @@ const PrivacyPolicyPage: React.FC = () => {
             <div className="space-y-2 text-gray-600">
               <p><strong>Email:</strong> privacy@juconnect.edu</p>
               <p><strong>Support:</strong> Visit our <Link to="/contact" className="text-primary-600 hover:underline">Contact Us</Link> page</p>
-              <p><strong>Address:</strong> Jadavpur University, Kolkata, West Bengal, India</p>
+              <p><strong>Address:</strong> JECRC University, Jaipur, Rajasthan 302022, India</p>
             </div>
           </section>
         </div>

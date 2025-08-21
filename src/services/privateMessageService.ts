@@ -61,7 +61,7 @@ export const sendPrivateMessage = async (
     .select('id')
     .eq('blocker_id', recipientId)
     .eq('blocked_id', senderId)
-    .single()
+    .maybeSingle()
 
   if (blockCheck) {
     throw new Error('Cannot send message to this user')

@@ -424,6 +424,204 @@ export interface Database {
           created_at?: string
         }
       }
+      class_groups: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          year: number
+          section: string
+          subject: string | null
+          created_by: string
+          is_active: boolean
+          member_count: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          year: number
+          section: string
+          subject?: string | null
+          created_by: string
+          is_active?: boolean
+          member_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          year?: number
+          section?: string
+          subject?: string | null
+          created_by?: string
+          is_active?: boolean
+          member_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      group_members: {
+        Row: {
+          id: string
+          group_id: string
+          user_id: string
+          role: 'admin' | 'member'
+          joined_at: string
+          is_active: boolean
+        }
+        Insert: {
+          id?: string
+          group_id: string
+          user_id: string
+          role?: 'admin' | 'member'
+          joined_at?: string
+          is_active?: boolean
+        }
+        Update: {
+          id?: string
+          group_id?: string
+          user_id?: string
+          role?: 'admin' | 'member'
+          joined_at?: string
+          is_active?: boolean
+        }
+      }
+      group_messages: {
+        Row: {
+          id: string
+          group_id: string
+          user_id: string
+          message: string
+          message_type: 'text' | 'file' | 'link'
+          file_url: string | null
+          file_name: string | null
+          file_size: number | null
+          reply_to: string | null
+          is_edited: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          group_id: string
+          user_id: string
+          message: string
+          message_type?: 'text' | 'file' | 'link'
+          file_url?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          reply_to?: string | null
+          is_edited?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          group_id?: string
+          user_id?: string
+          message?: string
+          message_type?: 'text' | 'file' | 'link'
+          file_url?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          reply_to?: string | null
+          is_edited?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      group_files: {
+        Row: {
+          id: string
+          group_id: string
+          uploaded_by: string
+          file_name: string
+          file_url: string
+          file_size: number
+          file_type: string
+          description: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          group_id: string
+          uploaded_by: string
+          file_name: string
+          file_url: string
+          file_size: number
+          file_type: string
+          description?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          group_id?: string
+          uploaded_by?: string
+          file_name?: string
+          file_url?: string
+          file_size?: number
+          file_type?: string
+          description?: string | null
+          created_at?: string
+        }
+      }
+      group_announcements: {
+        Row: {
+          id: string
+          group_id: string
+          created_by: string
+          title: string
+          content: string
+          is_important: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          group_id: string
+          created_by: string
+          title: string
+          content: string
+          is_important?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          group_id?: string
+          created_by?: string
+          title?: string
+          content?: string
+          is_important?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      group_message_reads: {
+        Row: {
+          id: string
+          message_id: string
+          user_id: string
+          read_at: string
+        }
+        Insert: {
+          id?: string
+          message_id: string
+          user_id: string
+          read_at?: string
+        }
+        Update: {
+          id?: string
+          message_id?: string
+          user_id?: string
+          read_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -432,6 +630,22 @@ export interface Database {
       delete_old_chat_messages: {
         Args: Record<string, never>
         Returns: undefined
+      }
+      get_user_groups: {
+        Args: {
+          user_id: string
+        }
+        Returns: {
+          group_id: string
+          group_name: string
+          group_description: string | null
+          year: number
+          section: string
+          subject: string | null
+          member_count: number
+          user_role: string
+          unread_count: number
+        }[]
       }
     }
     Enums: {

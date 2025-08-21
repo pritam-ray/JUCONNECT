@@ -118,6 +118,33 @@ export const createClassGroup = async (groupData: {
 export const joinClassGroup = async (groupId: string, userId: string): Promise<void> => {
   if (!supabase) throw new Error('Supabase not available')
 
+  // Check if user is already a member
+  const { data: existingMembership } = await supabase
+    .from('group_members')
+    .select('*')
+    .eq('group_id', groupId)
+    .eq('user_id', userId)
+    .single()
+
+  if (existingMembership) {
+    if (existingMembership.is_active) {
+      throw new Error('You are already a member of this group')
+    } else {
+      // Reactivate membership
+      const { error } = await supabase
+        .from('group_members')
+        .update({ is_active: true })
+        .eq('group_id', groupId)
+        .eq('user_id', userId)
+      
+      if (error) {
+        console.error('Error reactivating membership:', error)
+        throw new Error('Failed to rejoin group. Please try again.')
+      }
+      return
+    }
+  }
+
   const { error } = await supabase
     .from('group_members')
     .insert([{
@@ -126,7 +153,16 @@ export const joinClassGroup = async (groupId: string, userId: string): Promise<v
       role: 'member'
     }])
 
-  if (error) throw error
+  if (error) {
+    console.error('Error joining group:', error)
+    if (error.message.includes('infinite recursion')) {
+      throw new Error('Database configuration issue. Please contact support or try again later.')
+    } else if (error.code === '23505') {
+      throw new Error('You are already a member of this group')
+    } else {
+      throw new Error(`Failed to join group: ${error.message}`)
+    }
+  }
 }
 
 // Leave a class group
@@ -287,7 +323,7 @@ export const uploadGroupFile = async (
   const fileName = `${Date.now()}-${file.name}`
   const filePath = `group-files/${groupId}/${fileName}`
 
-  const { data: uploadData, error: uploadError } = await supabase.storage
+  const { error: uploadError } = await supabase.storage
     .from('files')
     .upload(filePath, file)
 
@@ -422,6 +458,8 @@ export const subscribeToGroupMessages = (
       },
       async (payload) => {
         // Fetch complete message with profile data
+        if (!supabase) return
+        
         const { data } = await supabase
           .from('group_messages')
           .select(`
@@ -444,7 +482,9 @@ export const subscribeToGroupMessages = (
     .subscribe()
 
   return () => {
-    supabase.removeChannel(channel)
+    if (supabase) {
+      supabase.removeChannel(channel)
+    }
   }
 }
 

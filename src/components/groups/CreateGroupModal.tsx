@@ -118,7 +118,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
               className="input-premium appearance-none cursor-pointer"
               disabled={loading}
             >
-              {[1, 2, 3, 4, 5, 6].map(year => (
+              {[1, 2, 3, 4, 5].map(year => (
                 <option key={year} value={year}>Year {year}</option>
               ))}
             </select>

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import React, { useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { BookOpen, Menu, X, User, LogOut, Upload, MessageCircle, Settings, FileText, Shield, Sparkles, Mail } from 'lucide-react'
+import { BookOpen, Menu, X, User, LogOut, Upload, MessageCircle, Settings, FileText, Shield, Sparkles, Mail, Users } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { cn } from '../../utils/cn'
 import AuthModal from '../ui/AuthModal'

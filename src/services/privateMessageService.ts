@@ -4,6 +4,14 @@ import { Database } from '../types/database.types'
 type PrivateMessage = Database['public']['Tables']['private_messages']['Row']
 type PrivateMessageInsert = Database['public']['Tables']['private_messages']['Insert']
 
+// Helper function to ensure supabase is available
+const getSupabase = () => {
+  if (!supabase) {
+    throw new Error('Supabase client not initialized')
+  }
+  return supabase
+}
+
 interface PrivateMessageWithProfile extends PrivateMessage {
   sender?: {
     id: string
@@ -45,6 +53,8 @@ export const sendPrivateMessage = async (
   }
 
   // Check if recipient exists and is not blocked
+  if (!supabase) throw new Error('Supabase client not initialized')
+  
   const { data: recipient } = await supabase
     .from('profiles')
     .select('id')

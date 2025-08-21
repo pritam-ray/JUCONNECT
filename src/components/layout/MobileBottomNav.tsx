@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Home, FileText, MessageCircle, Upload, Settings, Mail } from 'lucide-react'
+import { Home, FileText, MessageCircle, Upload, Mail, Users } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { cn } from '../../utils/cn'
 import PrivateMessageModal from '../messaging/PrivateMessageModal'

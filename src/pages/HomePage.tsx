@@ -18,6 +18,7 @@ const HomePage: React.FC = () => {
   const [categories, setCategories] = useState<CategoryWithChildren[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [searchInput, setSearchInput] = useState('') // Separate state for input vs actual search
   const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedContentType, setSelectedContentType] = useState('')
   const [selectedContent, setSelectedContent] = useState<ContentWithCategory | null>(null)
@@ -142,17 +143,9 @@ const HomePage: React.FC = () => {
       }
     }
 
-    // Only fetch if we have filters or search query, or if we're clearing filters
+    // Fetch when filters change or when search query is set (not input)
     if (searchQuery || selectedCategory || selectedContentType) {
-      // Only search if query has at least 2 characters or we have other filters
-      if (searchQuery && searchQuery.trim().length < 2 && !selectedCategory && !selectedContentType) {
-        return // Don't search for single characters
-      }
-      
-      // Longer debounce for search queries to prevent excessive API calls while typing
-      const debounceDelay = searchQuery ? 800 : 300 // 800ms for search, 300ms for dropdowns
-      const debounceTimer = setTimeout(fetchFilteredContent, debounceDelay)
-      return () => clearTimeout(debounceTimer)
+      fetchFilteredContent()
     } else {
       // Reset to all content when filters are cleared
       const fetchAllContent = async () => {
@@ -172,6 +165,20 @@ const HomePage: React.FC = () => {
   const handleContentClick = (contentItem: ContentWithCategory) => {
     setSelectedContent(contentItem)
     setShowViewer(true)
+  }
+
+  const handleManualSearch = () => {
+    if (searchInput.trim().length >= 2 || searchInput.trim().length === 0) {
+      setSearchQuery(searchInput.trim())
+    }
+  }
+
+  const handleSearchInputChange = (value: string) => {
+    setSearchInput(value)
+    // Only auto-search if input is cleared (for immediate reset)
+    if (value.trim() === '') {
+      setSearchQuery('')
+    }
   }
 
   const renderCategoryOptions = (cats: CategoryWithChildren[], depth = 0): React.ReactNode => {
@@ -401,42 +408,39 @@ const HomePage: React.FC = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
             <div className="md:col-span-2 order-1">
-              <div className="relative group">
-                <Search className="absolute left-4 top-4 h-5 w-5 text-secondary-400 group-focus-within:text-primary-500 transition-colors duration-300" />
-                <input
-                  type="text"
-                  placeholder="Search resources, notes, question papers... (min 2 characters)"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="input-premium pl-12 pr-16 text-lg"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && searchQuery.trim().length >= 2) {
-                      // Force immediate search on Enter key
-                      e.currentTarget.blur()
-                    }
-                  }}
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-4 top-4 h-5 w-5 text-secondary-400 hover:text-red-500 transition-colors duration-300 z-10"
-                    title="Clear search"
-                  >
-                    ✕
-                  </button>
-                )}
-                {/* Search status indicator */}
-                {searchQuery && searchQuery.trim().length > 0 && searchQuery.trim().length < 2 && (
-                  <div className="absolute right-12 top-4 text-xs text-amber-500 pointer-events-none">
-                    {2 - searchQuery.trim().length} more
-                  </div>
-                )}
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/10 to-primary-600/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
+              <div className="flex gap-2">
+                <div className="relative group flex-1">
+                  <Search className="absolute left-4 top-4 h-5 w-5 text-secondary-400 group-focus-within:text-primary-500 transition-colors duration-300" />
+                  <input
+                    type="text"
+                    placeholder="Search resources, notes, question papers..."
+                    value={searchInput}
+                    onChange={(e) => handleSearchInputChange(e.target.value)}
+                    className="input-premium pl-12 pr-4 text-lg w-full"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleManualSearch()
+                        e.currentTarget.blur()
+                      }
+                    }}
+                  />
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/10 to-primary-600/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                </div>
+                <Button
+                  onClick={handleManualSearch}
+                  variant="premium"
+                  size="lg"
+                  className="px-6 flex items-center gap-2"
+                  disabled={searchInput.trim().length > 0 && searchInput.trim().length < 2}
+                >
+                  <Search className="h-5 w-5" />
+                  <span className="hidden sm:inline">Search</span>
+                </Button>
               </div>
-              {/* Search help text for mobile */}
-              <div className="mt-2 md:hidden">
+              {/* Search help text */}
+              <div className="mt-2">
                 <p className="text-xs text-secondary-500">
-                  💡 Type at least 2 characters, then press Enter or wait for auto-search
+                  💡 Type your search terms and click the Search button or press Enter
                 </p>
               </div>
             </div>
@@ -483,7 +487,10 @@ const HomePage: React.FC = () => {
                   <Search className="h-3 w-3" />
                   "{searchQuery}"
                   <button
-                    onClick={() => setSearchQuery('')}
+                    onClick={() => {
+                      setSearchQuery('')
+                      setSearchInput('')
+                    }}
                     className="ml-1 hover:text-red-500 transition-colors"
                     title="Remove search filter"
                   >
@@ -525,6 +532,7 @@ const HomePage: React.FC = () => {
                 size="sm"
                 onClick={() => {
                   setSearchQuery('')
+                  setSearchInput('')
                   setSelectedCategory('')
                   setSelectedContentType('')
                 }}
@@ -587,6 +595,7 @@ const HomePage: React.FC = () => {
                 variant="premium" 
                 onClick={() => {
                   setSearchQuery('')
+                  setSearchInput('')
                   setSelectedCategory('')
                   setSelectedContentType('')
                 }}

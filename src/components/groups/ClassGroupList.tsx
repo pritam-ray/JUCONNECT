@@ -30,15 +30,32 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
   const fetchGroups = async () => {
     try {
       setLoading(true)
+      
+      // Fetch both datasets, but handle errors gracefully
+      const allGroupsPromise = getAllClassGroups().catch(error => {
+        console.error('Failed to fetch all groups:', error)
+        return []
+      })
+      
+      const userGroupsPromise = user && !isGuest 
+        ? getUserGroups(user.id).catch(error => {
+            console.error('Failed to fetch user groups:', error)
+            return []
+          })
+        : Promise.resolve([])
+      
       const [allGroupsData, userGroupsData] = await Promise.all([
-        getAllClassGroups(),
-        user && !isGuest ? getUserGroups(user.id) : Promise.resolve([])
+        allGroupsPromise,
+        userGroupsPromise
       ])
       
       setAllGroups(allGroupsData)
       setUserGroups(userGroupsData)
     } catch (error) {
       console.error('Failed to fetch groups:', error)
+      // Set empty arrays as fallback
+      setAllGroups([])
+      setUserGroups([])
     } finally {
       setLoading(false)
     }
@@ -203,7 +220,7 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
                   onSelect={() => onGroupSelect(group)}
                   onJoin={() => handleJoinGroup(group.id)}
                   isJoining={joining === group.id}
-                  showJoinButton={!isJoined && user && !isGuest}
+                  showJoinButton={!isJoined && !!user && !isGuest}
                   isJoined={isJoined}
                 />
               )

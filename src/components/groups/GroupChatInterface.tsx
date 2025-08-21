@@ -5,12 +5,8 @@ import {
   Users, 
   Settings, 
   ArrowLeft, 
-  Reply, 
-  MoreVertical,
-  Pin,
-  Download,
-  Eye,
-  EyeOff
+  Reply,
+  Download
 } from 'lucide-react'
 import { 
   getGroupMessages, 
@@ -25,19 +21,16 @@ import {
 import { useAuth } from '../../contexts/AuthContext'
 import Button from '../ui/Button'
 import LoadingSpinner from '../ui/LoadingSpinner'
-import { formatDistanceToNow } from 'date-fns'
 
 interface GroupChatInterfaceProps {
   group: ClassGroupWithDetails
   onBack: () => void
-  onShowMembers: () => void
   onShowSettings: () => void
 }
 
 const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   group,
   onBack,
-  onShowMembers,
   onShowSettings
 }) => {
   const { user } = useAuth()
@@ -52,7 +45,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (group.id) {
+    if (group.id && user) {
       loadMessages()
       loadMembers()
       
@@ -63,9 +56,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
       })
 
       // Mark messages as read when component mounts
-      if (user) {
-        markGroupMessagesAsRead(group.id, user.id)
-      }
+      markGroupMessagesAsRead(group.id, user.id)
 
       return unsubscribe
     }
@@ -76,23 +67,29 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   }, [messages])
 
   const loadMessages = async () => {
+    if (!group.id) return
+    
     try {
       setLoading(true)
       const messagesData = await getGroupMessages(group.id)
-      setMessages(messagesData)
+      setMessages(messagesData || [])
     } catch (error) {
       console.error('Failed to load messages:', error)
+      setMessages([])
     } finally {
       setLoading(false)
     }
   }
 
   const loadMembers = async () => {
+    if (!group.id) return
+    
     try {
       const membersData = await getGroupMembers(group.id)
-      setMembers(membersData)
+      setMembers(membersData || [])
     } catch (error) {
       console.error('Failed to load members:', error)
+      setMembers([])
     }
   }
 

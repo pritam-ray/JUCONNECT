@@ -48,39 +48,80 @@ export interface GroupMemberWithProfile extends GroupMember {
 export const getAllClassGroups = async (): Promise<ClassGroupWithDetails[]> => {
   if (!supabase) return []
 
-  const { data, error } = await supabase
-    .from('class_groups')
-    .select('*')
-    .eq('is_active', true)
-    .order('year', { ascending: true })
-    .order('section', { ascending: true })
+  try {
+    const { data, error } = await supabase
+      .from('class_groups')
+      .select('*')
+      .eq('is_active', true)
+      .order('year', { ascending: true })
+      .order('section', { ascending: true })
 
-  if (error) throw error
-  return data || []
+    if (error) throw error
+    
+    return (data || []).map(group => ({
+      ...group,
+      is_member: false,
+      user_role: undefined,
+      unread_count: 0
+    }))
+  } catch (error) {
+    console.error('Error fetching all groups:', error)
+    return []
+  }
 }
 
 // Get user's joined groups
 export const getUserGroups = async (userId: string): Promise<ClassGroupWithDetails[]> => {
-  if (!supabase) return []
+  if (!supabase || !userId) return []
 
-  const { data, error } = await supabase.rpc('get_user_groups', {
-    user_id: userId
-  })
+  try {
+    // Use direct query instead of RPC function to avoid potential issues
+    const { data, error } = await supabase
+      .from('group_members')
+      .select(`
+        group_id,
+        role,
+        joined_at,
+        class_groups!inner (
+          id,
+          name,
+          description,
+          year,
+          section,
+          subject,
+          member_count,
+          created_by,
+          is_active,
+          created_at,
+          updated_at
+        )
+      `)
+      .eq('user_id', userId)
+      .eq('is_active', true)
+      .eq('class_groups.is_active', true)
 
-  if (error) throw error
-  
-  return (data || []).map((group: any) => ({
-    id: group.group_id,
-    name: group.group_name,
-    description: group.group_description,
-    year: group.year,
-    section: group.section,
-    subject: group.subject,
-    member_count: group.member_count,
-    user_role: group.user_role,
-    unread_count: group.unread_count,
-    is_member: true
-  }))
+    if (error) throw error
+    
+    return (data || []).map((item: any) => ({
+      id: item.class_groups.id,
+      name: item.class_groups.name,
+      description: item.class_groups.description,
+      year: item.class_groups.year,
+      section: item.class_groups.section,
+      subject: item.class_groups.subject,
+      created_by: item.class_groups.created_by,
+      is_active: item.class_groups.is_active,
+      member_count: item.class_groups.member_count,
+      created_at: item.class_groups.created_at,
+      updated_at: item.class_groups.updated_at,
+      user_role: item.role,
+      unread_count: 0, // Will be calculated separately if needed
+      is_member: true
+    }))
+  } catch (error) {
+    console.error('Error fetching user groups:', error)
+    return []
+  }
 }
 
 // Create a new class group
@@ -248,38 +289,29 @@ export const getGroupMessages = async (
 ): Promise<GroupMessageWithProfile[]> => {
   if (!supabase) return []
 
-  const { data, error } = await supabase
-    .from('group_messages')
-    .select(`
-      *,
-      profiles (
-        id,
-        username,
-        full_name,
-        avatar_url
-      ),
-      reply_to_message:group_messages!group_messages_reply_to_fkey (
-        id,
-        message,
+  try {
+    const { data, error } = await supabase
+      .from('group_messages')
+      .select(`
+        *,
         profiles (
-          username
+          id,
+          username,
+          full_name,
+          avatar_url
         )
-      )
-    `)
-    .eq('group_id', groupId)
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1)
+      `)
+      .eq('group_id', groupId)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
 
-  if (error) throw error
-  
-  return (data || []).reverse().map(msg => ({
-    ...msg,
-    reply_to_message: msg.reply_to_message ? {
-      id: msg.reply_to_message.id,
-      message: msg.reply_to_message.message,
-      user_name: msg.reply_to_message.profiles?.username || 'Unknown'
-    } : null
-  }))
+    if (error) throw error
+    
+    return (data || []).reverse()
+  } catch (error) {
+    console.error('Error fetching group messages:', error)
+    return []
+  }
 }
 
 // Mark messages as read
@@ -287,26 +319,34 @@ export const markGroupMessagesAsRead = async (
   groupId: string,
   userId: string
 ): Promise<void> => {
-  if (!supabase) return
+  if (!supabase || !userId || !groupId) return
 
-  // Get unread messages
-  const { data: unreadMessages } = await supabase
-    .from('group_messages')
-    .select('id')
-    .eq('group_id', groupId)
-    .neq('user_id', userId)
+  try {
+    // Get unread messages
+    const { data: unreadMessages } = await supabase
+      .from('group_messages')
+      .select('id')
+      .eq('group_id', groupId)
+      .neq('user_id', userId)
 
-  if (!unreadMessages || unreadMessages.length === 0) return
+    if (!unreadMessages || unreadMessages.length === 0) return
 
-  // Mark as read
-  const readRecords = unreadMessages.map(msg => ({
-    message_id: msg.id,
-    user_id: userId
-  }))
+    // Mark as read
+    const readRecords = unreadMessages.map(msg => ({
+      message_id: msg.id,
+      user_id: userId
+    }))
 
-  await supabase
-    .from('group_message_reads')
-    .upsert(readRecords, { onConflict: 'message_id,user_id' })
+    const { error } = await supabase
+      .from('group_message_reads')
+      .upsert(readRecords, { onConflict: 'message_id,user_id' })
+
+    if (error) {
+      console.error('Error marking messages as read:', error)
+    }
+  } catch (error) {
+    console.error('Error in markGroupMessagesAsRead:', error)
+  }
 }
 
 // Upload file to group
@@ -460,22 +500,26 @@ export const subscribeToGroupMessages = (
         // Fetch complete message with profile data
         if (!supabase) return
         
-        const { data } = await supabase
-          .from('group_messages')
-          .select(`
-            *,
-            profiles (
-              id,
-              username,
-              full_name,
-              avatar_url
-            )
-          `)
-          .eq('id', payload.new.id)
-          .single()
+        try {
+          const { data } = await supabase
+            .from('group_messages')
+            .select(`
+              *,
+              profiles (
+                id,
+                username,
+                full_name,
+                avatar_url
+              )
+            `)
+            .eq('id', payload.new.id)
+            .single()
 
-        if (data) {
-          callback(data)
+          if (data) {
+            callback(data)
+          }
+        } catch (error) {
+          console.error('Error fetching new message:', error)
         }
       }
     )

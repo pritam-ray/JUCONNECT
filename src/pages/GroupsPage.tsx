@@ -1,12 +1,20 @@
-import React, { useState } from 'react'
-import { Users } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
 import { ClassGroupWithDetails } from '../services/classGroupService'
 import ClassGroupList from '../components/groups/ClassGroupList'
 import GroupChatInterface from '../components/groups/GroupChatInterface'
 
 const GroupsPage: React.FC = () => {
   const [selectedGroup, setSelectedGroup] = useState<ClassGroupWithDetails | null>(null)
-  const [isMobile] = useState(window.innerWidth < 768)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const handleGroupSelect = (group: ClassGroupWithDetails) => {
     setSelectedGroup(group)
@@ -25,7 +33,6 @@ const GroupsPage: React.FC = () => {
             <GroupChatInterface
               group={selectedGroup}
               onBack={handleBackToList}
-              onShowMembers={() => {}}
               onShowSettings={() => {}}
             />
           ) : (
@@ -42,7 +49,6 @@ const GroupsPage: React.FC = () => {
               <GroupChatInterface
                 group={selectedGroup}
                 onBack={handleBackToList}
-                onShowMembers={() => {}}
                 onShowSettings={() => {}}
               />
             </div>

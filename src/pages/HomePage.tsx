@@ -144,7 +144,14 @@ const HomePage: React.FC = () => {
 
     // Only fetch if we have filters or search query, or if we're clearing filters
     if (searchQuery || selectedCategory || selectedContentType) {
-      const debounceTimer = setTimeout(fetchFilteredContent, 300)
+      // Only search if query has at least 2 characters or we have other filters
+      if (searchQuery && searchQuery.trim().length < 2 && !selectedCategory && !selectedContentType) {
+        return // Don't search for single characters
+      }
+      
+      // Longer debounce for search queries to prevent excessive API calls while typing
+      const debounceDelay = searchQuery ? 800 : 300 // 800ms for search, 300ms for dropdowns
+      const debounceTimer = setTimeout(fetchFilteredContent, debounceDelay)
       return () => clearTimeout(debounceTimer)
     } else {
       // Reset to all content when filters are cleared
@@ -398,21 +405,39 @@ const HomePage: React.FC = () => {
                 <Search className="absolute left-4 top-4 h-5 w-5 text-secondary-400 group-focus-within:text-primary-500 transition-colors duration-300" />
                 <input
                   type="text"
-                  placeholder="Search resources, notes, question papers..."
+                  placeholder="Search resources, notes, question papers... (min 2 characters)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="input-premium pl-12 text-lg"
+                  className="input-premium pl-12 pr-16 text-lg"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && searchQuery.trim().length >= 2) {
+                      // Force immediate search on Enter key
+                      e.currentTarget.blur()
+                    }
+                  }}
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-4 top-4 h-5 w-5 text-secondary-400 hover:text-red-500 transition-colors duration-300"
+                    className="absolute right-4 top-4 h-5 w-5 text-secondary-400 hover:text-red-500 transition-colors duration-300 z-10"
                     title="Clear search"
                   >
                     ✕
                   </button>
                 )}
+                {/* Search status indicator */}
+                {searchQuery && searchQuery.trim().length > 0 && searchQuery.trim().length < 2 && (
+                  <div className="absolute right-12 top-4 text-xs text-amber-500 pointer-events-none">
+                    {2 - searchQuery.trim().length} more
+                  </div>
+                )}
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/10 to-primary-600/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
+              </div>
+              {/* Search help text for mobile */}
+              <div className="mt-2 md:hidden">
+                <p className="text-xs text-secondary-500">
+                  💡 Type at least 2 characters, then press Enter or wait for auto-search
+                </p>
               </div>
             </div>
             

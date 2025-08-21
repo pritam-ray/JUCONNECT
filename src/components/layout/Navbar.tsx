@@ -26,6 +26,7 @@ const Navbar: React.FC = () => {
   const navigation = [
     { name: 'Browse', href: '/', icon: BookOpen },
     { name: 'Categories', href: '/categories', icon: FileText },
+    { name: 'Groups', href: '/groups', icon: Users },
     { name: 'Chat', href: '/chat', icon: MessageCircle },
     { name: 'Upload', href: '/upload', icon: Upload },
     { name: 'Requests', href: '/my-requests', icon: Settings },

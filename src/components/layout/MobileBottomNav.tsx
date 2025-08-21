@@ -23,9 +23,9 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onAuthRequired }) => 
   const navigation = [
     { name: 'Home', href: '/', icon: Home, requiresAuth: false },
     { name: 'Categories', href: '/categories', icon: FileText, requiresAuth: false },
+    { name: 'Groups', href: '/groups', icon: Users, requiresAuth: false },
     { name: 'Chat', href: '/chat', icon: MessageCircle, requiresAuth: false },
-    { name: 'Upload', href: '/upload', icon: Upload, requiresAuth: true },
-    { name: 'My Requests', href: '/my-requests', icon: Settings, requiresAuth: true },
+    { name: 'Upload', href: '/upload', icon: Upload, requiresAuth: true }
   ]
 
   const handleNavClick = (e: React.MouseEvent, item: typeof navigation[0]) => {

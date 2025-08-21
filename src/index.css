@@ -228,6 +228,32 @@
     @apply chat-bubble bg-white border border-secondary-200 text-secondary-900;
   }
 
+  /* Group Chat Styles */
+  .group-message-bubble {
+    @apply relative px-4 py-2 rounded-2xl max-w-xs md:max-w-md break-words;
+  }
+
+  .group-message-sent {
+    @apply group-message-bubble bg-gradient-to-br from-primary-500 to-primary-600 text-white ml-auto;
+  }
+
+  .group-message-received {
+    @apply group-message-bubble bg-gray-100 text-gray-900;
+  }
+
+  /* Mobile Group Interface */
+  .mobile-group-header {
+    @apply sticky top-0 z-10 bg-white border-b border-gray-200 p-4;
+  }
+
+  .mobile-group-messages {
+    @apply flex-1 overflow-y-auto p-4 space-y-4;
+  }
+
+  .mobile-group-input {
+    @apply sticky bottom-0 bg-white border-t border-gray-200 p-4;
+  }
+
   /* File Upload Zone */
   .upload-zone {
     @apply relative border-2 border-dashed border-secondary-300 rounded-3xl p-8 text-center transition-all duration-300 hover:border-primary-400 hover:bg-primary-50/50;

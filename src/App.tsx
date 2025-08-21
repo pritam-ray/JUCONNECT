@@ -18,6 +18,7 @@ import HelpCenterPage from './pages/HelpCenterPage'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import TermsOfServicePage from './pages/TermsOfServicePage'
 import ContactUsPage from './pages/ContactUsPage'
+import GroupsPage from './pages/GroupsPage'
 
 function App() {
   const [showAuthModal, setShowAuthModal] = useState(false)
@@ -42,6 +43,7 @@ function App() {
                   <Route path="/privacy" element={<PrivacyPolicyPage />} />
                   <Route path="/terms" element={<TermsOfServicePage />} />
                   <Route path="/contact" element={<ContactUsPage />} />
+                  <Route path="/groups" element={<GroupsPage />} />
                 </Routes>
               </PageTransition>
             </main>

@@ -46,18 +46,34 @@ export interface GroupMemberWithProfile extends GroupMember {
 
 // Get all available class groups
 export const getAllClassGroups = async (): Promise<ClassGroupWithDetails[]> => {
-  if (!supabase) return []
+  if (!supabase) {
+    console.error('Supabase not available')
+    return []
+  }
 
   try {
+    console.log('Fetching all class groups...')
+    
+    // Check if table exists by attempting a simple query
     const { data, error } = await supabase
       .from('class_groups')
-      .select('*')
+      .select('id, name, description, year, section, subject, member_count, created_by, is_active, created_at, updated_at')
       .eq('is_active', true)
       .order('year', { ascending: true })
       .order('section', { ascending: true })
+      .limit(10) // Limit to avoid large queries initially
 
-    if (error) throw error
+    if (error) {
+      console.error('Error fetching all groups:', error)
+      // If table doesn't exist, return empty array instead of throwing
+      if (error.code === '42P01') { // Table doesn't exist
+        console.warn('class_groups table does not exist yet')
+        return []
+      }
+      throw error
+    }
     
+    console.log('Fetched groups:', data?.length || 0)
     return (data || []).map(group => ({
       ...group,
       is_member: false,
@@ -72,9 +88,14 @@ export const getAllClassGroups = async (): Promise<ClassGroupWithDetails[]> => {
 
 // Get user's joined groups
 export const getUserGroups = async (userId: string): Promise<ClassGroupWithDetails[]> => {
-  if (!supabase || !userId) return []
+  if (!supabase || !userId) {
+    console.error('Supabase not available or no user ID provided')
+    return []
+  }
 
   try {
+    console.log('Fetching user groups for:', userId)
+    
     // Use direct query instead of RPC function to avoid potential issues
     const { data, error } = await supabase
       .from('group_members')
@@ -100,8 +121,12 @@ export const getUserGroups = async (userId: string): Promise<ClassGroupWithDetai
       .eq('is_active', true)
       .eq('class_groups.is_active', true)
 
-    if (error) throw error
+    if (error) {
+      console.error('Error fetching user groups:', error)
+      throw error
+    }
     
+    console.log('Fetched user groups:', data?.length || 0)
     return (data || []).map((item: any) => ({
       id: item.class_groups.id,
       name: item.class_groups.name,

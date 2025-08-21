@@ -22,6 +22,7 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedYear, setSelectedYear] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState<'my-groups' | 'all-groups'>('my-groups')
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchGroups()
@@ -30,29 +31,41 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
   const fetchGroups = async () => {
     try {
       setLoading(true)
+      setError(null)
       
-      // Fetch both datasets, but handle errors gracefully
-      const allGroupsPromise = getAllClassGroups().catch(error => {
+      // First, try to fetch all groups (this should work without authentication)
+      let allGroupsData: ClassGroupWithDetails[] = []
+      let userGroupsData: ClassGroupWithDetails[] = []
+      
+      try {
+        allGroupsData = await getAllClassGroups()
+        console.log('All groups fetched:', allGroupsData.length)
+      } catch (error: any) {
         console.error('Failed to fetch all groups:', error)
-        return []
-      })
+        setError(`Failed to load groups: ${error.message}`)
+        allGroupsData = []
+      }
       
-      const userGroupsPromise = user && !isGuest 
-        ? getUserGroups(user.id).catch(error => {
-            console.error('Failed to fetch user groups:', error)
-            return []
-          })
-        : Promise.resolve([])
-      
-      const [allGroupsData, userGroupsData] = await Promise.all([
-        allGroupsPromise,
-        userGroupsPromise
-      ])
+      // Only fetch user groups if user is authenticated and not a guest
+      if (user && !isGuest) {
+        try {
+          userGroupsData = await getUserGroups(user.id)
+          console.log('User groups fetched:', userGroupsData.length)
+        } catch (error: any) {
+          console.error('Failed to fetch user groups:', error)
+          // Don't show error for user groups if we got all groups successfully
+          if (allGroupsData.length === 0) {
+            setError(`Failed to load user groups: ${error.message}`)
+          }
+          userGroupsData = []
+        }
+      }
       
       setAllGroups(allGroupsData)
       setUserGroups(userGroupsData)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch groups:', error)
+      setError(`Failed to load groups: ${error.message || 'Unknown error'}`)
       // Set empty arrays as fallback
       setAllGroups([])
       setUserGroups([])
@@ -92,6 +105,28 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
     return (
       <div className="flex justify-center py-12">
         <LoadingSpinner size="lg" text="Loading groups..." />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+        <div className="text-red-600 text-center">
+          <h3 className="text-lg font-medium mb-2">Unable to load groups</h3>
+          <p className="text-sm text-gray-600 mb-4">{error}</p>
+          <Button onClick={fetchGroups} className="mt-4">
+            Try Again
+          </Button>
+        </div>
+        <div className="text-center text-sm text-gray-500 mt-4">
+          <p>This might be because:</p>
+          <ul className="list-disc list-inside mt-2 space-y-1">
+            <li>Database migrations haven't been applied</li>
+            <li>Group tables don't exist yet</li>
+            <li>Network connectivity issue</li>
+          </ul>
+        </div>
       </div>
     )
   }

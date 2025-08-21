@@ -398,50 +398,130 @@ const HomePage: React.FC = () => {
                 <Search className="absolute left-4 top-4 h-5 w-5 text-secondary-400 group-focus-within:text-primary-500 transition-colors duration-300" />
                 <input
                   type="text"
-                  placeholder="Search resources..."
+                  placeholder="Search resources, notes, question papers..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="input-premium pl-12 text-lg"
                 />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-4 top-4 h-5 w-5 text-secondary-400 hover:text-red-500 transition-colors duration-300"
+                    title="Clear search"
+                  >
+                    ✕
+                  </button>
+                )}
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/10 to-primary-600/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
               </div>
             </div>
             
             <div className="order-2">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="input-premium appearance-none cursor-pointer"
-              >
-                <option value="">All Categories</option>
-                {renderCategoryOptions(categories)}
-              </select>
+              <div className="relative">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="input-premium appearance-none cursor-pointer"
+                >
+                  <option value="">📚 All Categories</option>
+                  {renderCategoryOptions(categories)}
+                </select>
+                <Filter className="absolute right-4 top-4 h-5 w-5 text-secondary-400 pointer-events-none" />
+              </div>
             </div>
             
             <div className="order-3">
-              <select
-                value={selectedContentType}
-                onChange={(e) => setSelectedContentType(e.target.value)}
-                className="input-premium appearance-none cursor-pointer"
-              >
-                {contentTypes.map(type => (
-                  <option key={type.value} value={type.value}>
-                    {type.icon} {type.label}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={selectedContentType}
+                  onChange={(e) => setSelectedContentType(e.target.value)}
+                  className="input-premium appearance-none cursor-pointer"
+                >
+                  {contentTypes.map(type => (
+                    <option key={type.value} value={type.value}>
+                      {type.icon} {type.label}
+                    </option>
+                  ))}
+                </select>
+                <Filter className="absolute right-4 top-4 h-5 w-5 text-secondary-400 pointer-events-none" />
+              </div>
             </div>
           </div>
+          
+          {/* Active Filters Display */}
+          {(searchQuery || selectedCategory || selectedContentType) && (
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <span className="text-sm font-medium text-secondary-600">Active filters:</span>
+              
+              {searchQuery && (
+                <Badge variant="premium" className="flex items-center gap-2">
+                  <Search className="h-3 w-3" />
+                  "{searchQuery}"
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="ml-1 hover:text-red-500 transition-colors"
+                    title="Remove search filter"
+                  >
+                    ✕
+                  </button>
+                </Badge>
+              )}
+              
+              {selectedCategory && (
+                <Badge variant="premium" className="flex items-center gap-2">
+                  <FileText className="h-3 w-3" />
+                  {categories.find(c => c.id === selectedCategory)?.name}
+                  <button
+                    onClick={() => setSelectedCategory('')}
+                    className="ml-1 hover:text-red-500 transition-colors"
+                    title="Remove category filter"
+                  >
+                    ✕
+                  </button>
+                </Badge>
+              )}
+              
+              {selectedContentType && (
+                <Badge variant="premium" className="flex items-center gap-2">
+                  {contentTypes.find(t => t.value === selectedContentType)?.icon}
+                  {contentTypes.find(t => t.value === selectedContentType)?.label}
+                  <button
+                    onClick={() => setSelectedContentType('')}
+                    className="ml-1 hover:text-red-500 transition-colors"
+                    title="Remove type filter"
+                  >
+                    ✕
+                  </button>
+                </Badge>
+              )}
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchQuery('')
+                  setSelectedCategory('')
+                  setSelectedContentType('')
+                }}
+                className="text-secondary-500 hover:text-primary-600"
+              >
+                Clear all filters
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Content Grid */}
         <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
           <div className="space-y-2">
             <h2 className="text-2xl md:text-3xl font-bold text-secondary-900 text-gradient">
-              All Resources
+              {searchQuery || selectedCategory || selectedContentType ? 'Filtered Results' : 'All Resources'}
             </h2>
             <p className="text-secondary-600">
-              {content.length} high-quality resources found
+              {content.length} {content.length === 1 ? 'resource' : 'resources'} found
+              {(searchQuery || selectedCategory || selectedContentType) && (
+                <span className="text-primary-600 font-medium"> matching your criteria</span>
+              )}
             </p>
           </div>
           
@@ -457,10 +537,27 @@ const HomePage: React.FC = () => {
           <div className="text-center py-12 md:py-20">
             <div className="card-premium p-12 max-w-md mx-auto">
               <BookOpen className="h-20 w-20 text-secondary-300 mx-auto mb-6 animate-bounce-subtle" />
-              <h3 className="text-xl font-semibold text-secondary-900 mb-4">No resources found</h3>
-              <p className="text-secondary-600 mb-6">
-                Try adjusting your search criteria or browse different categories
-              </p>
+              {searchQuery || selectedCategory || selectedContentType ? (
+                <>
+                  <h3 className="text-xl font-semibold text-secondary-900 mb-4">No matching resources found</h3>
+                  <p className="text-secondary-600 mb-6">
+                    No resources match your current search criteria. Try:
+                  </p>
+                  <ul className="text-sm text-secondary-600 mb-6 text-left space-y-2">
+                    <li>• Using different keywords</li>
+                    <li>• Checking your spelling</li>
+                    <li>• Selecting a different category</li>
+                    <li>• Browsing all content types</li>
+                  </ul>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-xl font-semibold text-secondary-900 mb-4">No resources available</h3>
+                  <p className="text-secondary-600 mb-6">
+                    There are currently no approved resources in the database.
+                  </p>
+                </>
+              )}
               <Button 
                 variant="premium" 
                 onClick={() => {
@@ -469,7 +566,7 @@ const HomePage: React.FC = () => {
                   setSelectedContentType('')
                 }}
               >
-                Clear Filters
+                {searchQuery || selectedCategory || selectedContentType ? 'Clear Filters' : 'Refresh'}
               </Button>
             </div>
           </div>

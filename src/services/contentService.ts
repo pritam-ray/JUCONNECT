@@ -62,7 +62,8 @@ export const getApprovedContent = async (
     }
 
     if (searchQuery) {
-      query = query.textSearch('title', searchQuery)
+      const searchTerm = `%${searchQuery.trim()}%`
+      query = query.or(`title.ilike.${searchTerm},description.ilike.${searchTerm}`)
     }
 
     const { data, error } = await query

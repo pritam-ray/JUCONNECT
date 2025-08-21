@@ -12,7 +12,7 @@ interface ChatMessageWithProfile extends ChatMessage {
   } | null
 }
 
-const getChatMessages = async (
+export const getChatMessages = async (
   limit: number = 50,
   offset: number = 0
 ): Promise<ChatMessageWithProfile[]> => {
@@ -34,7 +34,7 @@ const getChatMessages = async (
   return data || []
 }
 
-const sendChatMessage = async (message: string, userId: string): Promise<ChatMessage> => {
+export const sendChatMessage = async (message: string, userId: string): Promise<ChatMessage> => {
   const messageData: ChatMessageInsert = {
     user_id: userId,
     message: message.trim(),

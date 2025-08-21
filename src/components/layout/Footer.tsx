@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import React from 'react'
-import { BookOpen, Github, Mail, Heart, Sparkles, Star } from 'lucide-react'
+import { BookOpen, Github, Heart, Sparkles, Star } from 'lucide-react'
 import { cn } from '../../utils/cn'
 
 interface FooterProps {
@@ -96,9 +96,10 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
             </h3>
             <ul className="space-y-3">
               {[
-                { name: 'Help Center', href: 'https://github.com/pritam-ray/JUCONNECT/wiki', external: true },
-                { name: 'Privacy Policy', href: 'https://github.com/pritam-ray/JUCONNECT/blob/main/PRIVACY.md', external: true },
-                { name: 'Terms of Service', href: 'https://github.com/pritam-ray/JUCONNECT/blob/main/TERMS.md', external: true },
+                { name: 'Help Center', href: '/help', external: false },
+                { name: 'Privacy Policy', href: '/privacy', external: false },
+                { name: 'Terms of Service', href: '/terms', external: false },
+                { name: 'Contact Us', href: '/contact', external: false },
               ].map((link) => (
                 <li key={link.name}>
                   {link.external ? (
@@ -122,15 +123,6 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                   )}
                 </li>
               ))}
-              <li>
-                <a 
-                  href="mailto:impritamray@gmail.com" 
-                  className="text-secondary-300 hover:text-primary-400 transition-all duration-300 flex items-center space-x-2 group"
-                >
-                  <Mail className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
-                  <span className="group-hover:translate-x-1 transition-transform duration-300">Contact Us</span>
-                </a>
-              </li>
             </ul>
           </div>
         </div>

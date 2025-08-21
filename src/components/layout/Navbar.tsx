@@ -1,28 +1,25 @@
 import { Link } from 'react-router-dom'
 import React, { useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { BookOpen, Menu, X, User, LogOut, Upload, MessageCircle, Settings, FileText, Shield, Mail, Sparkles } from 'lucide-react'
+import { BookOpen, Menu, X, User, LogOut, Upload, MessageCircle, Settings, FileText, Shield, Sparkles, Mail } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { cn } from '../../utils/cn'
 import AuthModal from '../ui/AuthModal'
-import RealtimePrivateMessages from '../messaging/RealtimePrivateMessages'
-import { usePrivateMessages } from '../../hooks/useRealtime'
 import AdminPanel from '../admin/AdminPanel'
 import Button from '../ui/Button'
+import PrivateMessageModal from '../messaging/PrivateMessageModal'
+import { usePrivateMessages } from '../../hooks/usePrivateMessages'
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
-  const [showMessagesModal, setShowMessagesModal] = useState(false)
   const [showAdminPanel, setShowAdminPanel] = useState(false)
+  const [showMessagesModal, setShowMessagesModal] = useState(false)
   const { user, profile, isGuest, signInAsGuest, signOut } = useAuth()
   const location = useLocation()
-  
-  // Get connection status for messages
-  const { connectionStatus } = usePrivateMessages({
-    autoConnect: user && !isGuest,
-    onError: (error) => console.error('Navbar messages error:', error)
-  })
+
+  // Get unread message count
+  const { totalUnreadCount } = usePrivateMessages(user?.id || null)
 
   const isActive = (path: string) => location.pathname === path
 
@@ -44,24 +41,17 @@ const Navbar: React.FC = () => {
     setIsOpen(false)
   }
 
-  const handleAuthRequired = (action: () => void) => {
-    if (!user || isGuest) {
-      setShowAuthModal(true)
-    } else {
-      action()
-    }
-  }
-
-  const handleNavClick = (e: React.MouseEvent, href: string, requiresAuth: boolean = false) => {
+  const handleNavClick = (e: React.MouseEvent, requiresAuth: boolean = false) => {
     // Close mobile menu first
     setIsOpen(false)
     
     if (requiresAuth && (!user || isGuest)) {
       e.preventDefault()
       setShowAuthModal(true)
-      return false
+      return
     }
-    return true
+    
+    // Allow normal navigation to proceed
   }
 
   return (
@@ -91,7 +81,7 @@ const Navbar: React.FC = () => {
                     <Link
                       key={item.name}
                       to={item.href}
-                      onClick={(e) => handleNavClick(e, item.href, requiresAuth)}
+                      onClick={(e) => handleNavClick(e, requiresAuth)}
                       className={cn(
                         'px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center space-x-2 group relative overflow-hidden',
                         isActive(item.href)
@@ -133,23 +123,16 @@ const Navbar: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   {/* Messages Button */}
                   <button
-                    onClick={() => handleAuthRequired(() => setShowMessagesModal(true))}
-                    className="relative p-3 text-secondary-600 hover:text-primary-600 rounded-xl hover:bg-white/50 transition-all duration-300 hover:scale-110 group"
-                    title="Private Messages"
+                    onClick={() => setShowMessagesModal(true)}
+                    className="relative p-3 text-secondary-600 hover:text-primary-600 rounded-xl hover:bg-white/50 transition-all duration-300 hover:scale-110"
+                    title="Messages"
                   >
-                    <div className="relative">
-                      <Mail className="h-5 w-5" />
-                      {/* Connection status indicator */}
-                      <div className="absolute -bottom-1 -right-1">
-                        {connectionStatus.isConnected ? (
-                          <div className="w-2 h-2 bg-green-500 rounded-full" />
-                        ) : (
-                          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                        )}
+                    <Mail className="h-5 w-5" />
+                    {totalUnreadCount > 0 && (
+                      <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-xs rounded-full flex items-center justify-center px-1 animate-pulse">
+                        {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
                       </div>
-                    </div>
-                    {/* Notification dot - you can add logic to show unread count */}
-                    <div className="notification-dot" />
+                    )}
                   </button>
                   
                   {/* Admin Panel Button */}
@@ -223,7 +206,7 @@ const Navbar: React.FC = () => {
                   <Link
                     key={item.name}
                     to={item.href}
-                    onClick={(e) => handleNavClick(e, item.href, requiresAuth)}
+                    onClick={(e) => handleNavClick(e, requiresAuth)}
                     className={cn(
                       'flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-semibold transition-all duration-300 relative overflow-hidden',
                       isActive(item.href)
@@ -280,17 +263,7 @@ const Navbar: React.FC = () => {
                       </Link>
                     </div>
                     
-                    <button
-                      onClick={() => {
-                        handleAuthRequired(() => setShowMessagesModal(true))
-                        setIsOpen(false)
-                      }}
-                      className="w-full flex items-center space-x-3 px-4 py-3 text-base font-semibold text-secondary-600 hover:bg-white/50 rounded-xl transition-all duration-300"
-                    >
-                      <Mail className="h-5 w-5" />
-                      <span>Messages</span>
-                      <div className="ml-auto notification-dot" />
-                    </button>
+                    {/* Real-time messaging removed for better performance */}
                     
                     {profile.is_admin && (
                       <button
@@ -347,15 +320,17 @@ const Navbar: React.FC = () => {
         onSuccess={() => setShowAuthModal(false)}
       />
       
-      <RealtimePrivateMessages
+      <PrivateMessageModal
         isOpen={showMessagesModal}
         onClose={() => setShowMessagesModal(false)}
       />
       
-      <AdminPanel
-        isOpen={showAdminPanel}
-        onClose={() => setShowAdminPanel(false)}
-      />
+      {profile?.is_admin && (
+        <AdminPanel
+          isOpen={showAdminPanel}
+          onClose={() => setShowAdminPanel(false)}
+        />
+      )}
     </>
   )
 }

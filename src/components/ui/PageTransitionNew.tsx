@@ -8,14 +8,26 @@ interface PageTransitionProps {
 
 const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
   const [loading, setLoading] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
   const location = useLocation()
 
   useEffect(() => {
+    // Start loading transition
     setLoading(true)
+    setIsVisible(false)
+    
+    // Scroll to top immediately when route changes
     window.scrollTo({ top: 0, behavior: 'instant' })
+    
+    // Short loading sequence
     const timer = setTimeout(() => {
       setLoading(false)
-    }, 100) // Very brief 100ms spinner
+      // Small delay before showing content for smooth transition
+      setTimeout(() => {
+        setIsVisible(true)
+      }, 50)
+    }, 300) // Reduced from 800ms to 300ms
+
     return () => clearTimeout(timer)
   }, [location.pathname])
 
@@ -27,7 +39,18 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
     )
   }
 
-  return <>{children}</>;
+  return (
+    <div 
+      key={location.pathname} 
+      className={`transition-all duration-300 ease-out ${
+        isVisible 
+          ? 'opacity-100 translate-y-0' 
+          : 'opacity-0 translate-y-2'
+      }`}
+    >
+      {children}
+    </div>
+  )
 }
 
 export default PageTransition

@@ -35,7 +35,7 @@ interface Conversation {
 }
 
 // Send a private message
-const sendPrivateMessage = async (
+export const sendPrivateMessage = async (
   senderId: string,
   recipientId: string,
   message: string
@@ -84,7 +84,7 @@ const sendPrivateMessage = async (
 }
 
 // Get conversation between two users
-const getConversation = async (
+export const getConversation = async (
   userId: string,
   otherUserId: string,
   limit: number = 50,

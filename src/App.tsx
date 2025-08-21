@@ -1,12 +1,12 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { AuthProvider } from './contexts/AuthContext'
 import ErrorBoundary from './components/ErrorBoundary'
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
 import MobileBottomNav from './components/layout/MobileBottomNav'
-import PageTransition from './components/ui/PageTransition'
 import AuthModal from './components/ui/AuthModal'
+import PageTransition from './components/ui/PageTransition'
 import HomePage from './pages/HomePage'
 import AuthPage from './pages/AuthPage'
 import UploadPage from './pages/UploadPage'
@@ -14,20 +14,14 @@ import ChatPage from './pages/ChatPage'
 import CategoriesPage from './pages/CategoriesPage'
 import MyRequestsPage from './pages/MyRequestsPage'
 import UserProfilePage from './pages/UserProfilePage'
-import { logger } from './utils/logger'
+import HelpCenterPage from './pages/HelpCenterPage'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
+import TermsOfServicePage from './pages/TermsOfServicePage'
+import ContactUsPage from './pages/ContactUsPage'
 
 function App() {
   const [showAuthModal, setShowAuthModal] = useState(false)
 
-  // Debug navigation issues
-  useEffect(() => {
-    const handleRouteChange = () => {
-      logger.debug('Route changed to:', window.location.hash)
-    }
-    
-    window.addEventListener('hashchange', handleRouteChange)
-    return () => window.removeEventListener('hashchange', handleRouteChange)
-  }, [])
   return (
     <ErrorBoundary>
       <AuthProvider>
@@ -44,6 +38,10 @@ function App() {
                   <Route path="/categories" element={<CategoriesPage />} />
                   <Route path="/my-requests" element={<MyRequestsPage />} />
                   <Route path="/profile/:userId" element={<UserProfilePage />} />
+                  <Route path="/help" element={<HelpCenterPage />} />
+                  <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                  <Route path="/terms" element={<TermsOfServicePage />} />
+                  <Route path="/contact" element={<ContactUsPage />} />
                 </Routes>
               </PageTransition>
             </main>

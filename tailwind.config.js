@@ -106,6 +106,9 @@ export default {
         'float': 'float 6s ease-in-out infinite',
         'gradient-shift': 'gradientShift 3s ease infinite',
         'shimmer': 'shimmer 2s linear infinite',
+        'slide-down': 'slideDown 0.8s ease-out',
+        'progress': 'progress 0.8s ease-out',
+        'reveal-from-top': 'revealFromTop 0.7s ease-out',
       },
       keyframes: {
         fadeIn: {
@@ -152,16 +155,35 @@ export default {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(100%)' },
         },
+        slideDown: {
+          '0%': { transform: 'translateY(-100%)' },
+          '100%': { transform: 'translateY(0)' },
+        },
+        progress: {
+          '0%': { width: '0%' },
+          '100%': { width: '100%' },
+        },
+        revealFromTop: {
+          '0%': { 
+            opacity: '0', 
+            transform: 'translateY(-20px)',
+            clipPath: 'inset(0 0 100% 0)',
+          },
+          '100%': { 
+            opacity: '1', 
+            transform: 'translateY(0)',
+            clipPath: 'inset(0 0 0% 0)',
+          },
+        },
       },
+      screens: {
         'xs': '475px',
+      },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
         'mesh-gradient': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-        'mobile': { 'max': '767px' },
-        'tablet': { 'min': '768px', 'max': '1023px' },
-        'desktop': { 'min': '1024px' },
       },
     },
   },

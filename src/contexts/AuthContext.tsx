@@ -40,6 +40,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setProfile(profileData)
       } catch (error) {
         console.error('Error fetching profile:', error)
+        // If profile fetch fails due to invalid session, sign out to clear auth state
+        await signOut()
       }
     }
   }

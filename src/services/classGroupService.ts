@@ -246,28 +246,44 @@ export const leaveClassGroup = async (groupId: string, userId: string): Promise<
 
 // Get group members
 export const getGroupMembers = async (groupId: string): Promise<GroupMemberWithProfile[]> => {
-  if (!supabase) return []
+  if (!supabase || !groupId) return []
 
-  const { data, error } = await supabase
-    .from('group_members')
-    .select(`
-      *,
-      profiles (
-        id,
-        username,
-        full_name,
-        avatar_url,
-        is_online,
-        last_seen
-      )
-    `)
-    .eq('group_id', groupId)
-    .eq('is_active', true)
-    .order('role', { ascending: false })
-    .order('joined_at', { ascending: true })
+  try {
+    console.log('Fetching group members for:', groupId)
+    
+    const { data, error } = await supabase
+      .from('group_members')
+      .select(`
+        *,
+        profiles (
+          id,
+          username,
+          full_name,
+          avatar_url,
+          is_online,
+          last_seen
+        )
+      `)
+      .eq('group_id', groupId)
+      .eq('is_active', true)
+      .order('role', { ascending: false })
+      .order('joined_at', { ascending: true })
 
-  if (error) throw error
-  return data || []
+    if (error) {
+      console.error('Error fetching group members:', error)
+      if (error.code === '42P01') {
+        console.warn('group_members table does not exist yet')
+        return []
+      }
+      throw error
+    }
+    
+    console.log('Fetched group members:', data?.length || 0)
+    return data || []
+  } catch (error) {
+    console.error('Error in getGroupMembers:', error)
+    return []
+  }
 }
 
 // Send group message
@@ -284,26 +300,45 @@ export const sendGroupMessage = async (
   replyTo?: string
 ): Promise<GroupMessage> => {
   if (!supabase) throw new Error('Supabase not available')
+  if (!groupId || !userId || !message.trim()) throw new Error('Missing required parameters')
 
-  const messageData = {
-    group_id: groupId,
-    user_id: userId,
-    message: message.trim(),
-    message_type: messageType,
-    file_url: fileData?.file_url,
-    file_name: fileData?.file_name,
-    file_size: fileData?.file_size,
-    reply_to: replyTo
+  try {
+    console.log('Sending message to group:', groupId, 'from user:', userId)
+    
+    const messageData = {
+      group_id: groupId,
+      user_id: userId,
+      message: message.trim(),
+      message_type: messageType,
+      file_url: fileData?.file_url || null,
+      file_name: fileData?.file_name || null,
+      file_size: fileData?.file_size || null,
+      reply_to: replyTo || null
+    }
+
+    const { data, error } = await supabase
+      .from('group_messages')
+      .insert([messageData])
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error sending message:', error)
+      if (error.code === '42P01') {
+        throw new Error('Group messages table does not exist. Please contact administrator.')
+      } else if (error.code === '42501') {
+        throw new Error('Permission denied. You may not be a member of this group.')
+      } else {
+        throw new Error(`Failed to send message: ${error.message}`)
+      }
+    }
+    
+    console.log('Message sent successfully:', data.id)
+    return data
+  } catch (error) {
+    console.error('Error in sendGroupMessage:', error)
+    throw error
   }
-
-  const { data, error } = await supabase
-    .from('group_messages')
-    .insert([messageData])
-    .select()
-    .single()
-
-  if (error) throw error
-  return data
 }
 
 // Get group messages

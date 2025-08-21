@@ -14,10 +14,12 @@ import {
   markGroupMessagesAsRead,
   subscribeToGroupMessages,
   getGroupMembers,
+  joinClassGroup,
   ClassGroupWithDetails,
   GroupMessageWithProfile,
   GroupMemberWithProfile
 } from '../../services/classGroupService'
+import { debugGroupAccess } from '../../services/debugGroupService'
 import { useAuth } from '../../contexts/AuthContext'
 import Button from '../ui/Button'
 import LoadingSpinner from '../ui/LoadingSpinner'
@@ -46,6 +48,12 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
 
   useEffect(() => {
     if (group.id && user) {
+      console.log('Loading group chat for:', group.name)
+      console.log('Group ID:', group.id, 'User ID:', user.id)
+      
+      // Debug group access
+      debugGroupAccess(group.id, user.id)
+      
       loadMessages()
       loadMembers()
       
@@ -87,6 +95,24 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     try {
       const membersData = await getGroupMembers(group.id)
       setMembers(membersData || [])
+      
+      // Check if current user is a member
+      if (user && membersData) {
+        const isUserMember = membersData.some(member => member.user_id === user.id)
+        
+        if (!isUserMember) {
+          console.log('User is not a member, attempting to add...')
+          try {
+            await joinClassGroup(group.id, user.id)
+            console.log('User added to group successfully')
+            // Reload members after adding user
+            const updatedMembers = await getGroupMembers(group.id)
+            setMembers(updatedMembers || [])
+          } catch (error) {
+            console.error('Failed to add user to group:', error)
+          }
+        }
+      }
     } catch (error) {
       console.error('Failed to load members:', error)
       setMembers([])
@@ -102,6 +128,8 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
 
     try {
       setSending(true)
+      console.log('Attempting to send message...')
+      
       await sendGroupMessage(
         group.id,
         user.id,
@@ -113,8 +141,10 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
       
       setNewMessage('')
       setReplyTo(null)
-    } catch (error) {
+      console.log('Message sent successfully')
+    } catch (error: any) {
       console.error('Failed to send message:', error)
+      alert(`Failed to send message: ${error.message || 'Unknown error'}`)
     } finally {
       setSending(false)
     }

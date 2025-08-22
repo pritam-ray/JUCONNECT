@@ -819,8 +819,6 @@ export const removeGroupMember = async (
 ): Promise<{ success: boolean; message?: string; error?: string }> => {
   if (!supabase) throw new Error('Supabase not available')
 
-  console.log('removeGroupMember called with:', { groupId, targetUserId, requestingUserId })
-
   const { data, error } = await supabase
     .rpc('remove_group_member', {
       group_id_param: groupId,
@@ -828,7 +826,6 @@ export const removeGroupMember = async (
       requesting_user_id_param: requestingUserId
     })
 
-  console.log('removeGroupMember result:', { data, error })
   if (error) throw error
   return data
 }
@@ -861,15 +858,12 @@ export const deleteGroup = async (
 ): Promise<{ success: boolean; message?: string; error?: string }> => {
   if (!supabase) throw new Error('Supabase not available')
 
-  console.log('deleteGroup called with:', { groupId, requestingUserId })
-
   const { data, error } = await supabase
     .rpc('delete_group', {
       group_id_param: groupId,
       requesting_user_id_param: requestingUserId
     })
 
-  console.log('deleteGroup result:', { data, error })
   if (error) throw error
   return data
 }

@@ -63,13 +63,7 @@ const GroupAdminPanel: React.FC<GroupAdminPanelProps> = ({
 
   useEffect(() => {
     if (user) {
-      const userIsCreator = group.created_by === user.id
-      console.log('Admin panel - checking creator status:', { 
-        userId: user.id, 
-        groupCreatedBy: group.created_by, 
-        isUserCreator: userIsCreator 
-      })
-      setIsUserCreator(userIsCreator)
+      setIsUserCreator(group.created_by === user.id)
       checkAdminStatus()
     }
   }, [user, group.created_by])
@@ -97,9 +91,7 @@ const GroupAdminPanel: React.FC<GroupAdminPanelProps> = ({
     if (!user) return
     
     try {
-      console.log('Checking admin status for:', { groupId: group.id, userId: user.id })
       const adminStatus = await isGroupAdmin(group.id, user.id)
-      console.log('Admin status result:', adminStatus)
       setIsUserAdmin(adminStatus)
     } catch (err) {
       console.error('Error checking admin status:', err)
@@ -155,9 +147,7 @@ const GroupAdminPanel: React.FC<GroupAdminPanelProps> = ({
     
     try {
       setLoading(true)
-      console.log('Removing member:', { groupId: group.id, userId, requestingUserId: user.id })
       const result = await removeGroupMember(group.id, userId, user.id)
-      console.log('Remove member result:', result)
       
       if (result.success) {
         setSuccess(result.message || 'Member removed successfully')
@@ -165,10 +155,8 @@ const GroupAdminPanel: React.FC<GroupAdminPanelProps> = ({
         onGroupUpdated()
       } else {
         setError(result.error || 'Failed to remove member')
-        console.error('Remove member failed:', result.error)
       }
     } catch (err: any) {
-      console.error('Remove member error:', err)
       setError(err.message)
     } finally {
       setLoading(false)
@@ -212,9 +200,7 @@ const GroupAdminPanel: React.FC<GroupAdminPanelProps> = ({
     
     try {
       setLoading(true)
-      console.log('Deleting group:', { groupId: group.id, requestingUserId: user.id })
       const result = await deleteGroup(group.id, user.id)
-      console.log('Delete group result:', result)
       
       if (result.success) {
         setSuccess(result.message || 'Group deleted successfully')
@@ -222,10 +208,8 @@ const GroupAdminPanel: React.FC<GroupAdminPanelProps> = ({
         onClose()
       } else {
         setError(result.error || 'Failed to delete group')
-        console.error('Delete group failed:', result.error)
       }
     } catch (err: any) {
-      console.error('Delete group error:', err)
       setError(err.message)
     } finally {
       setLoading(false)

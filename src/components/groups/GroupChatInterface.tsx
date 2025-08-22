@@ -3,7 +3,6 @@ import {
   Send, 
   Paperclip, 
   Users, 
-  Settings, 
   ArrowLeft, 
   Reply,
   Download,
@@ -36,14 +35,12 @@ import GroupAdminPanel from './GroupAdminPanel'
 interface GroupChatInterfaceProps {
   group: ClassGroupWithDetails
   onBack: () => void
-  onShowSettings: () => void
   onLeaveGroup?: () => void
 }
 
 const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   group,
   onBack,
-  onShowSettings,
   onLeaveGroup
 }) => {
   const { user, loading: authLoading } = useAuth()
@@ -352,8 +349,6 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     }
   }
 
-  const onlineMembers = members.filter(m => m.profiles?.is_online).length
-
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Header */}
@@ -373,7 +368,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
           <div>
             <h3 className="font-semibold text-gray-900">{group.name}</h3>
             <p className="text-sm text-gray-500">
-              {group.member_count} members • {onlineMembers} online
+              {members.length} members
             </p>
           </div>
         </div>
@@ -409,16 +404,6 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
               <LogOut className="h-5 w-5 text-red-600 group-hover:text-red-700" />
             )}
           </button>
-          
-          {isUserAdmin && (
-            <button
-              onClick={onShowSettings}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Group settings"
-            >
-              <Settings className="h-5 w-5 text-gray-600" />
-            </button>
-          )}
         </div>
       </div>
 
@@ -686,9 +671,6 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
                           {member.profiles?.full_name?.charAt(0) || '?'}
                         </span>
                       </div>
-                      {member.profiles?.is_online && (
-                        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
-                      )}
                     </div>
                     
                     <div className="flex-1 min-w-0">

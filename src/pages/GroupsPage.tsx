@@ -40,7 +40,6 @@ const GroupsPage: React.FC = () => {
             <GroupChatInterface
               group={selectedGroup}
               onBack={handleBackToList}
-              onShowSettings={() => {}}
               onLeaveGroup={handleLeaveGroup}
             />
           ) : (
@@ -57,7 +56,6 @@ const GroupsPage: React.FC = () => {
               <GroupChatInterface
                 group={selectedGroup}
                 onBack={handleBackToList}
-                onShowSettings={() => {}}
                 onLeaveGroup={handleLeaveGroup}
               />
             </div>

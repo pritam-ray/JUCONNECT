@@ -546,6 +546,8 @@ export const subscribeToGroupMessages = (
 ) => {
   if (!supabase) return () => {}
 
+  console.log('🔔 Setting up real-time subscription for group:', groupId)
+
   const channel = supabase
     .channel(`group_messages_${groupId}`)
     .on(
@@ -557,11 +559,13 @@ export const subscribeToGroupMessages = (
         filter: `group_id=eq.${groupId}`
       },
       async (payload) => {
+        console.log('📨 New message received via real-time:', payload.new)
+        
         // Fetch complete message with profile data
         if (!supabase) return
         
         try {
-          const { data } = await supabase
+          const { data, error } = await supabase
             .from('group_messages')
             .select(`
               *,
@@ -575,7 +579,13 @@ export const subscribeToGroupMessages = (
             .eq('id', payload.new.id)
             .single()
 
+          if (error) {
+            console.error('Error fetching new message details:', error)
+            return
+          }
+
           if (data) {
+            console.log('✅ Broadcasting new message to UI:', data.message)
             callback(data)
           }
         } catch (error) {
@@ -583,9 +593,17 @@ export const subscribeToGroupMessages = (
         }
       }
     )
-    .subscribe()
+    .subscribe((status) => {
+      console.log('🔔 Subscription status:', status)
+      if (status === 'SUBSCRIBED') {
+        console.log('✅ Successfully subscribed to real-time updates')
+      } else if (status === 'CHANNEL_ERROR') {
+        console.error('❌ Real-time subscription failed')
+      }
+    })
 
   return () => {
+    console.log('🔕 Unsubscribing from real-time updates')
     if (supabase) {
       supabase.removeChannel(channel)
     }

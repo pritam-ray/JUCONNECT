@@ -6,7 +6,10 @@ import {
   Settings, 
   ArrowLeft, 
   Reply,
-  Download
+  Download,
+  File,
+  Image,
+  X
 } from 'lucide-react'
 import { 
   getGroupMessages, 
@@ -19,6 +22,7 @@ import {
   GroupMessageWithProfile,
   GroupMemberWithProfile
 } from '../../services/classGroupService'
+import { uploadGroupFile, deleteGroupFile } from '../../services/groupFileService'
 import { debugGroupAccess } from '../../services/debugGroupService'
 import { useAuth } from '../../contexts/AuthContext'
 import Button from '../ui/Button'
@@ -41,8 +45,10 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [uploadingFile, setUploadingFile] = useState(false)
   const [replyTo, setReplyTo] = useState<GroupMessageWithProfile | null>(null)
   const [showMembers, setShowMembers] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -161,8 +167,98 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     const file = e.target.files?.[0]
     if (!file || !user) return
 
-    // TODO: Implement file upload functionality
-    console.log('File upload:', file)
+    try {
+      setUploadingFile(true)
+      setError(null)
+      console.log('📤 Uploading file:', file.name)
+
+      // Upload file to group
+      const fileRecord = await uploadGroupFile({
+        file,
+        groupId: group.id,
+        userId: user.id
+      })
+
+      // Create message with file data for immediate UI update
+      const fileMessage: GroupMessageWithProfile = {
+        id: fileRecord.id,
+        group_id: fileRecord.group_id,
+        user_id: fileRecord.user_id,
+        message: `📎 ${file.name}`,
+        message_type: 'file',
+        file_url: fileRecord.file_url,
+        file_name: fileRecord.file_name,
+        file_size: fileRecord.file_size,
+        created_at: fileRecord.created_at,
+        updated_at: fileRecord.created_at,
+        reply_to: null,
+        is_edited: false,
+        profiles: {
+          id: user.id,
+          username: user.user_metadata?.username || user.email?.split('@')[0] || 'User',
+          full_name: user.user_metadata?.full_name || user.user_metadata?.username || 'User',
+          avatar_url: user.user_metadata?.avatar_url
+        }
+      }
+
+      // Add to messages
+      setMessages(prev => [...prev, fileMessage])
+      scrollToBottom()
+
+      console.log('✅ File uploaded successfully:', file.name)
+
+      // Reload messages to ensure consistency
+      setTimeout(() => {
+        loadMessages()
+      }, 1000)
+
+    } catch (error: any) {
+      console.error('❌ Failed to upload file:', error)
+      setError(`Failed to upload file: ${error.message || 'Unknown error'}`)
+      setTimeout(() => setError(null), 5000)
+    } finally {
+      setUploadingFile(false)
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
+  const handleDeleteFile = async (messageId: string) => {
+    if (!user) return
+
+    try {
+      console.log('🗑️ Deleting file message:', messageId)
+      
+      await deleteGroupFile(messageId, user.id)
+      
+      // Remove from UI
+      setMessages(prev => prev.filter(msg => msg.id !== messageId))
+      
+      console.log('✅ File deleted successfully')
+      
+    } catch (error: any) {
+      console.error('❌ Failed to delete file:', error)
+      setError(`Failed to delete file: ${error.message || 'Unknown error'}`)
+      setTimeout(() => setError(null), 5000)
+    }
+  }
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  }
+
+  const getFileIcon = (fileName: string) => {
+    const extension = fileName.split('.').pop()?.toLowerCase()
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension || '')) {
+      return <Image className="h-4 w-4" />
+    }
+    return <File className="h-4 w-4" />
   }
 
   const formatMessageTime = (timestamp: string) => {
@@ -227,9 +323,33 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
         </div>
       </div>
 
+      {/* Data Retention Info Banner */}
+      <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
+        <p className="text-xs text-blue-700 text-center">
+          📅 Messages and files in this group are automatically deleted after 2 weeks to manage storage space
+        </p>
+      </div>
+
       <div className="flex flex-1 overflow-hidden">
         {/* Messages Area */}
         <div className="flex-1 flex flex-col">
+          {/* Error Banner */}
+          {error && (
+            <div className="bg-red-50 border-l-4 border-red-400 p-4 m-4 mb-0">
+              <div className="flex">
+                <div className="ml-3">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+                <button
+                  onClick={() => setError(null)}
+                  className="ml-auto text-red-400 hover:text-red-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
+          
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {loading ? (
@@ -291,19 +411,44 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
                               : 'bg-gray-100 text-gray-900'
                           }`}
                         >
-                          <p className="text-sm whitespace-pre-wrap">{message.message}</p>
-                          
-                          {/* File attachment */}
-                          {message.file_url && (
-                            <div className="mt-2 p-2 bg-black/10 rounded-lg">
+                          {message.message_type === 'file' ? (
+                            <div className="space-y-2">
                               <div className="flex items-center space-x-2">
-                                <Paperclip className="h-4 w-4" />
-                                <span className="text-sm">{message.file_name}</span>
-                                <button className="p-1 hover:bg-black/10 rounded">
-                                  <Download className="h-3 w-3" />
-                                </button>
+                                {getFileIcon(message.file_name || '')}
+                                <span className="text-sm font-medium">
+                                  {message.file_name}
+                                </span>
+                                {isOwn && (
+                                  <button
+                                    onClick={() => handleDeleteFile(message.id)}
+                                    className="text-red-300 hover:text-red-100 p-1"
+                                    title="Delete file"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                )}
                               </div>
+                              
+                              <div className="text-xs opacity-75">
+                                {formatFileSize(message.file_size || 0)}
+                              </div>
+                              
+                              {message.file_url && (
+                                <a
+                                  href={message.file_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={`inline-flex items-center space-x-1 text-xs ${
+                                    isOwn ? 'text-blue-100 hover:text-white' : 'text-blue-600 hover:text-blue-800'
+                                  }`}
+                                >
+                                  <Download className="h-3 w-3" />
+                                  <span>Download</span>
+                                </a>
+                              )}
                             </div>
+                          ) : (
+                            <p className="text-sm whitespace-pre-wrap">{message.message}</p>
                           )}
                         </div>
                         
@@ -356,7 +501,9 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
             <div className="flex items-end space-x-2">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                disabled={uploadingFile}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+                title="Attach file"
               >
                 <Paperclip className="h-5 w-5" />
               </button>
@@ -369,19 +516,30 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
                   placeholder="Type a message..."
                   className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   rows={1}
-                  disabled={sending}
+                  disabled={sending || uploadingFile}
                 />
               </div>
               
               <Button
                 onClick={handleSendMessage}
-                disabled={!newMessage.trim() || sending}
-                loading={sending}
+                disabled={(!newMessage.trim() && !uploadingFile) || sending || uploadingFile}
+                loading={sending || uploadingFile}
                 className="px-4 py-3"
               >
-                <Send className="h-4 w-4" />
+                {sending || uploadingFile ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </div>
+            
+            {uploadingFile && (
+              <div className="mt-2 text-sm text-gray-600 flex items-center space-x-2">
+                <LoadingSpinner size="sm" />
+                <span>Uploading file...</span>
+              </div>
+            )}
           </div>
 
           <input
@@ -389,7 +547,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
             type="file"
             onChange={handleFileUpload}
             className="hidden"
-            accept=".pdf,.doc,.docx,.txt,.jpg,.png"
+            accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
           />
         </div>
 

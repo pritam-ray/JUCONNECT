@@ -28,19 +28,6 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
   const [activeTab, setActiveTab] = useState<'my-groups' | 'all-groups'>('my-groups')
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchGroups()
-  }, [user])
-
-  // Don't render anything if auth is still loading
-  if (authLoading) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <LoadingSpinner />
-      </div>
-    )
-  }
-
   const fetchGroups = async () => {
     try {
       setLoading(true)
@@ -85,6 +72,19 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
     } finally {
       setLoading(false)
     }
+  }
+
+  useEffect(() => {
+    fetchGroups()
+  }, [user])
+
+  // Don't render anything if auth is still loading
+  if (authLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <LoadingSpinner />
+      </div>
+    )
   }
 
   const handleJoinGroup = async (groupId: string, group?: ClassGroupWithDetails) => {

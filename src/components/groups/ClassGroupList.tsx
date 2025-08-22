@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, Users, BookOpen, Search, Filter, Star, Clock } from 'lucide-react'
+import { Plus, Users, BookOpen, Search, Filter, Star, Clock, Lock } from 'lucide-react'
 import { getAllClassGroups, getUserGroups, joinClassGroup, ClassGroupWithDetails } from '../../services/classGroupService'
 import { useAuth } from '../../contexts/AuthContext'
 import Button from '../ui/Button'
 import Badge from '../ui/Badge'
 import LoadingSpinner from '../ui/LoadingSpinner'
 import CreateGroupModal from './CreateGroupModal'
+import GroupPasswordModal from './GroupPasswordModal'
 import { formatDistanceToNow } from 'date-fns'
 
 interface ClassGroupListProps {
@@ -19,6 +20,9 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
   const [loading, setLoading] = useState(true)
   const [joining, setJoining] = useState<string | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [selectedGroupForPassword, setSelectedGroupForPassword] = useState<ClassGroupWithDetails | null>(null)
+  const [passwordError, setPasswordError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedYear, setSelectedYear] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState<'my-groups' | 'all-groups'>('my-groups')
@@ -74,9 +78,19 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
     }
   }
 
-  const handleJoinGroup = async (groupId: string) => {
+  const handleJoinGroup = async (groupId: string, group?: ClassGroupWithDetails) => {
     if (!user || isGuest) return
 
+    // Check if group is password protected
+    const targetGroup = group || allGroups.find(g => g.id === groupId)
+    if (targetGroup?.is_password_protected) {
+      setSelectedGroupForPassword(targetGroup)
+      setShowPasswordModal(true)
+      setPasswordError('')
+      return
+    }
+
+    // Join public group directly
     try {
       setJoining(groupId)
       await joinClassGroup(groupId, user.id)
@@ -87,6 +101,34 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
     } finally {
       setJoining(null)
     }
+  }
+
+  const handlePasswordSubmit = async (password: string) => {
+    if (!selectedGroupForPassword || !user) return
+
+    try {
+      setJoining(selectedGroupForPassword.id)
+      setPasswordError('')
+      
+      await joinClassGroup(selectedGroupForPassword.id, user.id, password)
+      
+      // Close modal and refresh groups
+      setShowPasswordModal(false)
+      setSelectedGroupForPassword(null)
+      await fetchGroups()
+    } catch (error: any) {
+      console.error('Failed to join protected group:', error)
+      setPasswordError(error.message || 'Failed to join group')
+    } finally {
+      setJoining(null)
+    }
+  }
+
+  const handlePasswordModalClose = () => {
+    setShowPasswordModal(false)
+    setSelectedGroupForPassword(null)
+    setPasswordError('')
+    setJoining(null)
   }
 
   const filteredGroups = (groups: ClassGroupWithDetails[]) => {
@@ -232,7 +274,7 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
                 key={group.id}
                 group={group}
                 onSelect={() => onGroupSelect(group)}
-                onJoin={() => handleJoinGroup(group.id)}
+                onJoin={() => handleJoinGroup(group.id, group)}
                 isJoining={joining === group.id}
                 showJoinButton={false}
               />
@@ -253,7 +295,7 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
                   key={group.id}
                   group={group}
                   onSelect={() => onGroupSelect(group)}
-                  onJoin={() => handleJoinGroup(group.id)}
+                  onJoin={() => handleJoinGroup(group.id, group)}
                   isJoining={joining === group.id}
                   showJoinButton={!isJoined && !!user && !isGuest}
                   isJoined={isJoined}
@@ -273,6 +315,16 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
           fetchGroups()
         }}
       />
+
+      {/* Password Modal */}
+      <GroupPasswordModal
+        isOpen={showPasswordModal}
+        onClose={handlePasswordModalClose}
+        onSubmit={handlePasswordSubmit}
+        groupName={selectedGroupForPassword?.name || ''}
+        loading={joining === selectedGroupForPassword?.id}
+        error={passwordError}
+      />
     </div>
   )
 }
@@ -280,7 +332,7 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
 interface GroupCardProps {
   group: ClassGroupWithDetails
   onSelect: () => void
-  onJoin: () => void
+  onJoin: (group?: ClassGroupWithDetails) => void
   isJoining: boolean
   showJoinButton: boolean
   isJoined?: boolean
@@ -325,6 +377,12 @@ const GroupCard: React.FC<GroupCardProps> = ({
             <Users className="h-4 w-4" />
             <span>{group.member_count} members</span>
           </div>
+          {group.is_password_protected && (
+            <div className="flex items-center space-x-1 text-amber-600">
+              <Lock className="h-4 w-4" />
+              <span className="text-sm font-medium">Protected</span>
+            </div>
+          )}
           {group.unread_count && group.unread_count > 0 && (
             <div className="flex items-center space-x-1">
               <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
@@ -352,12 +410,19 @@ const GroupCard: React.FC<GroupCardProps> = ({
         ) : showJoinButton ? (
           <>
             <Button
-              onClick={onJoin}
+              onClick={() => onJoin(group)}
               loading={isJoining}
               disabled={isJoining}
               className="flex-1"
             >
-              Join Group
+              {group.is_password_protected ? (
+                <>
+                  <Lock className="h-4 w-4 mr-2" />
+                  Join Group
+                </>
+              ) : (
+                'Join Group'
+              )}
             </Button>
             <Button
               onClick={onSelect}

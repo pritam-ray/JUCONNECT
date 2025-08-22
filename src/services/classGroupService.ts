@@ -12,6 +12,8 @@ export interface ClassGroupWithDetails extends ClassGroup {
   user_role?: string
   unread_count?: number
   is_member?: boolean
+  is_password_protected?: boolean
+  join_status?: string
 }
 
 export interface GroupMessageWithProfile extends GroupMessage {
@@ -57,7 +59,7 @@ export const getAllClassGroups = async (): Promise<ClassGroupWithDetails[]> => {
     // Check if table exists by attempting a simple query
     const { data, error } = await supabase
       .from('class_groups')
-      .select('id, name, description, year, section, subject, member_count, created_by, is_active, created_at, updated_at')
+      .select('id, name, description, year, section, subject, member_count, created_by, is_active, is_password_protected, created_at, updated_at')
       .eq('is_active', true)
       .order('year', { ascending: true })
       .order('section', { ascending: true })
@@ -78,7 +80,8 @@ export const getAllClassGroups = async (): Promise<ClassGroupWithDetails[]> => {
       ...group,
       is_member: false,
       user_role: undefined,
-      unread_count: 0
+      unread_count: 0,
+      join_status: group.is_password_protected ? '🔒 Password Protected' : 'Open to Join'
     }))
   } catch (error) {
     console.error('Error fetching all groups:', error)
@@ -157,16 +160,41 @@ export const createClassGroup = async (groupData: {
   section: string
   subject?: string
   created_by: string
+  password?: string
 }): Promise<ClassGroup> => {
   if (!supabase) throw new Error('Supabase not available')
 
   const { data, error } = await supabase
     .from('class_groups')
-    .insert([groupData])
+    .insert([{
+      name: groupData.name,
+      description: groupData.description,
+      year: groupData.year,
+      section: groupData.section,
+      subject: groupData.subject,
+      created_by: groupData.created_by,
+      is_password_protected: !!groupData.password
+    }])
     .select()
     .single()
 
   if (error) throw error
+
+  // Set password if provided
+  if (groupData.password) {
+    const { error: passwordError } = await supabase
+      .rpc('set_group_password', {
+        group_id_param: data.id,
+        password_param: groupData.password,
+        user_id_param: groupData.created_by
+      })
+
+    if (passwordError) {
+      // If password setting fails, clean up the created group
+      await supabase.from('class_groups').delete().eq('id', data.id)
+      throw new Error('Failed to set group password')
+    }
+  }
 
   // Add creator as admin
   await supabase
@@ -181,8 +209,38 @@ export const createClassGroup = async (groupData: {
 }
 
 // Join a class group
-export const joinClassGroup = async (groupId: string, userId: string): Promise<void> => {
+export const joinClassGroup = async (groupId: string, userId: string, password?: string): Promise<void> => {
   if (!supabase) throw new Error('Supabase not available')
+
+  // First check if group is password protected
+  const { data: groupData, error: groupError } = await supabase
+    .from('class_groups')
+    .select('is_password_protected')
+    .eq('id', groupId)
+    .single()
+
+  if (groupError) throw new Error('Group not found')
+
+  // If password protected, verify password
+  if (groupData.is_password_protected) {
+    if (!password) {
+      throw new Error('This group requires a password to join')
+    }
+
+    const { data: isValid, error: verifyError } = await supabase
+      .rpc('verify_group_password', {
+        group_id_param: groupId,
+        password_param: password
+      })
+
+    if (verifyError) {
+      throw new Error('Error verifying password')
+    }
+
+    if (!isValid) {
+      throw new Error('Incorrect password')
+    }
+  }
 
   // Check if user is already a member
   const { data: existingMembership } = await supabase
@@ -641,4 +699,44 @@ export const removeGroupMember = async (
     .eq('user_id', userId)
 
   if (error) throw error
+}
+
+// Verify group password
+export const verifyGroupPassword = async (
+  groupId: string,
+  password: string
+): Promise<boolean> => {
+  if (!supabase) throw new Error('Supabase not available')
+
+  const { data, error } = await supabase
+    .rpc('verify_group_password', {
+      group_id_param: groupId,
+      password_param: password
+    })
+
+  if (error) {
+    console.error('Error verifying password:', error)
+    return false
+  }
+
+  return data || false
+}
+
+// Set group password (for group admin/creator)
+export const setGroupPassword = async (
+  groupId: string,
+  password: string | null,
+  userId: string
+): Promise<void> => {
+  if (!supabase) throw new Error('Supabase not available')
+
+  const { data, error } = await supabase
+    .rpc('set_group_password', {
+      group_id_param: groupId,
+      password_param: password,
+      user_id_param: userId
+    })
+
+  if (error) throw error
+  if (!data) throw new Error('You do not have permission to change group password')
 }

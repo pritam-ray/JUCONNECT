@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Plus, Users } from 'lucide-react'
+import { Plus, Users, Lock, Eye, EyeOff } from 'lucide-react'
 import { createClassGroup } from '../../services/classGroupService'
 import { useAuth } from '../../contexts/AuthContext'
 import Modal from '../ui/Modal'
@@ -26,12 +26,32 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
     description: '',
     year: 1,
     section: '',
-    subject: ''
+    subject: '',
+    isPasswordProtected: false,
+    password: '',
+    confirmPassword: ''
   })
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user || loading) return
+
+    // Validate password if protection is enabled
+    if (formData.isPasswordProtected) {
+      if (!formData.password) {
+        setError('Password is required for protected groups')
+        return
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match')
+        return
+      }
+      if (formData.password.length < 4) {
+        setError('Password must be at least 4 characters long')
+        return
+      }
+    }
 
     setLoading(true)
     setError('')
@@ -43,7 +63,8 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         year: formData.year,
         section: formData.section.trim().toUpperCase(),
         subject: formData.subject.trim() || undefined,
-        created_by: user.id
+        created_by: user.id,
+        password: formData.isPasswordProtected ? formData.password : undefined
       })
 
       // Reset form
@@ -52,7 +73,10 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
         description: '',
         year: 1,
         section: '',
-        subject: ''
+        subject: '',
+        isPasswordProtected: false,
+        password: '',
+        confirmPassword: ''
       })
       
       onSuccess()
@@ -68,11 +92,20 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ 
-      ...prev, 
-      [name]: name === 'year' ? parseInt(value) : value 
-    }))
+    const { name, value, type } = e.target
+    
+    if (type === 'checkbox') {
+      const target = e.target as HTMLInputElement
+      setFormData(prev => ({ 
+        ...prev, 
+        [name]: target.checked
+      }))
+    } else {
+      setFormData(prev => ({ 
+        ...prev, 
+        [name]: name === 'year' ? parseInt(value) : value 
+      }))
+    }
   }
 
   return (
@@ -159,6 +192,74 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
             className="input-premium resize-none"
             disabled={loading}
           />
+        </div>
+
+        {/* Password Protection Section */}
+        <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+          <div className="flex items-center space-x-3 mb-3">
+            <Lock className="h-5 w-5 text-gray-600" />
+            <div>
+              <h4 className="font-medium text-gray-900">Group Privacy</h4>
+              <p className="text-sm text-gray-600">Control who can join your group</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <input
+              type="checkbox"
+              id="isPasswordProtected"
+              name="isPasswordProtected"
+              checked={formData.isPasswordProtected}
+              onChange={handleInputChange}
+              disabled={loading}
+              className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            />
+            <label htmlFor="isPasswordProtected" className="text-sm font-medium text-gray-700">
+              Password protect this group
+            </label>
+          </div>
+          
+          {formData.isPasswordProtected && (
+            <div className="mt-4 space-y-4">
+              <div className="relative">
+                <Input
+                  name="password"
+                  label="Group Password *"
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  placeholder="Enter password (min 4 characters)"
+                  required={formData.isPasswordProtected}
+                  disabled={loading}
+                  premium
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-8 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              
+              <Input
+                name="confirmPassword"
+                label="Confirm Password *"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                placeholder="Confirm your password"
+                required={formData.isPasswordProtected}
+                disabled={loading}
+                premium
+              />
+              
+              <div className="text-xs text-gray-500 bg-yellow-50 p-2 rounded border">
+                <p className="font-medium text-yellow-700 mb-1">🔒 Password Protected Group</p>
+                <p>Only users with the correct password can join this group. Make sure to share the password securely with your classmates.</p>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex justify-end space-x-3">

@@ -112,15 +112,21 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
         const isUserMember = membersData.some(member => member.user_id === user.id)
         
         if (!isUserMember) {
-          console.log('User is not a member, attempting to add...')
-          try {
-            await joinClassGroup(group.id, user.id)
-            console.log('User added to group successfully')
-            // Reload members after adding user
-            const updatedMembers = await getGroupMembers(group.id)
-            setMembers(updatedMembers || [])
-          } catch (error) {
-            console.error('Failed to add user to group:', error)
+          // Only auto-join if group is not password protected
+          if (!group.is_password_protected) {
+            console.log('User is not a member, attempting to add...')
+            try {
+              await joinClassGroup(group.id, user.id)
+              console.log('User added to group successfully')
+              // Reload members after adding user
+              const updatedMembers = await getGroupMembers(group.id)
+              setMembers(updatedMembers || [])
+            } catch (error) {
+              console.error('Failed to add user to group:', error)
+            }
+          } else {
+            console.log('Group is password protected, user needs to join manually')
+            setError('This group is password protected. Please join from the groups list.')
           }
         }
       }

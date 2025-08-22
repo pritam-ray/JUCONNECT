@@ -46,7 +46,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   onShowSettings,
   onLeaveGroup
 }) => {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [messages, setMessages] = useState<GroupMessageWithProfile[]>([])
   const [members, setMembers] = useState<GroupMemberWithProfile[]>([])
   const [newMessage, setNewMessage] = useState('')
@@ -61,6 +61,24 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   const [error, setError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Show loading while auth is loading
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  // Show error if user is not available after loading
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-600">Authentication required</div>
+      </div>
+    )
+  }
 
   useEffect(() => {
     if (group.id && user) {
@@ -334,7 +352,6 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     }
   }
 
-  const isUserAdmin = group.user_role === 'admin'
   const onlineMembers = members.filter(m => m.profiles?.is_online).length
 
   return (

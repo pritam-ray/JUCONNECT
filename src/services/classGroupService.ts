@@ -868,31 +868,6 @@ export const deleteGroup = async (
   return data
 }
 
-// Get group members with their roles
-export const getGroupMembers = async (groupId: string) => {
-  if (!supabase) throw new Error('Supabase not available')
-
-  const { data, error } = await supabase
-    .from('group_members')
-    .select(`
-      id,
-      role,
-      joined_at,
-      is_active,
-      profiles:user_id (
-        id,
-        username,
-        full_name
-      )
-    `)
-    .eq('group_id', groupId)
-    .eq('is_active', true)
-    .order('joined_at', { ascending: true })
-
-  if (error) throw error
-  return data || []
-}
-
 // Get group admin info
 export const getGroupAdminInfo = async (groupId: string) => {
   if (!supabase) throw new Error('Supabase not available')

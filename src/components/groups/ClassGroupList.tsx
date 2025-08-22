@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, Users, BookOpen, Search, Filter, Star, Clock, Lock, Crown } from 'lucide-react'
-import { getAllClassGroups, getUserGroups, joinClassGroup, isGroupAdmin, ClassGroupWithDetails } from '../../services/classGroupService'
+import { Plus, Users, BookOpen, Search, Filter, Clock, Lock, Crown } from 'lucide-react'
+import { getAllClassGroups, getUserGroups, joinClassGroup, ClassGroupWithDetails } from '../../services/classGroupService'
 import { useAuth } from '../../contexts/AuthContext'
 import Button from '../ui/Button'
 import Badge from '../ui/Badge'
@@ -14,7 +14,7 @@ interface ClassGroupListProps {
 }
 
 const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
-  const { user, isGuest } = useAuth()
+  const { user, isGuest, loading: authLoading } = useAuth()
   const [allGroups, setAllGroups] = useState<ClassGroupWithDetails[]>([])
   const [userGroups, setUserGroups] = useState<ClassGroupWithDetails[]>([])
   const [loading, setLoading] = useState(true)
@@ -31,6 +31,15 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
   useEffect(() => {
     fetchGroups()
   }, [user])
+
+  // Don't render anything if auth is still loading
+  if (authLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <LoadingSpinner />
+      </div>
+    )
+  }
 
   const fetchGroups = async () => {
     try {
@@ -277,6 +286,7 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
                 onJoin={() => handleJoinGroup(group.id, group)}
                 isJoining={joining === group.id}
                 showJoinButton={false}
+                userId={user?.id}
               />
             ))
           )
@@ -299,6 +309,7 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
                   isJoining={joining === group.id}
                   showJoinButton={!isJoined && !!user && !isGuest}
                   isJoined={isJoined}
+                  userId={user?.id}
                 />
               )
             })
@@ -336,6 +347,7 @@ interface GroupCardProps {
   isJoining: boolean
   showJoinButton: boolean
   isJoined?: boolean
+  userId?: string
 }
 
 const GroupCard: React.FC<GroupCardProps> = ({
@@ -344,7 +356,8 @@ const GroupCard: React.FC<GroupCardProps> = ({
   onJoin,
   isJoining,
   showJoinButton,
-  isJoined = false
+  isJoined = false,
+  userId
 }) => {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
@@ -360,7 +373,7 @@ const GroupCard: React.FC<GroupCardProps> = ({
                 Admin
               </Badge>
             )}
-            {group.created_by === user?.id && (
+            {group.created_by === userId && (
               <Badge variant="success">
                 <Crown className="h-3 w-3 mr-1" />
                 Creator

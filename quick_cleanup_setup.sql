@@ -1,36 +1,34 @@
--- COPY AND PASTE THIS INTO SUPABASE SQL EDITOR
--- This will set up the cleanup system without complex indexes
+-- ULTRA SIMPLE CLEANUP - COPY AND PASTE THIS INTO SUPABASE SQL EDITOR
+-- This version has NO indexes or complex functions to avoid any IMMUTABLE errors
 
--- Step 1: Create cleanup function
+-- Step 1: Create the most basic cleanup function
 CREATE OR REPLACE FUNCTION cleanup_old_group_data()
-RETURNS jsonb
+RETURNS text
 LANGUAGE plpgsql
 AS $$
 DECLARE
-  cutoff_date timestamptz;
   deleted_count integer := 0;
 BEGIN
-  cutoff_date := NOW() - INTERVAL '14 days';
-  
+  -- Delete messages older than 2 weeks
   DELETE FROM group_messages
-  WHERE created_at < cutoff_date;
+  WHERE created_at < (NOW() - INTERVAL '14 days');
   
   GET DIAGNOSTICS deleted_count = ROW_COUNT;
   
-  RETURN jsonb_build_object(
-    'deleted_messages', deleted_count,
-    'cutoff_date', cutoff_date,
-    'cleanup_date', NOW()
-  );
+  RETURN 'Deleted ' || deleted_count || ' messages older than 2 weeks';
 END;
 $$;
 
--- Step 2: Test what would be cleaned up (safe query)
+-- Step 2: Check what would be deleted (SAFE - this just counts, doesn't delete anything)
 SELECT 
-  COUNT(*) as messages_older_than_2_weeks,
-  COUNT(*) FILTER (WHERE message_type = 'file') as old_files
+  COUNT(*) as total_old_messages,
+  COUNT(CASE WHEN message_type = 'file' THEN 1 END) as old_file_messages,
+  MIN(created_at) as oldest_message,
+  MAX(created_at) as newest_old_message
 FROM group_messages 
 WHERE created_at < (NOW() - INTERVAL '14 days');
 
--- Step 3: Run cleanup (uncomment to actually delete old data)
+-- Step 3: To actually run the cleanup, uncomment and run this line:
 -- SELECT cleanup_old_group_data();
+
+-- That's it! No indexes, no complex functions, just basic cleanup.

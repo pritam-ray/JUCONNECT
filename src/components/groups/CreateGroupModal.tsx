@@ -109,7 +109,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Create Class Group" size="md">
+    <Modal isOpen={isOpen} onClose={onClose} title="Create Class Group" size="lg">
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
           <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg border border-red-200">

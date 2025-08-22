@@ -14,6 +14,28 @@ export interface ClassGroupWithDetails extends ClassGroup {
   is_member?: boolean
   is_password_protected?: boolean
   join_status?: string
+  is_admin?: boolean
+  is_creator?: boolean
+}
+
+export interface GroupMemberWithProfile extends GroupMember {
+  profiles?: {
+    id: string
+    username: string
+    full_name: string
+  } | null
+}
+
+export interface GroupAdminInfo {
+  group_id: string
+  group_name: string
+  creator_id: string
+  creator_name: string
+  creator_username: string
+  admin_count: number
+  total_members: number
+  created_at: string
+  is_active: boolean
 }
 
 export interface GroupMessageWithProfile extends GroupMessage {
@@ -164,17 +186,27 @@ export const createClassGroup = async (groupData: {
 }): Promise<ClassGroup> => {
   if (!supabase) throw new Error('Supabase not available')
 
+  // Prepare the insert data - only include password protection if password is provided
+  const insertData: any = {
+    name: groupData.name,
+    description: groupData.description,
+    year: groupData.year,
+    section: groupData.section,
+    subject: groupData.subject,
+    created_by: groupData.created_by
+  }
+
+  // Only include password protection fields if password is actually provided
+  if (groupData.password && groupData.password.trim()) {
+    insertData.is_password_protected = true
+  }
+  // Don't set is_password_protected at all if no password - let it use the default false
+
+  console.log('Creating group with data:', insertData)
+
   const { data, error } = await supabase
     .from('class_groups')
-    .insert([{
-      name: groupData.name,
-      description: groupData.description,
-      year: groupData.year,
-      section: groupData.section,
-      subject: groupData.subject,
-      created_by: groupData.created_by,
-      is_password_protected: !!groupData.password
-    }])
+    .insert([insertData])
     .select()
     .single()
 
@@ -196,14 +228,8 @@ export const createClassGroup = async (groupData: {
     }
   }
 
-  // Add creator as admin
-  await supabase
-    .from('group_members')
-    .insert([{
-      group_id: data.id,
-      user_id: groupData.created_by,
-      role: 'admin'
-    }])
+  // Creator is automatically added as admin by database trigger
+  // No need to manually insert into group_members
 
   return data
 }
@@ -685,22 +711,6 @@ export const updateGroupMemberRole = async (
   if (error) throw error
 }
 
-// Remove group member (admin only)
-export const removeGroupMember = async (
-  groupId: string,
-  userId: string
-): Promise<void> => {
-  if (!supabase) throw new Error('Supabase not available')
-
-  const { error } = await supabase
-    .from('group_members')
-    .update({ is_active: false })
-    .eq('group_id', groupId)
-    .eq('user_id', userId)
-
-  if (error) throw error
-}
-
 // Verify group password
 export const verifyGroupPassword = async (
   groupId: string,
@@ -739,4 +749,160 @@ export const setGroupPassword = async (
 
   if (error) throw error
   if (!data) throw new Error('You do not have permission to change group password')
+}
+
+// ============================================================================
+// ADMIN MANAGEMENT FUNCTIONS
+// ============================================================================
+
+// Check if user is admin of a group
+export const isGroupAdmin = async (groupId: string, userId: string): Promise<boolean> => {
+  if (!supabase) throw new Error('Supabase not available')
+
+  const { data, error } = await supabase
+    .rpc('is_group_admin', {
+      group_id_param: groupId,
+      user_id_param: userId
+    })
+
+  if (error) {
+    console.error('Error checking admin status:', error)
+    return false
+  }
+
+  return data || false
+}
+
+// Promote member to admin
+export const promoteToAdmin = async (
+  groupId: string,
+  targetUserId: string,
+  requestingUserId: string
+): Promise<{ success: boolean; message?: string; error?: string }> => {
+  if (!supabase) throw new Error('Supabase not available')
+
+  const { data, error } = await supabase
+    .rpc('promote_to_admin', {
+      group_id_param: groupId,
+      target_user_id_param: targetUserId,
+      requesting_user_id_param: requestingUserId
+    })
+
+  if (error) throw error
+  return data
+}
+
+// Demote admin to member
+export const demoteAdmin = async (
+  groupId: string,
+  targetUserId: string,
+  requestingUserId: string
+): Promise<{ success: boolean; message?: string; error?: string }> => {
+  if (!supabase) throw new Error('Supabase not available')
+
+  const { data, error } = await supabase
+    .rpc('demote_admin', {
+      group_id_param: groupId,
+      target_user_id_param: targetUserId,
+      requesting_user_id_param: requestingUserId
+    })
+
+  if (error) throw error
+  return data
+}
+
+// Remove member from group
+export const removeGroupMember = async (
+  groupId: string,
+  targetUserId: string,
+  requestingUserId: string
+): Promise<{ success: boolean; message?: string; error?: string }> => {
+  if (!supabase) throw new Error('Supabase not available')
+
+  const { data, error } = await supabase
+    .rpc('remove_group_member', {
+      group_id_param: groupId,
+      target_user_id_param: targetUserId,
+      requesting_user_id_param: requestingUserId
+    })
+
+  if (error) throw error
+  return data
+}
+
+// Update group details (admin only)
+export const updateGroupDetails = async (
+  groupId: string,
+  newName?: string,
+  newDescription?: string,
+  requestingUserId?: string
+): Promise<{ success: boolean; message?: string; error?: string }> => {
+  if (!supabase) throw new Error('Supabase not available')
+
+  const { data, error } = await supabase
+    .rpc('update_group_details', {
+      group_id_param: groupId,
+      new_name: newName || null,
+      new_description: newDescription || null,
+      requesting_user_id_param: requestingUserId
+    })
+
+  if (error) throw error
+  return data
+}
+
+// Delete group (creator only)
+export const deleteGroup = async (
+  groupId: string,
+  requestingUserId: string
+): Promise<{ success: boolean; message?: string; error?: string }> => {
+  if (!supabase) throw new Error('Supabase not available')
+
+  const { data, error } = await supabase
+    .rpc('delete_group', {
+      group_id_param: groupId,
+      requesting_user_id_param: requestingUserId
+    })
+
+  if (error) throw error
+  return data
+}
+
+// Get group members with their roles
+export const getGroupMembers = async (groupId: string) => {
+  if (!supabase) throw new Error('Supabase not available')
+
+  const { data, error } = await supabase
+    .from('group_members')
+    .select(`
+      id,
+      role,
+      joined_at,
+      is_active,
+      profiles:user_id (
+        id,
+        username,
+        full_name
+      )
+    `)
+    .eq('group_id', groupId)
+    .eq('is_active', true)
+    .order('joined_at', { ascending: true })
+
+  if (error) throw error
+  return data || []
+}
+
+// Get group admin info
+export const getGroupAdminInfo = async (groupId: string) => {
+  if (!supabase) throw new Error('Supabase not available')
+
+  const { data, error } = await supabase
+    .from('group_admin_info')
+    .select('*')
+    .eq('group_id', groupId)
+    .single()
+
+  if (error) throw error
+  return data
 }

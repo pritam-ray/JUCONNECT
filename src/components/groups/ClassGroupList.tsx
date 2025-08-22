@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, Users, BookOpen, Search, Filter, Star, Clock, Lock } from 'lucide-react'
-import { getAllClassGroups, getUserGroups, joinClassGroup, ClassGroupWithDetails } from '../../services/classGroupService'
+import { Plus, Users, BookOpen, Search, Filter, Star, Clock, Lock, Crown } from 'lucide-react'
+import { getAllClassGroups, getUserGroups, joinClassGroup, isGroupAdmin, ClassGroupWithDetails } from '../../services/classGroupService'
 import { useAuth } from '../../contexts/AuthContext'
 import Button from '../ui/Button'
 import Badge from '../ui/Badge'
@@ -356,8 +356,14 @@ const GroupCard: React.FC<GroupCardProps> = ({
             </Badge>
             {group.user_role === 'admin' && (
               <Badge variant="warning">
-                <Star className="h-3 w-3 mr-1" />
+                <Crown className="h-3 w-3 mr-1" />
                 Admin
+              </Badge>
+            )}
+            {group.created_by === user?.id && (
+              <Badge variant="success">
+                <Crown className="h-3 w-3 mr-1" />
+                Creator
               </Badge>
             )}
           </div>

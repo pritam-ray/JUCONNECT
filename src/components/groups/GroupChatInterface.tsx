@@ -10,7 +10,8 @@ import {
   File,
   Image,
   X,
-  LogOut
+  LogOut,
+  Crown
 } from 'lucide-react'
 import { 
   getGroupMessages, 
@@ -20,6 +21,7 @@ import {
   getGroupMembers,
   joinClassGroup,
   leaveClassGroup,
+  isGroupAdmin,
   ClassGroupWithDetails,
   GroupMessageWithProfile,
   GroupMemberWithProfile
@@ -29,6 +31,7 @@ import { debugGroupAccess } from '../../services/debugGroupService'
 import { useAuth } from '../../contexts/AuthContext'
 import Button from '../ui/Button'
 import LoadingSpinner from '../ui/LoadingSpinner'
+import GroupAdminPanel from './GroupAdminPanel'
 
 interface GroupChatInterfaceProps {
   group: ClassGroupWithDetails
@@ -53,6 +56,8 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   const [leavingGroup, setLeavingGroup] = useState(false)
   const [replyTo, setReplyTo] = useState<GroupMessageWithProfile | null>(null)
   const [showMembers, setShowMembers] = useState(false)
+  const [showAdminPanel, setShowAdminPanel] = useState(false)
+  const [isUserAdmin, setIsUserAdmin] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -67,6 +72,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
       
       loadMessages()
       loadMembers()
+      checkAdminStatus()
       
       // Subscribe to new messages
       const unsubscribe = subscribeToGroupMessages(group.id, (newMessage) => {
@@ -84,6 +90,18 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  const checkAdminStatus = async () => {
+    if (!user) return
+    
+    try {
+      const adminStatus = await isGroupAdmin(group.id, user.id)
+      setIsUserAdmin(adminStatus || group.created_by === user.id)
+    } catch (error) {
+      console.error('Error checking admin status:', error)
+      setIsUserAdmin(group.created_by === user.id)
+    }
+  }
 
   const loadMessages = async () => {
     if (!group.id) return
@@ -344,6 +362,16 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
         </div>
 
         <div className="flex items-center space-x-2">
+          {(isUserAdmin || group.created_by === user?.id) && (
+            <button
+              onClick={() => setShowAdminPanel(true)}
+              className="p-2 hover:bg-yellow-50 rounded-lg transition-colors group"
+              title="Group Administration"
+            >
+              <Crown className="h-5 w-5 text-yellow-600 group-hover:text-yellow-700" />
+            </button>
+          )}
+          
           <button
             onClick={() => setShowMembers(!showMembers)}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -668,6 +696,18 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
           </div>
         )}
       </div>
+      
+      {/* Group Admin Panel */}
+      <GroupAdminPanel
+        group={group}
+        isOpen={showAdminPanel}
+        onClose={() => setShowAdminPanel(false)}
+        onGroupUpdated={() => {
+          checkAdminStatus()
+          loadMembers()
+          // Optionally reload group data if needed
+        }}
+      />
     </div>
   )
 }

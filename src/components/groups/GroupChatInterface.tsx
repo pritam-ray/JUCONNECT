@@ -9,7 +9,8 @@ import {
   Download,
   File,
   Image,
-  X
+  X,
+  LogOut
 } from 'lucide-react'
 import { 
   getGroupMessages, 
@@ -18,6 +19,7 @@ import {
   subscribeToGroupMessages,
   getGroupMembers,
   joinClassGroup,
+  leaveClassGroup,
   ClassGroupWithDetails,
   GroupMessageWithProfile,
   GroupMemberWithProfile
@@ -32,12 +34,14 @@ interface GroupChatInterfaceProps {
   group: ClassGroupWithDetails
   onBack: () => void
   onShowSettings: () => void
+  onLeaveGroup?: () => void
 }
 
 const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   group,
   onBack,
-  onShowSettings
+  onShowSettings,
+  onLeaveGroup
 }) => {
   const { user } = useAuth()
   const [messages, setMessages] = useState<GroupMessageWithProfile[]>([])
@@ -46,6 +50,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [uploadingFile, setUploadingFile] = useState(false)
+  const [leavingGroup, setLeavingGroup] = useState(false)
   const [replyTo, setReplyTo] = useState<GroupMessageWithProfile | null>(null)
   const [showMembers, setShowMembers] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -127,6 +132,36 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const handleLeaveGroup = async () => {
+    if (!user || !group.id) return
+
+    const confirmLeave = window.confirm(
+      `Are you sure you want to leave "${group.name}"? You'll need to rejoin to see messages and participate in the group.`
+    )
+
+    if (!confirmLeave) return
+
+    try {
+      setLeavingGroup(true)
+      setError(null)
+      
+      await leaveClassGroup(group.id, user.id)
+      
+      // Call parent callback to handle navigation
+      if (onLeaveGroup) {
+        onLeaveGroup()
+      } else {
+        // Fallback to going back
+        onBack()
+      }
+    } catch (error: any) {
+      console.error('Failed to leave group:', error)
+      setError(error.message || 'Failed to leave group. Please try again.')
+    } finally {
+      setLeavingGroup(false)
+    }
   }
 
   const handleSendMessage = async () => {
@@ -309,6 +344,19 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
             title="View members"
           >
             <Users className="h-5 w-5 text-gray-600" />
+          </button>
+          
+          <button
+            onClick={handleLeaveGroup}
+            disabled={leavingGroup}
+            className="p-2 hover:bg-red-50 rounded-lg transition-colors group"
+            title="Leave group"
+          >
+            {leavingGroup ? (
+              <div className="h-5 w-5 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
+            ) : (
+              <LogOut className="h-5 w-5 text-red-600 group-hover:text-red-700" />
+            )}
           </button>
           
           {isUserAdmin && (
@@ -558,6 +606,25 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
               <h4 className="font-medium text-gray-900 mb-4">
                 Members ({members.length})
               </h4>
+              
+              {/* Leave Group Button */}
+              <button
+                onClick={handleLeaveGroup}
+                disabled={leavingGroup}
+                className="w-full mb-4 px-3 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 text-sm"
+              >
+                {leavingGroup ? (
+                  <>
+                    <div className="h-4 w-4 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
+                    <span>Leaving...</span>
+                  </>
+                ) : (
+                  <>
+                    <LogOut className="h-4 w-4" />
+                    <span>Leave Group</span>
+                  </>
+                )}
+              </button>
               
               <div className="space-y-2">
                 {members.map((member) => (

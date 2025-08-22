@@ -6,6 +6,7 @@ import GroupChatInterface from '../components/groups/GroupChatInterface'
 const GroupsPage: React.FC = () => {
   const [selectedGroup, setSelectedGroup] = useState<ClassGroupWithDetails | null>(null)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     const handleResize = () => {
@@ -24,6 +25,12 @@ const GroupsPage: React.FC = () => {
     setSelectedGroup(null)
   }
 
+  const handleLeaveGroup = () => {
+    // Navigate back to groups list after leaving and refresh the list
+    setSelectedGroup(null)
+    setRefreshKey(prev => prev + 1) // Force refresh of groups list
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Mobile View */}
@@ -34,10 +41,11 @@ const GroupsPage: React.FC = () => {
               group={selectedGroup}
               onBack={handleBackToList}
               onShowSettings={() => {}}
+              onLeaveGroup={handleLeaveGroup}
             />
           ) : (
             <div className="p-4">
-              <ClassGroupList onGroupSelect={handleGroupSelect} />
+              <ClassGroupList key={refreshKey} onGroupSelect={handleGroupSelect} />
             </div>
           )}
         </div>
@@ -50,10 +58,11 @@ const GroupsPage: React.FC = () => {
                 group={selectedGroup}
                 onBack={handleBackToList}
                 onShowSettings={() => {}}
+                onLeaveGroup={handleLeaveGroup}
               />
             </div>
           ) : (
-            <ClassGroupList onGroupSelect={handleGroupSelect} />
+            <ClassGroupList key={refreshKey} onGroupSelect={handleGroupSelect} />
           )}
         </div>
       )}

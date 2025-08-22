@@ -1,8 +1,6 @@
 import { supabase } from '../lib/supabase'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { Database } from '../types/database.types'
-import { ensureSupabase, withSupabaseGuard } from '../utils/serviceGuards'
-import { logger } from '../utils/logger'
 
 type Content = Database['public']['Tables']['content']['Row']
 type ContentInsert = Database['public']['Tables']['content']['Insert']
@@ -29,11 +27,15 @@ export const getApprovedContent = async (
   offset: number = 0
 ): Promise<ContentWithCategory[]> => {
   if (!isSupabaseConfigured()) {
-    logger.demoMode('Supabase is not configured. Returning empty content list.')
+    console.warn('Supabase is not configured. Returning empty content list.')
     return []
   }
 
   try {
+    if (!supabase) {
+      console.warn('Supabase client is not available')
+      return []
+    }
     let query = supabase
       .from('content')
       .select(`
@@ -71,7 +73,7 @@ export const getApprovedContent = async (
     if (error) throw error
     return data || []
   } catch (error: any) {
-    logger.error('Failed to fetch content:', error)
+    console.error('Failed to fetch content:', error)
     if (error.message?.includes('Failed to fetch') || error.name === 'TypeError') {
       throw new Error('Unable to connect to the server. Please check your internet connection and try again.')
     }
@@ -224,7 +226,7 @@ export const getContentStats = async () => {
 
     return stats
   } catch (error: any) {
-    logger.error('Failed to fetch content stats:', error)
+    console.error('Failed to fetch content stats:', error)
     return {
       totalContent: 0,
       totalCategories: 0,

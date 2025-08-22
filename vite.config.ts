@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: process.env.NETLIFY === 'true' ? '/' : process.env.NODE_ENV === 'production' ? '/JUCONNECT/' : '/',
+  base: process.env.GITHUB_ACTIONS ? '/JUCONNECT/' : '/',
   optimizeDeps: {
     exclude: ['lucide-react'],
   },

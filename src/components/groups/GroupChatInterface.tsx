@@ -356,7 +356,8 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
         <div className="flex items-center space-x-3">
           <button
             onClick={onBack}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors md:hidden"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Back to groups"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>

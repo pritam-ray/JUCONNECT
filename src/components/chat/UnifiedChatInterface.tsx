@@ -44,28 +44,13 @@ const UnifiedChatInterface: React.FC = () => {
   const location = useLocation()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
-  // Check if mobile view
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-  // Use mobile interface for small screens
-  if (isMobile) {
-    return <MobileChatInterface />
-  }
-  
   // Get initial tab from URL parameters
   const searchParams = new URLSearchParams(location.search)
   const initialTab = searchParams.get('tab') === 'private' ? 'private' : 'global'
   const [chatMode, setChatMode] = useState<ChatMode>(initialTab)
+  
+  // Check if mobile view
+  const [isMobile, setIsMobile] = useState(false)
   
   // Global chat state
   const [globalMessages, setGlobalMessages] = useState<OptimisticChatMessage[]>([])
@@ -96,6 +81,21 @@ const UnifiedChatInterface: React.FC = () => {
     loadConversation,
     sendMessage: sendPrivateMessage
   } = usePrivateMessages(user?.id || null)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Use mobile interface for small screens
+  if (isMobile) {
+    return <MobileChatInterface />
+  }
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })

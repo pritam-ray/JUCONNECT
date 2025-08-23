@@ -9,6 +9,23 @@ import Button from '../ui/Button'
 import LoadingSpinner from '../ui/LoadingSpinner'
 import { formatDistanceToNow } from 'date-fns'
 
+interface OptimisticChatMessage {
+  id: string
+  user_id: string | null
+  message: string
+  is_reported: boolean
+  is_flagged?: boolean
+  created_at: string
+  profiles?: {
+    id: string
+    username: string
+    full_name: string
+    avatar_url?: string
+    is_admin?: boolean
+  } | null
+  isOptimistic?: boolean
+}
+
 const ChatRoom: React.FC = () => {
   const { user, profile, isGuest } = useAuth()
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -16,7 +33,7 @@ const ChatRoom: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [messages, setMessages] = useState<any[]>([])
+  const [messages, setMessages] = useState<OptimisticChatMessage[]>([])
   const [loading, setLoading] = useState(true)
 
   const scrollToBottom = () => {
@@ -48,7 +65,29 @@ const ChatRoom: React.FC = () => {
 
   // Real-time message subscription
   const handleNewMessage = useCallback((message: any) => {
-    setMessages(prevMessages => [...prevMessages, message])
+    setMessages(prevMessages => {
+      // Check if this message replaces an optimistic one
+      const optimisticIndex = prevMessages.findIndex(msg => 
+        msg.isOptimistic && 
+        msg.user_id === message.user_id &&
+        msg.message === message.message &&
+        Math.abs(new Date(msg.created_at).getTime() - new Date(message.created_at).getTime()) < 5000 // Within 5 seconds
+      )
+      
+      if (optimisticIndex !== -1) {
+        // Replace optimistic message with real one
+        const newMessages = [...prevMessages]
+        newMessages[optimisticIndex] = message
+        return newMessages
+      } else {
+        // Add new message if it's not replacing an optimistic one
+        const isDuplicate = prevMessages.some(msg => msg.id === message.id)
+        if (!isDuplicate) {
+          return [...prevMessages, message]
+        }
+        return prevMessages
+      }
+    })
   }, [])
 
   const handleMessageUpdate = useCallback((updatedMessage: any) => {
@@ -94,16 +133,41 @@ const ChatRoom: React.FC = () => {
       return
     }
 
+    const tempMessageId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    const optimisticMessage: OptimisticChatMessage = {
+      id: tempMessageId,
+      user_id: user.id,
+      message: newMessage.trim(),
+      is_reported: false,
+      is_flagged: false,
+      created_at: new Date().toISOString(),
+      profiles: {
+        id: user.id,
+        username: user.user_metadata?.username || user.email?.split('@')[0] || 'Anonymous',
+        full_name: user.user_metadata?.full_name || user.user_metadata?.username || 'Anonymous User',
+        avatar_url: user.user_metadata?.avatar_url || null,
+        is_admin: profile?.is_admin || false
+      },
+      isOptimistic: true
+    }
+
     try {
       setSending(true)
       setError(null)
 
-      // Send message to server - real-time subscription will handle adding it to the UI
-      await sendChatMessage(newMessage.trim(), user.id)
+      // Optimistically add the message to UI immediately
+      setMessages(prev => [...prev, optimisticMessage])
       setNewMessage('')
+
+      // Send message to server - real-time subscription will handle updating it
+      await sendChatMessage(optimisticMessage.message, user.id)
 
     } catch (error) {
       console.error('Failed to send message:', error)
+      // Remove the optimistic message on error
+      setMessages(prev => prev.filter(msg => msg.id !== tempMessageId))
+      // Restore the message text
+      setNewMessage(optimisticMessage.message)
       setError('Failed to send message. Please try again.')
     } finally {
       setSending(false)
@@ -209,7 +273,7 @@ const ChatRoom: React.FC = () => {
                   message.is_flagged
                     ? 'bg-red-50 border border-red-200'
                     : 'hover:bg-gray-50'
-                }`}
+                } ${message.isOptimistic ? 'opacity-70 animate-pulse' : ''}`}
               >
                 <div className="flex-shrink-0">
                   <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center">

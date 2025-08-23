@@ -32,6 +32,10 @@ import Button from '../ui/Button'
 import LoadingSpinner from '../ui/LoadingSpinner'
 import GroupAdminPanel from './GroupAdminPanel'
 
+interface OptimisticGroupMessage extends GroupMessageWithProfile {
+  isOptimistic?: boolean
+}
+
 interface GroupChatInterfaceProps {
   group: ClassGroupWithDetails
   onBack: () => void
@@ -44,7 +48,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   onLeaveGroup
 }) => {
   const { user, loading: authLoading } = useAuth()
-  const [messages, setMessages] = useState<GroupMessageWithProfile[]>([])
+  const [messages, setMessages] = useState<OptimisticGroupMessage[]>([])
   const [members, setMembers] = useState<GroupMemberWithProfile[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
@@ -96,7 +100,29 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
 
   // Real-time message handlers
   const handleNewMessage = useCallback((message: any) => {
-    setMessages(prev => [...prev, message])
+    setMessages(prev => {
+      // Check if this message replaces an optimistic one
+      const optimisticIndex = prev.findIndex(msg => 
+        msg.isOptimistic && 
+        msg.user_id === message.user_id &&
+        msg.message === message.message &&
+        Math.abs(new Date(msg.created_at).getTime() - new Date(message.created_at).getTime()) < 5000 // Within 5 seconds
+      )
+      
+      if (optimisticIndex !== -1) {
+        // Replace optimistic message with real one
+        const newMessages = [...prev]
+        newMessages[optimisticIndex] = message
+        return newMessages
+      } else {
+        // Add new message if it's not replacing an optimistic one
+        const isDuplicate = prev.some(msg => msg.id === message.id)
+        if (!isDuplicate) {
+          return [...prev, message]
+        }
+        return prev
+      }
+    })
     scrollToBottom()
   }, [])
 
@@ -256,9 +282,37 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !user || sending) return
 
+    const tempMessageId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    const optimisticMessage: OptimisticGroupMessage = {
+      id: tempMessageId,
+      group_id: group.id,
+      user_id: user.id,
+      message: newMessage.trim(),
+      message_type: 'text',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      reply_to: replyTo?.id || null,
+      file_url: null,
+      file_name: null,
+      file_size: null,
+      is_edited: false,
+      profiles: {
+        id: user.id,
+        username: user.user_metadata?.username || user.email?.split('@')[0] || 'Anonymous',
+        full_name: user.user_metadata?.full_name || user.user_metadata?.username || 'Anonymous User',
+        avatar_url: user.user_metadata?.avatar_url || null
+      },
+      isOptimistic: true
+    }
+
     try {
       setSending(true)
       console.log('Attempting to send message...')
+      
+      // Optimistically add the message to UI immediately
+      setMessages(prev => [...prev, optimisticMessage])
+      setNewMessage('')
+      setReplyTo(null)
       
       await sendGroupMessage(
         group.id,
@@ -269,11 +323,14 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
         replyTo?.id
       )
       
-      setNewMessage('')
-      setReplyTo(null)
       console.log('Message sent successfully')
     } catch (error: any) {
       console.error('Failed to send message:', error)
+      // Remove the optimistic message on error
+      setMessages(prev => prev.filter(msg => msg.id !== tempMessageId))
+      // Restore the message text and reply context
+      setNewMessage(optimisticMessage.message)
+      setReplyTo(replyTo)
       alert(`Failed to send message: ${error.message || 'Unknown error'}`)
     } finally {
       setSending(false)
@@ -542,9 +599,9 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
                         <div
                           className={`px-3 py-2 rounded-2xl ${
                             isOwn
-                              ? 'bg-primary-600 text-white'
+                              ? `bg-primary-600 text-white ${message.isOptimistic ? 'opacity-70' : ''}`
                               : 'bg-gray-100 text-gray-900'
-                          }`}
+                          } ${message.isOptimistic ? 'animate-pulse' : ''}`}
                         >
                           {message.message_type === 'file' ? (
                             <div className="space-y-2">

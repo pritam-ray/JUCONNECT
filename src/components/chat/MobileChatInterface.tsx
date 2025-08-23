@@ -292,6 +292,8 @@ const MobileChatInterface: React.FC = () => {
         {/* Header */}
         <div className="bg-gradient-to-r from-primary-500 to-primary-600 text-white p-4 shadow-lg">
           <h1 className="text-xl font-bold text-center">Messages</h1>
+          {/* Debug info */}
+          <div className="text-xs opacity-75 mt-1 text-center">Mode: {viewMode}</div>
         </div>
 
         {/* Tab Selection */}
@@ -342,9 +344,9 @@ const MobileChatInterface: React.FC = () => {
   // Global Chat View
   if (viewMode === 'global-chat') {
     return (
-      <div className="fixed inset-0 bg-white z-50 flex flex-col">
+      <div className="fixed inset-0 bg-white z-50 flex flex-col h-screen">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 shadow-lg">
+        <div className="flex-shrink-0 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 shadow-lg">
           <div className="flex items-center space-x-3">
             <button onClick={goBack} className="p-2 hover:bg-white/20 rounded-lg">
               <ArrowLeft className="h-5 w-5" />
@@ -353,20 +355,23 @@ const MobileChatInterface: React.FC = () => {
               <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
                 <Users className="h-4 w-4" />
               </div>
-              <h1 className="text-lg font-semibold">Global Chat</h1>
+              <div>
+                <h1 className="text-lg font-semibold">Global Chat</h1>
+                <div className="text-xs opacity-75">Mode: {viewMode}</div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Error Display */}
         {error && (
-          <div className="p-3 bg-red-50 border-l-4 border-red-400 text-red-700 text-sm">
+          <div className="flex-shrink-0 p-3 bg-red-50 border-l-4 border-red-400 text-red-700 text-sm">
             {error}
           </div>
         )}
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 min-h-0">
           {globalLoading ? (
             <div className="flex justify-center py-12">
               <LoadingSpinner />
@@ -413,7 +418,8 @@ const MobileChatInterface: React.FC = () => {
         </div>
 
         {/* Input */}
-        <div className="p-4 bg-white border-t border-gray-200">
+        <div className="flex-shrink-0 p-4 bg-white border-t-2 border-blue-500 shadow-lg">
+          <div className="text-xs text-blue-600 mb-2 font-medium">Global Chat Input (Mode: {viewMode})</div>
           <div className="flex items-center space-x-3">
             <input
               type="text"
@@ -616,9 +622,9 @@ const MobileChatInterface: React.FC = () => {
     if (!conversation) return null
 
     return (
-      <div className="fixed inset-0 bg-white z-50 flex flex-col">
+      <div className="fixed inset-0 bg-white z-50 flex flex-col h-screen">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 shadow-lg">
+        <div className="flex-shrink-0 bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 shadow-lg">
           <div className="flex items-center space-x-3">
             <button onClick={goBack} className="p-2 hover:bg-white/20 rounded-lg">
               <ArrowLeft className="h-5 w-5" />
@@ -629,12 +635,13 @@ const MobileChatInterface: React.FC = () => {
             <div>
               <h1 className="text-lg font-semibold">{conversation.otherUser.full_name}</h1>
               <p className="text-sm text-purple-100">@{conversation.otherUser.username}</p>
+              <div className="text-xs opacity-75">Mode: {viewMode}</div>
             </div>
           </div>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 min-h-0">
           {currentConversation ? (
             currentConversation.map((message) => {
               const isOwn = message.sender_id === user?.id
@@ -667,7 +674,8 @@ const MobileChatInterface: React.FC = () => {
         </div>
 
         {/* Input */}
-        <div className="p-4 bg-white border-t border-gray-200">
+        <div className="flex-shrink-0 p-4 bg-white border-t-2 border-purple-500 shadow-lg">
+          <div className="text-xs text-purple-600 mb-2 font-medium">Private Chat Input (Mode: {viewMode})</div>
           <div className="flex items-center space-x-3">
             <input
               type="text"

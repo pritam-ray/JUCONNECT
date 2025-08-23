@@ -1,5 +1,5 @@
 import React from 'react'
-import { FileText, Download, Eye, Calendar, User, Tag, Flag, Sparkles, Star } from 'lucide-react'
+import { FileText, Download, Eye, Calendar, User, Tag, Flag, Sparkles } from 'lucide-react'
 import { ContentWithCategory } from '../../services/contentService'
 import { reportContent } from '../../services/reportingService'
 import { useAuth } from '../../contexts/AuthContext'

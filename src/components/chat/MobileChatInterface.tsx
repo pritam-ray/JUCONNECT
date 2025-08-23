@@ -43,8 +43,10 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
     conversations,
     currentConversation,
     sendMessage: sendPrivateMessage,
-    startNewConversation
-  } = usePrivateMessages(activeConversation)
+    startNewConversation,
+    loadConversations,
+    loadConversation
+  } = usePrivateMessages(user?.id || null)
 
   // Load global messages
   const loadGlobalMessages = async () => {
@@ -77,11 +79,11 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
 
   // Handle private message send
   const handleSendPrivateMessage = async () => {
-    if (!privateMessage.trim() || privateSending || !activeConversation) return
+    if (!privateMessage.trim() || privateSending || !activeConversation || !user?.id) return
     
     try {
       setPrivateSending(true)
-      await sendPrivateMessage(privateMessage.trim())
+      await sendPrivateMessage(activeConversation, privateMessage.trim())
       setPrivateMessage('')
     } catch (error) {
       console.error('Error sending private message:', error)
@@ -97,9 +99,14 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
       return
     }
     
+    if (!user?.id) {
+      console.error('User not authenticated')
+      return
+    }
+    
     try {
       setSearching(true)
-      const users = await searchUsers(query)
+      const users = await searchUsers(query, user.id)
       setSearchResults(users || [])
     } catch (error) {
       console.error('Error searching users:', error)
@@ -112,9 +119,11 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
   // Start new conversation
   const startConversation = async (userId: string) => {
     try {
-      await startNewConversation(userId)
-      setActiveConversation(userId)
-      setViewMode('private-chat')
+      if (user?.id) {
+        await startNewConversation(userId)
+        setActiveConversation(userId)
+        setViewMode('private-chat')
+      }
     } catch (error) {
       console.error('Error starting conversation:', error)
     }
@@ -151,6 +160,20 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
       loadGlobalMessages()
     }
   }, [viewMode])
+
+  // Load conversations when accessing private messages
+  useEffect(() => {
+    if (viewMode === 'private-list' && user?.id && loadConversations) {
+      loadConversations()
+    }
+  }, [viewMode, user?.id, loadConversations])
+
+  // Load conversation messages when selecting a conversation
+  useEffect(() => {
+    if (viewMode === 'private-chat' && activeConversation && user?.id && loadConversation) {
+      loadConversation(activeConversation)
+    }
+  }, [viewMode, activeConversation, user?.id, loadConversation])
 
   // Parse URL parameters
   useEffect(() => {
@@ -356,6 +379,7 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
                   key={conversation.otherUser.id}
                   onClick={() => {
                     setActiveConversation(conversation.otherUser.id)
+                    loadConversation(conversation.otherUser.id)
                     setViewMode('private-chat')
                   }}
                   className="w-full p-4 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200"

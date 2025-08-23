@@ -185,20 +185,20 @@ const FileUploadForm: React.FC<FileUploadFormProps> = ({ onSuccess }) => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 md:px-0">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
-        <div className="mb-6">
-          <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">Upload Content</h2>
-          <p className="text-gray-600">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-0">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8">
+        <div className="mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-2">Upload Content</h2>
+          <p className="text-sm sm:text-base text-gray-600">
             Share your study materials with the community. All uploads are reviewed before publishing.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg border border-red-200 flex items-center space-x-2">
-              <AlertCircle className="h-4 w-4" />
-              <span>{error}</span>
+            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg border border-red-200 flex items-start space-x-2">
+              <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span className="break-words">{error}</span>
             </div>
           )}
 
@@ -210,7 +210,7 @@ const FileUploadForm: React.FC<FileUploadFormProps> = ({ onSuccess }) => {
 
           {/* Security Notice */}
           <div className="p-3 text-sm text-blue-600 bg-blue-50 rounded-lg border border-blue-200 flex items-start space-x-2">
-            <Shield className="h-4 w-4 mt-0.5" />
+            <Shield className="h-4 w-4 mt-0.5 flex-shrink-0" />
             <div>
               <p className="font-medium">Security Notice</p>
               <p className="text-xs mt-1">
@@ -219,6 +219,7 @@ const FileUploadForm: React.FC<FileUploadFormProps> = ({ onSuccess }) => {
               </p>
             </div>
           </div>
+          
           {/* File Upload */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -228,21 +229,21 @@ const FileUploadForm: React.FC<FileUploadFormProps> = ({ onSuccess }) => {
             {!selectedFile ? (
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-gray-300 rounded-lg p-6 md:p-8 text-center cursor-pointer hover:border-blue-400 transition-colors"
+                className="border-2 border-dashed border-gray-300 rounded-lg p-4 sm:p-6 lg:p-8 text-center cursor-pointer hover:border-blue-400 transition-colors"
               >
-                <Upload className="h-10 w-10 md:h-12 md:w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-2">Click to select a file or drag and drop</p>
-                <p className="text-xs md:text-sm text-gray-500">
+                <Upload className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+                <p className="text-sm sm:text-base text-gray-600 mb-2">Click to select a file or drag and drop</p>
+                <p className="text-xs sm:text-sm text-gray-500">
                   Supported: PDF, DOC, DOCX, TXT, JPG, PNG
                 </p>
               </div>
             ) : (
-              <div className="border border-gray-200 rounded-lg p-3 md:p-4 flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <FileText className="h-6 w-6 md:h-8 md:w-8 text-blue-600 flex-shrink-0" />
+              <div className="border border-gray-200 rounded-lg p-3 sm:p-4 flex items-center justify-between">
+                <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                  <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 flex-shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-gray-900 text-sm md:text-base truncate">{selectedFile.name}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="font-medium text-gray-900 text-sm sm:text-base truncate">{selectedFile.name}</p>
+                    <p className="text-xs sm:text-sm text-gray-500">
                       {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
                     </p>
                   </div>
@@ -250,9 +251,9 @@ const FileUploadForm: React.FC<FileUploadFormProps> = ({ onSuccess }) => {
                 <button
                   type="button"
                   onClick={handleRemoveFile}
-                  className="text-red-600 hover:text-red-700 p-1"
+                  className="text-red-600 hover:text-red-700 p-1 ml-2 flex-shrink-0"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
               </div>
             )}
@@ -288,7 +289,7 @@ const FileUploadForm: React.FC<FileUploadFormProps> = ({ onSuccess }) => {
               onChange={handleInputChange}
               placeholder="Describe the content (optional)"
               rows={3}
-              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
               disabled={loading}
             />
           </div>
@@ -303,7 +304,7 @@ const FileUploadForm: React.FC<FileUploadFormProps> = ({ onSuccess }) => {
               value={formData.contentType}
               onChange={handleInputChange}
               required
-              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none bg-white"
               disabled={loading}
             >
               <option value="notes">Study Notes</option>
@@ -311,7 +312,6 @@ const FileUploadForm: React.FC<FileUploadFormProps> = ({ onSuccess }) => {
               <option value="syllabus">Syllabus</option>
               <option value="assignments">Assignments</option>
               <option value="other">Other</option>
-              
             </select>
           </div>
 
@@ -324,7 +324,7 @@ const FileUploadForm: React.FC<FileUploadFormProps> = ({ onSuccess }) => {
               name="categoryId"
               value={formData.categoryId}
               onChange={handleInputChange}
-              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none bg-white"
               disabled={loading}
             >
               <option value="">Select a category (optional)</option>
@@ -333,7 +333,7 @@ const FileUploadForm: React.FC<FileUploadFormProps> = ({ onSuccess }) => {
           </div>
 
           {/* Year and Semester */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <Input
               name="year"
               label="Academic Year"
@@ -372,10 +372,10 @@ const FileUploadForm: React.FC<FileUploadFormProps> = ({ onSuccess }) => {
             disabled={loading}
           />
 
-          <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3">
+          <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-2">
             <Button
               type="submit"
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto order-1 sm:order-2"
               loading={loading}
               disabled={loading || !selectedFile || !formData.title.trim()}
             >

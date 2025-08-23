@@ -256,7 +256,7 @@ const HomePage: React.FC = () => {
       
       {/* Hero Section */}
       <div
-        className="hero-gradient text-white relative overflow-hidden min-h-[40vh] md:min-h-[28vh] flex items-center"
+        className="hero-gradient text-white relative overflow-hidden min-h-[35vh] sm:min-h-[30vh] md:min-h-[28vh] lg:min-h-[25vh] flex items-center"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
@@ -289,58 +289,58 @@ const HomePage: React.FC = () => {
         </div>
 
         {/* Decorative floating lights (optional, keep as before) */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-float pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-0 left-1/4 w-48 sm:w-72 md:w-96 h-48 sm:h-72 md:h-96 bg-white/10 rounded-full blur-3xl animate-float pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-48 sm:w-72 md:w-96 h-48 sm:h-72 md:h-96 bg-white/5 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
 
         {/* Overlay Content (text/buttons) */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-5 lg:py-8 w-full">
-          <div className="text-center space-y-8">
-            <div className="flex items-center justify-center space-x-3 mb-6">
-              <Sparkles className="h-8 w-8 text-accent-400 animate-bounce-subtle" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 w-full">
+          <div className="text-center space-y-3 sm:space-y-4 md:space-y-5">
+            <div className="flex items-center justify-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
+              <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-accent-400 animate-bounce-subtle" />
               <Badge variant="premium" size="lg" glow pulse>
                 The JECRC App
               </Badge>
-              <Sparkles className="h-8 w-8 text-accent-400 animate-bounce-subtle" />
+              <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-accent-400 animate-bounce-subtle" />
             </div>
             
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold mb-8 animate-fade-in-up">
+            <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold mb-3 sm:mb-4 md:mb-5 animate-fade-in-up">
               <span className="block text-white text-shadow-lg">JU CONNECT</span>
-              <span className="block text-lg sm:text-2xl md:text-3xl font-medium text-white/90 mt-4">
+              <span className="block text-xs sm:text-base md:text-lg lg:text-xl font-medium text-white/90 mt-1 sm:mt-2">
                 Resource Hub
               </span>
             </h1>
             
-            <p className="text-lg sm:text-xl md:text-2xl mb-8 md:mb-12 max-w-4xl mx-auto text-white/90 leading-relaxed animate-fade-in-up px-4" style={{ animationDelay: '0.2s' }}>
+            <p className="text-xs sm:text-sm md:text-base lg:text-lg mb-4 sm:mb-5 md:mb-6 max-w-3xl mx-auto text-white/90 leading-relaxed animate-fade-in-up px-2 sm:px-4" style={{ animationDelay: '0.2s' }}>
               Access all the study materials, PYQ'S, Notes and many more. Connect with fellow students, 
               and elevate your academic journey with this platform
             </p>
             
             {/* Stats */}
             {stats && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto animate-fade-in-up px-4" style={{ animationDelay: '0.4s' }}>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 max-w-3xl mx-auto animate-fade-in-up px-2 sm:px-4" style={{ animationDelay: '0.4s' }}>
                 {[
                   { label: 'Resources Available', value: stats.approved, icon: BookOpen },
                   { label: 'Question Papers', value: stats.byType.question_paper, icon: FileText },
                   { label: 'Study Notes', value: stats.byType.notes, icon: TrendingUp },
                   { label: 'Subject Areas', value: categories.length, icon: Users },
                 ].map((stat) => (
-                  <div key={stat.label} className="glass p-4 md:p-6 rounded-2xl text-center group hover:scale-105 transition-all duration-300">
-                    <stat.icon className="h-8 w-8 text-accent-400 mx-auto mb-3 group-hover:scale-110 transition-transform duration-300" />
-                    <div className="text-2xl md:text-3xl font-bold text-white mb-2">{stat.value}</div>
-                    <div className="text-xs md:text-sm text-white/80 font-medium">{stat.label}</div>
+                  <div key={stat.label} className="glass p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl text-center group hover:scale-105 transition-all duration-300">
+                    <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-accent-400 mx-auto mb-1 sm:mb-2 group-hover:scale-110 transition-transform duration-300" />
+                    <div className="text-sm sm:text-lg md:text-xl font-bold text-white mb-1">{stat.value}</div>
+                    <div className="text-2xs sm:text-xs text-white/80 font-medium leading-tight">{stat.label}</div>
                   </div>
                 ))}
               </div>
             )}
             
-            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 animate-fade-in-up px-4" style={{ animationDelay: '0.6s' }}>
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-3 md:space-x-4 animate-fade-in-up px-2 sm:px-4" style={{ animationDelay: '0.6s' }}>
               <Button 
                 size="lg"
                 variant="secondary"
-                className="bg-white/30 backdrop-blur-none border-white/30 text-white hover:bg-white/40"
+                className="bg-white/30 backdrop-blur-none border-white/30 text-white hover:bg-white/40 w-full sm:w-auto"
                 onClick={() => document.getElementById('content-section')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                <Zap className="mr-2 h-5 w-5" />
+                <Zap className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 Explore Content
               </Button>
               
@@ -348,7 +348,7 @@ const HomePage: React.FC = () => {
                 <Button 
                   size="lg"
                   variant="outline"
-                  className="border-white/50 text-white hover:bg-white hover:text-primary-600"
+                  className="border-white/50 text-white hover:bg-white hover:text-primary-600 w-full sm:w-auto"
                   onClick={() => setShowAuthModal(true)}
                 >
                   <Star className="mr-2 h-5 w-5" />
@@ -395,28 +395,28 @@ const HomePage: React.FC = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12" id="content-section">
-        <div className="card-premium p-8 mb-12 animate-fade-in-up">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-secondary-900 mb-2 text-gradient">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12" id="content-section">
+        <div className="card-premium p-4 sm:p-6 md:p-8 mb-8 sm:mb-12 animate-fade-in-up">
+          <div className="text-center mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-secondary-900 mb-2 text-gradient">
               Find Your Perfect Study Material
             </h2>
-            <p className="text-secondary-600">
+            <p className="text-sm sm:text-base text-secondary-600">
               Use our advanced filters to discover exactly what you need
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
-            <div className="md:col-span-2 order-1">
-              <div className="flex gap-2">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="lg:col-span-2 order-1">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <div className="relative group flex-1">
-                  <Search className="absolute left-4 top-4 h-5 w-5 text-secondary-400 group-focus-within:text-primary-500 transition-colors duration-300" />
+                  <Search className="absolute left-3 sm:left-4 top-3 sm:top-4 h-4 w-4 sm:h-5 sm:w-5 text-secondary-400 group-focus-within:text-primary-500 transition-colors duration-300" />
                   <input
                     type="text"
                     placeholder="Search resources, notes, question papers..."
                     value={searchInput}
                     onChange={(e) => handleSearchInputChange(e.target.value)}
-                    className="input-premium pl-12 pr-4 text-lg w-full"
+                    className="input-premium pl-10 sm:pl-12 pr-3 sm:pr-4 text-base sm:text-lg w-full h-12 sm:h-14"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         handleManualSearch()
@@ -430,11 +430,11 @@ const HomePage: React.FC = () => {
                   onClick={handleManualSearch}
                   variant="premium"
                   size="lg"
-                  className="px-6 flex items-center gap-2"
+                  className="px-4 sm:px-6 flex items-center justify-center gap-2 h-12 sm:h-14 w-full sm:w-auto"
                   disabled={searchInput.trim().length > 0 && searchInput.trim().length < 2}
                 >
-                  <Search className="h-5 w-5" />
-                  <span className="hidden sm:inline">Search</span>
+                  <Search className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <span>Search</span>
                 </Button>
               </div>
               {/* Search help text */}
@@ -445,7 +445,7 @@ const HomePage: React.FC = () => {
               </div>
             </div>
             
-            <div className="order-2">
+            <div className="order-3 lg:order-2">
               <div className="relative">
                 <select
                   value={selectedCategory}
@@ -605,11 +605,11 @@ const HomePage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 animate-fade-in-up">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 animate-fade-in-up">
             {content.map((item, index) => (
               <div 
                 key={item.id} 
-                className="animate-fade-in-up"
+                className="animate-fade-in-up w-full"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <ContentCard
@@ -623,34 +623,34 @@ const HomePage: React.FC = () => {
         )}
 
         {/* Quick Access Categories */}
-        <div className="mt-12 md:mt-20">
-          <div className="text-center mb-8 md:mb-12">
-            <h3 className="text-2xl md:text-3xl font-bold text-secondary-900 mb-4 text-gradient">
+        <div className="mt-8 sm:mt-12 lg:mt-16 xl:mt-20">
+          <div className="text-center mb-6 sm:mb-8 lg:mb-12">
+            <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-secondary-900 mb-2 sm:mb-4 text-gradient">
               Browse by Subject
             </h3>
-            <p className="text-secondary-600 text-base md:text-lg">
+            <p className="text-secondary-600 text-sm sm:text-base lg:text-lg px-4">
               Explore our carefully organized subject categories
             </p>
           </div>
           
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4 lg:gap-6">
             {categories.slice(0, 8).map((category, index) => (
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className="card-premium p-6 text-left group hover:scale-105 transition-all duration-300 animate-fade-in-up"
+                className="card-premium p-3 sm:p-4 lg:p-6 text-left group hover:scale-105 transition-all duration-300 animate-fade-in-up"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                <div className="flex flex-col items-center space-y-2 sm:space-y-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <FileText className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
                   </div>
-                  <div className="flex-1">
-                    <div className="font-semibold text-sm sm:text-base text-secondary-900 group-hover:text-primary-600 transition-colors duration-300 text-center sm:text-left">
+                  <div className="flex-1 text-center">
+                    <div className="font-semibold text-xs sm:text-sm lg:text-base text-secondary-900 group-hover:text-primary-600 transition-colors duration-300 line-clamp-2">
                       {category.name}
                     </div>
                     {category.description && (
-                      <div className="text-xs text-secondary-500 mt-1 line-clamp-2 hidden sm:block">
+                      <div className="text-xs text-secondary-500 mt-1 line-clamp-1 hidden sm:block">
                         {category.description}
                       </div>
                     )}

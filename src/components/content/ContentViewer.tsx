@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Download, Eye, Calendar, User, Tag, X, ExternalLink } from 'lucide-react'
+import { Download, Eye, Calendar, User, Tag, ExternalLink } from 'lucide-react'
 import { ContentWithCategory, incrementViewCount } from '../../services/contentService'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
@@ -194,7 +194,7 @@ const ContentViewer: React.FC<ContentViewerProps> = ({ content, isOpen, onClose 
               </Button>
             )}
             
-            {(content.file_data || content.file_url) && (
+            {content.file_url && (
               <Button
                 onClick={handleDownload}
                 size="sm"
@@ -208,10 +208,10 @@ const ContentViewer: React.FC<ContentViewerProps> = ({ content, isOpen, onClose 
         </div>
 
         {/* File Preview for images */}
-        {content.file_data && content.file_type && ['jpg', 'png'].includes(content.file_type) && (
+        {content.file_url && content.file_type && ['jpg', 'png'].includes(content.file_type) && (
           <div className="border rounded-lg overflow-hidden mt-4">
             <img 
-              src={content.file_data} 
+              src={content.file_url} 
               alt={content.title}
               className="w-full h-auto max-h-64 md:max-h-96 object-contain"
             />

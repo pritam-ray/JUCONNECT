@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Eye, EyeOff, User, Mail, Phone, Lock } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { signIn, signUp } from '../../services/authService'
 import { useAuth } from '../../contexts/AuthContext'
 import Button from '../ui/Button'

@@ -406,7 +406,7 @@ const UnifiedChatInterface: React.FC = () => {
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-gray-200 bg-white">
+      <div className="p-4 border-t border-gray-200 bg-white mb-16 md:mb-0">
         <div className="flex gap-2">
           <input
             type="text"
@@ -646,7 +646,7 @@ const UnifiedChatInterface: React.FC = () => {
         </div>
 
         {/* Input */}
-        <div className="p-4 border-t border-gray-200 bg-white">
+        <div className="p-4 border-t border-gray-200 bg-white mb-16 md:mb-0">
           <div className="flex gap-2">
             <input
               type="text"

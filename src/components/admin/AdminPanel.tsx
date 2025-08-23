@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Shield, AlertTriangle, FileText, MessageCircle, Users, BarChart3 } from 'lucide-react'
+import { Shield, FileText, MessageSquare, AlertTriangle, BarChart3 } from 'lucide-react'
 import { 
   getAllContentReports, 
   getAllChatReports, 
@@ -182,7 +182,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            <MessageCircle className="h-4 w-4 inline mr-1" />
+            <MessageSquare className="h-4 w-4 inline mr-1" />
             <span className="hidden sm:inline">Chat Reports</span>
             <span className="sm:hidden">Chat</span>
             <span className="ml-1">({chatReports.filter(r => r.status === 'pending').length})</span>
@@ -215,7 +215,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                   
                   <div className="bg-red-50 p-4 rounded-lg">
                     <div className="flex items-center space-x-2">
-                      <MessageCircle className="h-5 w-5 text-red-600" />
+                      <MessageSquare className="h-5 w-5 text-red-600" />
                       <span className="font-medium text-red-900">Chat Reports</span>
                     </div>
                     <div className="mt-2 space-y-1">

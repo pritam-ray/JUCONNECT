@@ -43,7 +43,7 @@ const GroupsPage: React.FC = () => {
               onLeaveGroup={handleLeaveGroup}
             />
           ) : (
-            <div className="p-4">
+            <div className="p-4 pb-20">
               <ClassGroupList key={refreshKey} onGroupSelect={handleGroupSelect} />
             </div>
           )}

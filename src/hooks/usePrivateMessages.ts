@@ -172,6 +172,38 @@ export const usePrivateMessages = (userId: string | null) => {
     }
   }, [error])
 
+  // Start new conversation
+  const startNewConversation = useCallback(async (otherUserId: string) => {
+    if (!userId) return
+    
+    // Load the conversation (even if empty) to set up the chat
+    await loadConversation(otherUserId)
+    
+    // Add to conversations if not already there
+    const existingConv = conversations.find(c => c.otherUser.id === otherUserId)
+    if (!existingConv) {
+      // Fetch the other user's profile to create a conversation entry
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, username, full_name, avatar_url, is_online, last_seen')
+          .eq('id', otherUserId)
+          .single()
+        
+        if (profile) {
+          const newConversation = {
+            otherUser: profile,
+            lastMessage: undefined,
+            unreadCount: 0
+          }
+          setConversations(prev => [newConversation, ...prev])
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error)
+      }
+    }
+  }, [userId, loadConversation, conversations])
+
   return {
     conversations,
     currentConversation,
@@ -182,6 +214,7 @@ export const usePrivateMessages = (userId: string | null) => {
     loadConversations,
     loadConversation,
     sendMessage,
+    startNewConversation,
     setCurrentConversation
   }
 }

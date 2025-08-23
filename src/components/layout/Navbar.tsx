@@ -57,22 +57,25 @@ const Navbar: React.FC = () => {
     <>
       <nav className="glass sticky top-0 z-40 border-b border-white/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+          <div className="flex justify-between h-14 sm:h-16">
             {/* Logo and Desktop Navigation */}
             <div className="flex items-center">
-              <Link to="/" className="flex items-center space-x-3 group">
+              <Link to="/" className="flex items-center space-x-2 sm:space-x-3 group">
                 <div className="relative">
-                  <BookOpen className="h-8 w-8 text-primary-600 group-hover:scale-110 transition-transform duration-300" />
+                  <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-primary-600 group-hover:scale-110 transition-transform duration-300" />
                   <div className="absolute inset-0 bg-primary-500 rounded-full blur-lg opacity-0 group-hover:opacity-30 transition-opacity duration-300" />
                 </div>
-                <span className="font-display font-bold text-xl text-gradient animate-gradient-text">
+                <span className="font-display font-bold text-lg sm:text-xl text-gradient animate-gradient-text hidden xs:block">
                   JU CONNECT
                 </span>
-                <Sparkles className="h-4 w-4 text-accent-500 animate-bounce-subtle" />
+                <span className="font-display font-bold text-lg sm:text-xl text-gradient animate-gradient-text xs:hidden">
+                  JU
+                </span>
+                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-accent-500 animate-bounce-subtle" />
               </Link>
               
               {/* Desktop Navigation */}
-              <div className="hidden md:ml-8 md:flex md:space-x-2">
+              <div className="hidden lg:ml-8 lg:flex lg:space-x-2">
                 {navigation.map((item) => {
                   const requiresAuth = ['/upload', '/my-requests'].includes(item.href)
                   
@@ -82,7 +85,7 @@ const Navbar: React.FC = () => {
                       to={item.href}
                       onClick={(e) => handleNavClick(e, requiresAuth)}
                       className={cn(
-                        'px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center space-x-2 group relative overflow-hidden',
+                        'px-3 xl:px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center space-x-2 group relative overflow-hidden',
                         isActive(item.href)
                           ? 'text-white bg-gradient-to-r from-primary-500 to-primary-600 shadow-lg shadow-primary-500/30'
                           : 'text-secondary-600 hover:text-primary-600 hover:bg-white/50'
@@ -92,7 +95,7 @@ const Navbar: React.FC = () => {
                         'h-4 w-4 transition-transform duration-300',
                         isActive(item.href) ? 'scale-110' : 'group-hover:scale-110'
                       )} />
-                      <span>{item.name}</span>
+                      <span className="hidden xl:block">{item.name}</span>
                       
                       {/* Shimmer effect */}
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full transition-transform duration-700 group-hover:translate-x-full" />
@@ -182,13 +185,13 @@ const Navbar: React.FC = () => {
             </div>
 
             {/* Mobile menu button */}
-            <div className="md:hidden flex items-center">
+            <div className="lg:hidden flex items-center">
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="p-2 rounded-xl text-secondary-600 hover:text-primary-600 hover:bg-white/50 transition-all duration-300"
                 aria-label={isOpen ? 'Close menu' : 'Open menu'}
               >
-                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                {isOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <Menu className="h-5 w-5 sm:h-6 sm:w-6" />}
               </button>
             </div>
           </div>
@@ -196,7 +199,7 @@ const Navbar: React.FC = () => {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden border-t border-white/20 bg-white/95 backdrop-blur-xl animate-fade-in-down">
+          <div className="lg:hidden border-t border-white/20 bg-white/95 backdrop-blur-xl animate-fade-in-down">
             <div className="px-4 pt-4 pb-6 space-y-3">
               {navigation.map((item) => {
                 const requiresAuth = ['/upload', '/my-requests'].includes(item.href)

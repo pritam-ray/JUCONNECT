@@ -10,6 +10,7 @@ import { searchUsers } from '../../services/privateMessageService'
 import AuthModal from '../ui/AuthModal'
 import Button from '../ui/Button'
 import LoadingSpinner from '../ui/LoadingSpinner'
+import MobileChatInterface from './MobileChatInterface'
 import { formatDistanceToNow } from 'date-fns'
 
 interface OptimisticChatMessage {
@@ -42,6 +43,24 @@ const UnifiedChatInterface: React.FC = () => {
   const { user, profile, isGuest } = useAuth()
   const location = useLocation()
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  
+  // Check if mobile view
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Use mobile interface for small screens
+  if (isMobile) {
+    return <MobileChatInterface />
+  }
   
   // Get initial tab from URL parameters
   const searchParams = new URLSearchParams(location.search)

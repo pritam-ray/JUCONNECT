@@ -1,9 +1,8 @@
-import React, { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import React from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Home, FileText, MessageCircle, Upload, Mail, Users } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { cn } from '../../utils/cn'
-import PrivateMessageModal from '../messaging/PrivateMessageModal'
 import { usePrivateMessages } from '../../hooks/usePrivateMessages'
 
 interface MobileBottomNavProps {
@@ -13,7 +12,7 @@ interface MobileBottomNavProps {
 const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onAuthRequired }) => {
   const { user, isGuest } = useAuth()
   const location = useLocation()
-  const [showMessagesModal, setShowMessagesModal] = useState(false)
+  const navigate = useNavigate()
 
   // Get unread message count
   const { totalUnreadCount } = usePrivateMessages(user?.id || null)
@@ -40,7 +39,7 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onAuthRequired }) => 
       onAuthRequired()
       return
     }
-    setShowMessagesModal(true)
+    navigate('/chat?tab=private')
   }
 
   return (
@@ -99,11 +98,6 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onAuthRequired }) => 
           ))}
         </div>
       </div>
-
-      <PrivateMessageModal
-        isOpen={showMessagesModal}
-        onClose={() => setShowMessagesModal(false)}
-      />
     </>
   )
 }

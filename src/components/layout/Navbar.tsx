@@ -1,22 +1,21 @@
 import { Link } from 'react-router-dom'
 import React, { useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { BookOpen, Menu, X, User, LogOut, Upload, MessageCircle, Settings, FileText, Shield, Sparkles, Mail, Users } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { cn } from '../../utils/cn'
 import AuthModal from '../ui/AuthModal'
 import AdminPanel from '../admin/AdminPanel'
 import Button from '../ui/Button'
-import PrivateMessageModal from '../messaging/PrivateMessageModal'
 import { usePrivateMessages } from '../../hooks/usePrivateMessages'
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showAdminPanel, setShowAdminPanel] = useState(false)
-  const [showMessagesModal, setShowMessagesModal] = useState(false)
   const { user, profile, isGuest, signInAsGuest, signOut } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
 
   // Get unread message count
   const { totalUnreadCount } = usePrivateMessages(user?.id || null)
@@ -124,7 +123,7 @@ const Navbar: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   {/* Messages Button */}
                   <button
-                    onClick={() => setShowMessagesModal(true)}
+                    onClick={() => navigate('/chat?tab=private')}
                     className="relative p-3 text-secondary-600 hover:text-primary-600 rounded-xl hover:bg-white/50 transition-all duration-300 hover:scale-110"
                     title="Messages"
                   >
@@ -319,11 +318,6 @@ const Navbar: React.FC = () => {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={() => setShowAuthModal(false)}
-      />
-      
-      <PrivateMessageModal
-        isOpen={showMessagesModal}
-        onClose={() => setShowMessagesModal(false)}
       />
       
       {profile?.is_admin && (

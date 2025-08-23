@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { 
   Send, 
   Paperclip, 
@@ -16,7 +16,6 @@ import {
   getGroupMessages, 
   sendGroupMessage, 
   markGroupMessagesAsRead,
-  subscribeToGroupMessages,
   getGroupMembers,
   joinClassGroup,
   leaveClassGroup,
@@ -27,6 +26,7 @@ import {
 } from '../../services/classGroupService'
 import { uploadGroupFile, deleteGroupFile } from '../../services/groupFileService'
 import { debugGroupAccess } from '../../services/debugGroupService'
+import { useRealtimeGroupMessages, useRealtimeGroupMembers } from '../../hooks/useRealtime'
 import { useAuth } from '../../contexts/AuthContext'
 import Button from '../ui/Button'
 import LoadingSpinner from '../ui/LoadingSpinner'
@@ -88,19 +88,69 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
       loadMessages()
       loadMembers()
       checkAdminStatus()
-      
-      // Subscribe to new messages
-      const unsubscribe = subscribeToGroupMessages(group.id, (newMessage) => {
-        setMessages(prev => [...prev, newMessage])
-        scrollToBottom()
-      })
 
       // Mark messages as read when component mounts
       markGroupMessagesAsRead(group.id, user.id)
-
-      return unsubscribe
     }
   }, [group.id, user])
+
+  // Real-time message handlers
+  const handleNewMessage = useCallback((message: any) => {
+    setMessages(prev => [...prev, message])
+    scrollToBottom()
+  }, [])
+
+  const handleMessageUpdate = useCallback((updatedMessage: any) => {
+    setMessages(prev => 
+      prev.map(msg => 
+        msg.id === updatedMessage.id ? { ...msg, ...updatedMessage } : msg
+      )
+    )
+  }, [])
+
+  const handleMessageDelete = useCallback((messageId: string) => {
+    setMessages(prev => prev.filter(msg => msg.id !== messageId))
+  }, [])
+
+  // Real-time member handlers
+  const handleMemberJoin = useCallback((member: any) => {
+    setMembers(prev => [...prev, member])
+  }, [])
+
+  const handleMemberLeave = useCallback((userId: string) => {
+    setMembers(prev => prev.filter(member => member.user_id !== userId))
+  }, [])
+
+  const handleMemberUpdate = useCallback((updatedMember: any) => {
+    setMembers(prev => 
+      prev.map(member => 
+        member.user_id === updatedMember.user_id ? { ...member, ...updatedMember } : member
+      )
+    )
+  }, [])
+
+  // Set up real-time subscriptions
+  useRealtimeGroupMessages(
+    group.id,
+    handleNewMessage,
+    handleMessageUpdate,
+    handleMessageDelete,
+    {
+      enabled: !!group.id,
+      onError: (error) => console.error('Real-time messages error:', error)
+    }
+  )
+
+  useRealtimeGroupMembers(
+    group.id,
+    handleMemberJoin,
+    handleMemberLeave,
+    handleMemberUpdate,
+    {
+      enabled: !!group.id,
+      onError: (error) => console.error('Real-time members error:', error)
+    }
+  )
 
   useEffect(() => {
     scrollToBottom()

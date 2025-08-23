@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Send, Flag, Trash2, User, MessageCircle, AlertCircle } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { reportChatMessage } from '../../services/reportingService'
 import { deleteChatMessage, getChatMessages, sendChatMessage } from '../../services/chatService'
+import { useRealtimeChatMessages } from '../../hooks/useRealtime'
 import AuthModal from '../ui/AuthModal'
 import Button from '../ui/Button'
 import LoadingSpinner from '../ui/LoadingSpinner'
@@ -45,6 +46,38 @@ const ChatRoom: React.FC = () => {
     loadMessages()
   }, [])
 
+  // Real-time message subscription
+  const handleNewMessage = useCallback((message: any) => {
+    setMessages(prevMessages => [...prevMessages, message])
+  }, [])
+
+  const handleMessageUpdate = useCallback((updatedMessage: any) => {
+    setMessages(prevMessages => 
+      prevMessages.map(msg => 
+        msg.id === updatedMessage.id ? { ...msg, ...updatedMessage } : msg
+      )
+    )
+  }, [])
+
+  const handleMessageDelete = useCallback((messageId: string) => {
+    setMessages(prevMessages => 
+      prevMessages.filter(msg => msg.id !== messageId)
+    )
+  }, [])
+
+  useRealtimeChatMessages(
+    handleNewMessage,
+    handleMessageUpdate,
+    handleMessageDelete,
+    {
+      enabled: true,
+      onError: (error) => {
+        console.error('Real-time subscription error:', error)
+        setError('Real-time updates unavailable')
+      }
+    }
+  )
+
   // Clear error after 5 seconds
   useEffect(() => {
     if (error) {
@@ -65,13 +98,9 @@ const ChatRoom: React.FC = () => {
       setSending(true)
       setError(null)
 
-      // Send message to server
+      // Send message to server - real-time subscription will handle adding it to the UI
       await sendChatMessage(newMessage.trim(), user.id)
       setNewMessage('')
-
-      // Reload messages to show the new one
-      const updatedMessages = await getChatMessages()
-      setMessages(updatedMessages ? updatedMessages.reverse() : [])
 
     } catch (error) {
       console.error('Failed to send message:', error)

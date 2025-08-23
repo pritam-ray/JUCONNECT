@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Plus, Users, BookOpen, Search, Filter, Clock, Lock, Crown } from 'lucide-react'
 import { getAllClassGroups, getUserGroups, joinClassGroup, ClassGroupWithDetails } from '../../services/classGroupService'
+import { useRealtimeGroups } from '../../hooks/useRealtime'
 import { useAuth } from '../../contexts/AuthContext'
 import Button from '../ui/Button'
 import Badge from '../ui/Badge'
@@ -77,6 +78,40 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
   useEffect(() => {
     fetchGroups()
   }, [user])
+
+  // Real-time group handlers
+  const handleGroupCreate = useCallback((newGroup: any) => {
+    setAllGroups(prev => [newGroup, ...prev])
+  }, [])
+
+  const handleGroupUpdate = useCallback((updatedGroup: any) => {
+    setAllGroups(prev => 
+      prev.map(group => 
+        group.id === updatedGroup.id ? { ...group, ...updatedGroup } : group
+      )
+    )
+    setUserGroups(prev => 
+      prev.map(group => 
+        group.id === updatedGroup.id ? { ...group, ...updatedGroup } : group
+      )
+    )
+  }, [])
+
+  const handleGroupDelete = useCallback((groupId: string) => {
+    setAllGroups(prev => prev.filter(group => group.id !== groupId))
+    setUserGroups(prev => prev.filter(group => group.id !== groupId))
+  }, [])
+
+  // Set up real-time group subscriptions
+  useRealtimeGroups(
+    handleGroupCreate,
+    handleGroupUpdate,
+    handleGroupDelete,
+    {
+      enabled: true,
+      onError: (error) => console.error('Real-time groups error:', error)
+    }
+  )
 
   // Don't render anything if auth is still loading
   if (authLoading) {

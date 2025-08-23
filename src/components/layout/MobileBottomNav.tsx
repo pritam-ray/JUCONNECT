@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Home, FileText, MessageCircle, Upload, Mail, Users } from 'lucide-react'
+import { Home, FileText, Upload, Mail, Users } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { cn } from '../../utils/cn'
 import { usePrivateMessages } from '../../hooks/usePrivateMessages'
@@ -23,7 +23,6 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onAuthRequired }) => 
     { name: 'Home', href: '/', icon: Home, requiresAuth: false },
     { name: 'Categories', href: '/categories', icon: FileText, requiresAuth: false },
     { name: 'Groups', href: '/groups', icon: Users, requiresAuth: false },
-    { name: 'Chat', href: '/chat', icon: MessageCircle, requiresAuth: false },
     { name: 'Upload', href: '/upload', icon: Upload, requiresAuth: true }
   ]
 

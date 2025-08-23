@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import React, { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { BookOpen, Menu, X, User, LogOut, Upload, MessageCircle, Settings, FileText, Shield, Sparkles, Mail, Users } from 'lucide-react'
+import { BookOpen, Menu, X, User, LogOut, Upload, Settings, FileText, Shield, Sparkles, Mail, Users } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { cn } from '../../utils/cn'
 import AuthModal from '../ui/AuthModal'
@@ -26,7 +26,6 @@ const Navbar: React.FC = () => {
     { name: 'Browse', href: '/', icon: BookOpen },
     { name: 'Categories', href: '/categories', icon: FileText },
     { name: 'Groups', href: '/groups', icon: Users },
-    { name: 'Chat', href: '/chat', icon: MessageCircle },
     { name: 'Upload', href: '/upload', icon: Upload },
     { name: 'Requests', href: '/my-requests', icon: Settings },
   ]

@@ -82,47 +82,6 @@ const UnifiedChatInterface: React.FC = () => {
     sendMessage: sendPrivateMessage
   } = usePrivateMessages(user?.id || null)
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-  // Use mobile interface for small screens
-  if (isMobile) {
-    return <MobileChatInterface />
-  }
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
-  useEffect(() => {
-    scrollToBottom()
-  }, [globalMessages, currentConversation])
-
-  // Load initial global messages
-  useEffect(() => {
-    const loadGlobalMessages = async () => {
-      try {
-        setGlobalLoading(true)
-        const initialMessages = await getChatMessages()
-        setGlobalMessages(initialMessages ? initialMessages.reverse() : [])
-      } catch (error) {
-        console.error('Failed to load global messages:', error)
-        setError('Failed to load chat messages')
-      } finally {
-        setGlobalLoading(false)
-      }
-    }
-
-    loadGlobalMessages()
-  }, [])
-
   // Real-time global message handlers
   const handleNewGlobalMessage = useCallback((message: any) => {
     setGlobalMessages(prevMessages => {
@@ -161,18 +120,41 @@ const UnifiedChatInterface: React.FC = () => {
     )
   }, [])
 
-  useRealtimeChatMessages(
-    handleNewGlobalMessage,
-    handleGlobalMessageUpdate,
-    handleGlobalMessageDelete,
-    {
-      enabled: true,
-      onError: (error) => {
-        console.error('Real-time subscription error:', error)
-        setError('Real-time updates unavailable')
+  // Mobile detection effect
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Scroll to bottom effect
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [globalMessages, currentConversation])
+
+  // Load initial global messages
+  useEffect(() => {
+    const loadGlobalMessages = async () => {
+      try {
+        setGlobalLoading(true)
+        const initialMessages = await getChatMessages()
+        setGlobalMessages(initialMessages ? initialMessages.reverse() : [])
+      } catch (error) {
+        console.error('Failed to load global messages:', error)
+        setError('Failed to load chat messages')
+      } finally {
+        setGlobalLoading(false)
       }
     }
-  )
+
+    if (!isMobile) {
+      loadGlobalMessages()
+    }
+  }, [isMobile])
 
   // Clear error after 5 seconds
   useEffect(() => {
@@ -182,6 +164,21 @@ const UnifiedChatInterface: React.FC = () => {
     }
   }, [error, privateError])
 
+  // Real-time chat messages hook
+  useRealtimeChatMessages(
+    handleNewGlobalMessage,
+    handleGlobalMessageUpdate,
+    handleGlobalMessageDelete,
+    {
+      enabled: !isMobile,
+      onError: (error) => {
+        console.error('Real-time subscription error:', error)
+        setError('Real-time updates unavailable')
+      }
+    }
+  )
+
+  // Function definitions
   const handleSendGlobalMessage = async () => {
     if (!globalNewMessage.trim()) return
 
@@ -305,6 +302,11 @@ const UnifiedChatInterface: React.FC = () => {
     setShowNewChat(false)
     setSearchQuery('')
     setSearchResults([])
+  }
+
+  // Use mobile interface for small screens
+  if (isMobile) {
+    return <MobileChatInterface />
   }
 
   const renderGlobalChat = () => (

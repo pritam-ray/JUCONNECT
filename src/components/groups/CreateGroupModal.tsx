@@ -82,9 +82,9 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
       onSuccess()
     } catch (err: any) {
       if (err.code === '23505') {
-        setError('A group with this year, section, and subject already exists')
+        setError('A group like this already exists. Please try different details.')
       } else {
-        setError(err.message || 'Failed to create group')
+        setError(err.message || 'Could not create the group. Please try again.')
       }
     } finally {
       setLoading(false)

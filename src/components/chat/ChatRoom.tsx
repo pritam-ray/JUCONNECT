@@ -54,7 +54,7 @@ const ChatRoom: React.FC = () => {
         setMessages(initialMessages ? initialMessages.reverse() : [])
       } catch (error) {
         console.error('Failed to load messages:', error)
-        setError('Failed to load chat messages')
+        setError('Could not load chat messages. Please refresh the page.')
       } finally {
         setLoading(false)
       }
@@ -168,7 +168,7 @@ const ChatRoom: React.FC = () => {
       setMessages(prev => prev.filter(msg => msg.id !== tempMessageId))
       // Restore the message text
       setNewMessage(optimisticMessage.message)
-      setError('Failed to send message. Please try again.')
+      setError('Could not send your message. Please try again.')
     } finally {
       setSending(false)
     }

@@ -110,7 +110,8 @@ const AuthModal: React.FC<AuthModalProps> = ({
       })
       setErrors({})
     } catch (err: any) {
-      setError(err.message || 'An error occurred')
+      const friendlyError = err.message || 'Something went wrong. Please try again.'
+      setError(friendlyError)
     } finally {
       setLoading(false)
     }

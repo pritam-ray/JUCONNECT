@@ -50,11 +50,11 @@ export const getAllCategories = async (): Promise<CategoryWithChildren[]> => {
 
     return rootCategories
   } catch (error: any) {
-    console.error('Failed to fetch categories:', error)
+    logger.error('Failed to fetch categories:', error)
     if (error.message?.includes('Failed to fetch') || error.name === 'TypeError') {
-      throw new Error('Unable to connect to the server. Please check your internet connection and try again.')
+      throw new Error('Connection problem. Please check your internet.')
     }
-    throw error
+    throw new Error('Could not load categories. Please try again.')
   }
 }
 

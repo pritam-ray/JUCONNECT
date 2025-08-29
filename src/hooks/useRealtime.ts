@@ -1,9 +1,12 @@
 import { useEffect, useRef } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { logger } from '../utils/logger'
 
 export interface RealtimeHookOptions {
   enabled?: boolean
   onError?: (error: Error) => void
+  onConnected?: () => void
+  onDisconnected?: () => void
 }
 
 /**
@@ -17,10 +20,12 @@ export const useRealtimeGroupMessages = (
   options: RealtimeHookOptions = {}
 ) => {
   const channelRef = useRef<any>(null)
-  const { enabled = true, onError } = options
+  const { enabled = true, onError, onConnected, onDisconnected } = options
 
   useEffect(() => {
     if (!enabled || !groupId || !isSupabaseConfigured() || !supabase) return
+
+    logger.debug('Setting up real-time updates for group messages:', groupId)
 
     // Clean up existing subscription
     if (channelRef.current) {
@@ -39,6 +44,7 @@ export const useRealtimeGroupMessages = (
         },
         async (payload) => {
           try {
+            logger.debug('New message received:', payload.new.id)
             if (!supabase) return
             // Fetch complete message with profile data
             const { data, error } = await supabase
@@ -55,10 +61,14 @@ export const useRealtimeGroupMessages = (
               .eq('id', payload.new.id)
               .single()
 
-            if (error) throw error
+            if (error) {
+              logger.error('Error loading new message:', error)
+              onError?.(new Error('Could not load new message'))
+              return
+            }
             if (data) onMessage(data)
-          } catch (error) {
-            console.error('Error fetching new message:', error)
+          } catch (error: any) {
+            logger.error('Error loading new message:', error)
             onError?.(error as Error)
           }
         }
@@ -72,6 +82,7 @@ export const useRealtimeGroupMessages = (
           filter: `group_id=eq.${groupId}`
         },
         (payload) => {
+          logger.debug('Message updated:', payload.new.id)
           onUpdate?.(payload.new)
         }
       )
@@ -84,19 +95,33 @@ export const useRealtimeGroupMessages = (
           filter: `group_id=eq.${groupId}`
         },
         (payload) => {
+          logger.debug('Message deleted:', payload.old.id)
           onDelete?.(payload.old.id)
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        logger.debug('Real-time connection status:', status)
+        if (status === 'SUBSCRIBED') {
+          logger.info('Real-time updates connected')
+          onConnected?.()
+        } else if (status === 'CHANNEL_ERROR') {
+          logger.error('Real-time updates failed')
+          onError?.(new Error('Live updates are not working right now'))
+        } else if (status === 'CLOSED') {
+          logger.warn('Real-time updates disconnected')
+          onDisconnected?.()
+        }
+      })
 
     channelRef.current = channel
 
     return () => {
       if (channelRef.current && supabase) {
+        logger.debug('Disconnecting real-time updates')
         supabase.removeChannel(channelRef.current)
       }
     }
-  }, [groupId, enabled, onMessage, onUpdate, onDelete, onError])
+  }, [groupId, enabled, onMessage, onUpdate, onDelete, onError, onConnected, onDisconnected])
 
   return () => {
     if (channelRef.current && supabase) {
@@ -156,8 +181,8 @@ export const useRealtimeGroupMembers = (
 
             if (error) throw error
             if (data) onMemberJoin(data)
-          } catch (error) {
-            console.error('Error fetching new member:', error)
+          } catch (error: any) {
+            logger.error('Error loading new member:', error)
             onError?.(error as Error)
           }
         }

@@ -220,29 +220,13 @@ export function handleFileUploadError(error: any): UserFriendlyError {
 /**
  * Handle network errors
  */
-export function handleNetworkError(): UserFriendlyError {
+export function handleNetworkError(error: any): UserFriendlyError {
   return {
     message: 'Connection problem',
     action: 'Please check your internet connection and try again',
     severity: 'warning',
     code: 'NETWORK_ERROR'
   }
-}
-
-/**
- * Handle Supabase-specific errors
- */
-export function handleSupabaseError(error: any): AppError {
-  const message = error?.message || 'Database operation failed'
-  const userFriendlyError = createUserFriendlyError(error, { operation: 'database' })
-  
-  return new AppError(
-    message,
-    userFriendlyError.message,
-    userFriendlyError.action,
-    userFriendlyError.severity,
-    userFriendlyError.code
-  )
 }
 
 /**

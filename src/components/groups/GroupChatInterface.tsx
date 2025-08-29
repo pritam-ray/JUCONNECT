@@ -258,7 +258,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
       console.error('Error sending message:', error)
       // Remove optimistic message on error
       setMessages(prev => prev.filter(msg => msg.id !== tempId))
-      setError('Failed to send message')
+      setError('Could not send your message. Please try again.')
     } finally {
       setSending(false)
     }
@@ -292,7 +292,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
       setReplyTo(null)
     } catch (error: any) {
       console.error('Error uploading file:', error)
-      setError('Failed to upload file')
+      setError('Could not upload your file. Please try again.')
     } finally {
       setUploadingFile(false)
       // Clear the file input
@@ -311,7 +311,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
       onLeaveGroup?.()
     } catch (error: any) {
       console.error('Error leaving group:', error)
-      setError('Failed to leave group')
+      setError('Could not leave the group. Please try again.')
     } finally {
       setLeavingGroup(false)
     }

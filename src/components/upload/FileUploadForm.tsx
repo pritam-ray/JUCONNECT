@@ -51,14 +51,14 @@ const FileUploadForm: React.FC<FileUploadFormProps> = ({ onSuccess }) => {
     // Validate file name
     const nameValidation = validateFileName(file.name)
     if (!nameValidation.isValid) {
-      setError(nameValidation.error || 'Invalid file name')
+      setError(nameValidation.error || 'This file name is not allowed')
       return
     }
 
     // Validate file content asynchronously
     validateFileContent(file).then(contentValidation => {
       if (!contentValidation.isValid) {
-        setError(contentValidation.error || 'Invalid file content')
+        setError(contentValidation.error || 'This file cannot be uploaded')
         setSelectedFile(null)
         if (fileInputRef.current) {
           fileInputRef.current.value = ''

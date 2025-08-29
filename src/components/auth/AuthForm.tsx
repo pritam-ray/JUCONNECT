@@ -89,7 +89,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
       await refreshProfile()
       onSuccess?.()
     } catch (err: any) {
-      setError(err.message || 'An error occurred')
+      const friendlyError = err.message || 'Something went wrong. Please try again.'
+      setError(friendlyError)
     } finally {
       setLoading(false)
     }

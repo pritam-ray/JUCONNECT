@@ -19,28 +19,29 @@ const FILE_SIZE_LIMITS = {
   txt: 5 * 1024 * 1024,   // 5MB
   jpg: 5 * 1024 * 1024,   // 5MB
   png: 5 * 1024 * 1024,   // 5MB
+  jpeg: 5 * 1024 * 1024,  // 5MB
+  gif: 5 * 1024 * 1024,   // 5MB
 }
 
-const ALLOWED_FILE_TYPES = ['pdf', 'doc', 'docx', 'txt', 'jpg', 'png'] as const
+const ALLOWED_FILE_TYPES = ['pdf', 'doc', 'docx', 'txt', 'jpg', 'png', 'jpeg', 'gif'] as const
 
 export type AllowedFileType = typeof ALLOWED_FILE_TYPES[number]
 
-const validateFile = (file: File): { isValid: boolean; error?: string } => {
+export const validateFile = (file: File): { isValid: boolean; error?: string } => {
   const fileExtension = file.name.split('.').pop()?.toLowerCase()
   
   if (!fileExtension || !ALLOWED_FILE_TYPES.includes(fileExtension as AllowedFileType)) {
     return {
       isValid: false,
-      error: `File type not allowed. Allowed types: ${ALLOWED_FILE_TYPES.join(', ')}`
+      error: `This file type is not supported. Please choose a PDF, Word document, text file, or image.`
     }
   }
 
   const maxSize = FILE_SIZE_LIMITS[fileExtension as AllowedFileType]
   if (file.size > maxSize) {
-    const maxSizeMB = (maxSize / (1024 * 1024)).toFixed(1)
     return {
       isValid: false,
-      error: `File size exceeds ${maxSizeMB}MB limit. Please compress your file.`
+      error: `Please upload a file or PDF smaller than 5MB`
     }
   }
 

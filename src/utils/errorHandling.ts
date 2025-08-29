@@ -1,8 +1,18 @@
-/**
- * Utility functions for handling errors and retries
- */
-
 import { logger } from './logger'
+
+export interface UserFriendlyError {
+  message: string
+  action?: string
+  severity: 'error' | 'warning' | 'info'
+  code?: string
+}
+
+export interface ErrorContext {
+  operation?: string
+  userId?: string
+  timestamp?: string
+  metadata?: Record<string, any>
+}
 
 export interface RetryOptions {
   maxAttempts?: number
@@ -12,7 +22,231 @@ export interface RetryOptions {
 }
 
 /**
- * Retry a function with exponential backoff
+ * Enhanced AppError class with user-friendly error conversion
+ */
+export class AppError extends Error {
+  public readonly code?: string
+  public readonly statusCode?: number
+  public readonly userFriendlyMessage: string
+  public readonly action?: string
+  public readonly severity: 'error' | 'warning' | 'info'
+  public readonly context?: ErrorContext
+
+  constructor(
+    message: string,
+    userFriendlyMessage?: string,
+    action?: string,
+    severity: 'error' | 'warning' | 'info' = 'error',
+    code?: string,
+    context?: ErrorContext
+  ) {
+    super(message)
+    this.name = 'AppError'
+    this.code = code
+    this.userFriendlyMessage = userFriendlyMessage || this.convertToUserFriendlyMessage(message)
+    this.action = action
+    this.severity = severity
+    this.context = context
+  }
+
+  private convertToUserFriendlyMessage(message: string): string {
+    const errorMap: Record<string, string> = {
+      'Network request failed': 'Connection problem. Please check your internet.',
+      'Invalid credentials': 'Please check your username and password.',
+      'User not found': 'We could not find your account.',
+      'Permission denied': 'You do not have permission to do this.',
+      'File too large': 'Please upload a file or PDF smaller than 5MB',
+      'Invalid file type': 'Please upload a valid file type.',
+      'Session expired': 'Your session has expired. Please log in again.',
+      'Rate limit exceeded': 'Too many requests. Please wait a moment.',
+      'Service unavailable': 'Our service is temporarily unavailable.'
+    }
+
+    for (const [key, friendlyMessage] of Object.entries(errorMap)) {
+      if (message.toLowerCase().includes(key.toLowerCase())) {
+        return friendlyMessage
+      }
+    }
+
+    return 'Something went wrong. Please try again.'
+  }
+
+  convertToUserFriendly(): UserFriendlyError {
+    return {
+      message: this.userFriendlyMessage,
+      action: this.action,
+      severity: this.severity,
+      code: this.code
+    }
+  }
+}
+
+/**
+ * Create user-friendly error from any error
+ */
+export function createUserFriendlyError(error: any, context?: ErrorContext): UserFriendlyError {
+  if (error instanceof AppError) {
+    return error.convertToUserFriendly()
+  }
+
+  const message = error?.message || 'An unexpected error occurred'
+  const errorMap: Record<string, { message: string; action?: string; severity?: 'error' | 'warning' | 'info' }> = {
+    'network error': {
+      message: 'Connection problem',
+      action: 'Please check your internet connection and try again',
+      severity: 'warning'
+    },
+    'unauthorized': {
+      message: 'Access denied',
+      action: 'Please log in and try again',
+      severity: 'warning'
+    },
+    'forbidden': {
+      message: 'Permission denied',
+      action: 'You do not have permission to perform this action',
+      severity: 'error'
+    },
+    'not found': {
+      message: 'Not found',
+      action: 'The requested item could not be found',
+      severity: 'info'
+    },
+    'timeout': {
+      message: 'Request timed out',
+      action: 'Please try again',
+      severity: 'warning'
+    },
+    'file too large': {
+      message: 'Please upload a file or PDF smaller than 5MB',
+      action: 'Choose a smaller file and try again',
+      severity: 'warning'
+    },
+    'session expired': {
+      message: 'Session expired',
+      action: 'Please log in again',
+      severity: 'warning'
+    }
+  }
+
+  // Check for specific error patterns
+  for (const [pattern, config] of Object.entries(errorMap)) {
+    if (message.toLowerCase().includes(pattern)) {
+      return {
+        message: config.message,
+        action: config.action,
+        severity: config.severity || 'error',
+        code: pattern.toUpperCase().replace(' ', '_')
+      }
+    }
+  }
+
+  // Handle context-specific errors
+  if (context?.operation) {
+    switch (context.operation) {
+      case 'file_upload':
+        return {
+          message: 'Upload failed',
+          action: 'Please check your file and try again',
+          severity: 'warning',
+          code: 'UPLOAD_ERROR'
+        }
+      case 'auth':
+        return {
+          message: 'Authentication failed',
+          action: 'Please check your credentials and try again',
+          severity: 'warning',
+          code: 'AUTH_ERROR'
+        }
+      case 'chat':
+        return {
+          message: 'Message could not be sent',
+          action: 'Please try sending your message again',
+          severity: 'warning',
+          code: 'CHAT_ERROR'
+        }
+      case 'group':
+        return {
+          message: 'Group operation failed',
+          action: 'Please try again or contact support',
+          severity: 'error',
+          code: 'GROUP_ERROR'
+        }
+    }
+  }
+
+  return {
+    message: 'Something went wrong',
+    action: 'Please try again or contact support if the problem continues',
+    severity: 'error',
+    code: 'UNKNOWN_ERROR'
+  }
+}
+
+/**
+ * Enhanced error reporting with user-friendly messages
+ */
+export function reportError(
+  error: any,
+  context?: ErrorContext,
+  defaultMessage?: string
+): UserFriendlyError {
+  const userFriendlyError = createUserFriendlyError(error, context)
+  
+  // Log the actual error for debugging
+  logger.error('Error occurred:', {
+    originalError: error?.message || error,
+    userFriendlyMessage: userFriendlyError.message,
+    context,
+    stack: error?.stack
+  })
+
+  return userFriendlyError
+}
+
+/**
+ * Handle authentication errors specifically
+ */
+export function handleAuthError(error: any): UserFriendlyError {
+  return createUserFriendlyError(error, { operation: 'auth' })
+}
+
+/**
+ * Handle file upload errors specifically
+ */
+export function handleFileUploadError(error: any): UserFriendlyError {
+  return createUserFriendlyError(error, { operation: 'file_upload' })
+}
+
+/**
+ * Handle network errors
+ */
+export function handleNetworkError(): UserFriendlyError {
+  return {
+    message: 'Connection problem',
+    action: 'Please check your internet connection and try again',
+    severity: 'warning',
+    code: 'NETWORK_ERROR'
+  }
+}
+
+/**
+ * Handle Supabase-specific errors
+ */
+export function handleSupabaseError(error: any): AppError {
+  const message = error?.message || 'Database operation failed'
+  const userFriendlyError = createUserFriendlyError(error, { operation: 'database' })
+  
+  return new AppError(
+    message,
+    userFriendlyError.message,
+    userFriendlyError.action,
+    userFriendlyError.severity,
+    userFriendlyError.code
+  )
+}
+
+/**
+ * Enhanced retry function with user-friendly error handling
  */
 export async function retry<T>(
   fn: () => Promise<T>,
@@ -45,151 +279,102 @@ export async function retry<T>(
     }
   }
 
-  throw lastError!
+  // Create user-friendly error for the final failure
+  const context: ErrorContext = {
+    operation: 'retry',
+    timestamp: new Date().toISOString()
+  }
+  
+  const userFriendlyError = createUserFriendlyError(lastError!, context)
+  throw new AppError(
+    lastError!.message,
+    userFriendlyError.message,
+    userFriendlyError.action,
+    userFriendlyError.severity,
+    userFriendlyError.code
+  )
 }
 
 /**
- * Safe async function wrapper that catches errors
+ * Wrapper for async operations with automatic error handling
  */
-export function safeAsync<T extends any[], R>(
-  fn: (...args: T) => Promise<R>,
-  fallback?: R
+export async function safeAsync<T>(
+  operation: () => Promise<T>,
+  context?: ErrorContext,
+  defaultMessage?: string
+): Promise<{ data: T | null; error: UserFriendlyError | null }> {
+  try {
+    const data = await operation()
+    return { data, error: null }
+  } catch (error) {
+    const userFriendlyError = reportError(error, context, defaultMessage)
+    return { data: null, error: userFriendlyError }
+  }
+}
+
+/**
+ * Handle form validation errors
+ */
+export function handleFormError(error: any): string {
+  const userFriendlyError = createUserFriendlyError(error, { operation: 'form_validation' })
+  return userFriendlyError.message
+}
+
+/**
+ * Handle API errors with specific context
+ */
+export function handleAPIError(error: any, operation: string): UserFriendlyError {
+  return createUserFriendlyError(error, { operation })
+}
+
+/**
+ * Create error message for offline scenarios
+ */
+export function createOfflineError(): UserFriendlyError {
+  return {
+    message: 'You appear to be offline',
+    action: 'Please check your internet connection and try again',
+    severity: 'warning',
+    code: 'OFFLINE_ERROR'
+  }
+}
+
+/**
+ * Create error message for maintenance scenarios
+ */
+export function createMaintenanceError(): UserFriendlyError {
+  return {
+    message: 'We are currently performing maintenance',
+    action: 'Please try again in a few minutes',
+    severity: 'info',
+    code: 'MAINTENANCE_ERROR'
+  }
+}
+
+// Legacy compatibility functions
+export function safeSync<T extends any[], R>(
+  fn: (...args: T) => R,
+  errorHandler?: (error: Error, ...args: T) => void
 ) {
-  return async (...args: T): Promise<R | undefined> => {
+  return (...args: T): R | null => {
     try {
-      return await fn(...args)
+      return fn(...args)
     } catch (error) {
-      logger.error('Safe async function failed:', error)
-      return fallback
+      const appError = error as Error
+      logger.error(`Safe sync error in ${fn.name}:`, appError.message)
+      errorHandler?.(appError, ...args)
+      return null
     }
   }
 }
 
-/**
- * Error boundary for React components
- */
-export class AppError extends Error {
-  constructor(
-    message: string,
-    public code?: string,
-    public statusCode?: number
-  ) {
-    super(message)
-    this.name = 'AppError'
+export function createFriendlyError(error: unknown): AppError {
+  if (error instanceof AppError) {
+    return error
   }
-}
 
-/**
- * Handle Supabase errors consistently
- */
-export function handleSupabaseError(error: any): AppError {
-  // User-friendly error messages for common Supabase errors
-  const userFriendlyMessages: Record<string, string> = {
-    'PGRST116': 'The information you requested could not be found.',
-    '23505': 'This already exists. Please try a different name.',
-    '42501': 'You do not have permission to do this.',
-    'auth/invalid-email': 'Please check your email address.',
-    'auth/user-not-found': 'No account found with this email.',
-    'auth/wrong-password': 'Password is incorrect. Please try again.',
-    'auth/too-many-requests': 'Too many attempts. Please wait a moment.',
-    'auth/network-request-failed': 'Connection problem. Please check your internet.',
-    'refresh_token_not_found': 'Please sign in again.',
-    'invalid_grant': 'Please sign in again.',
-    'auth/email-already-in-use': 'An account with this email already exists.',
-    'auth/weak-password': 'Please choose a stronger password.',
-    'auth/invalid-password': 'Password must be at least 6 characters.',
-    'storage/object-not-found': 'The file could not be found.',
-    'storage/bucket-not-found': 'File storage is not set up yet.',
-    'storage/unauthorized': 'You cannot upload files right now.',
-  }
+  const message = error && typeof error === 'object' && 'message' in error ? 
+    String(error.message) : 'An unexpected error occurred'
   
-  if (error?.code) {
-    const friendlyMessage = userFriendlyMessages[error.code]
-    if (friendlyMessage) {
-      return new AppError(friendlyMessage, error.code, getStatusCode(error.code))
-    }
-    
-    switch (error.code) {
-      case 'PGRST116':
-        return new AppError('The information you requested could not be found.', 'NOT_FOUND', 404)
-      case '23505':
-        return new AppError('This already exists. Please try a different name.', 'CONFLICT', 409)
-      case '42501':
-        return new AppError('You do not have permission to do this.', 'FORBIDDEN', 403)
-      default:
-        return new AppError(getUserFriendlyMessage(error.message) || 'Something went wrong. Please try again.', error.code, 500)
-    }
-  }
-  
-  return new AppError(getUserFriendlyMessage(error?.message) || 'Something went wrong. Please try again.', 'UNKNOWN', 500)
-}
-
-/**
- * Convert technical error messages to user-friendly ones
- */
-function getUserFriendlyMessage(message: string): string {
-  if (!message) return 'Something went wrong. Please try again.'
-  
-  const lowerMessage = message.toLowerCase()
-  
-  if (lowerMessage.includes('network') || lowerMessage.includes('fetch')) {
-    return 'Connection problem. Please check your internet.'
-  }
-  
-  if (lowerMessage.includes('timeout')) {
-    return 'This is taking too long. Please try again.'
-  }
-  
-  if (lowerMessage.includes('unauthorized') || lowerMessage.includes('forbidden')) {
-    return 'You do not have permission to do this.'
-  }
-  
-  if (lowerMessage.includes('not found')) {
-    return 'Could not find what you are looking for.'
-  }
-  
-  if (lowerMessage.includes('already exists') || lowerMessage.includes('duplicate')) {
-    return 'This already exists. Please try something different.'
-  }
-  
-  if (lowerMessage.includes('invalid') && lowerMessage.includes('email')) {
-    return 'Please check your email address.'
-  }
-  
-  if (lowerMessage.includes('password')) {
-    return 'Please check your password.'
-  }
-  
-  if (lowerMessage.includes('session') || lowerMessage.includes('token')) {
-    return 'Please sign in again.'
-  }
-  
-  if (lowerMessage.includes('file') && lowerMessage.includes('size')) {
-    return 'Please upload a file or PDF smaller than 5MB'
-  }
-  
-  if (lowerMessage.includes('bucket') || lowerMessage.includes('storage')) {
-    return 'File uploads are not available right now.'
-  }
-  
-  // Return simplified message for anything else
-  return 'Something went wrong. Please try again.'
-}
-
-/**
- * Get appropriate HTTP status code for error
- */
-function getStatusCode(errorCode: string): number {
-  const statusCodes: Record<string, number> = {
-    'PGRST116': 404,
-    '23505': 409,
-    '42501': 403,
-    'auth/invalid-email': 400,
-    'auth/user-not-found': 404,
-    'auth/wrong-password': 401,
-    'auth/too-many-requests': 429,
-    'auth/network-request-failed': 503,
-  }
-  
-  return statusCodes[errorCode] || 500
+  return new AppError(message)
 }

@@ -7,7 +7,7 @@ import {
   createUpdateRequest,
   UpdateRequestWithProfile 
 } from '../services/updateRequestService'
-import { getAllCategories, CategoryWithChildren } from '../services/categoryService'
+import { getAllCategories } from '../services/categoryService'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Modal from '../components/ui/Modal'
@@ -18,7 +18,6 @@ import { formatDistanceToNow } from 'date-fns'
 const MyRequestsPage: React.FC = () => {
   const { user, loading: authLoading, isGuest } = useAuth()
   const [requests, setRequests] = useState<UpdateRequestWithProfile[]>([])
-  const [categories, setCategories] = useState<CategoryWithChildren[]>([])
   const [loading, setLoading] = useState(true)
   const [showNewRequestModal, setShowNewRequestModal] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -38,12 +37,11 @@ const MyRequestsPage: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const [requestsData, categoriesData] = await Promise.all([
+      const [requestsData] = await Promise.all([
         getUserUpdateRequests(user!.id),
         getAllCategories()
       ])
       setRequests(requestsData)
-      setCategories(categoriesData)
     } catch (error) {
       console.error('Failed to fetch data:', error)
     } finally {

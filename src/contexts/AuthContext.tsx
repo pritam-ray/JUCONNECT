@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { Database } from '../types/database.types'
@@ -33,7 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true)
   const [isGuest, setIsGuest] = useState(false)
 
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     if (user && !isGuest && isSupabaseConfigured() && supabase) {
       try {
         const { data, error } = await supabase
@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Error fetching profile:', error)
       }
     }
-  }
+  }, [user, isGuest])
 
   const signInAsGuest = () => {
     setIsGuest(true)
@@ -133,7 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       mounted = false
     }
-  }, [])
+  }, [refreshProfile])
 
   const value: AuthContextType = {
     user,

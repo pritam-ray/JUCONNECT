@@ -19,8 +19,11 @@ class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error }
   }
 
-  componentDidCatch(error: Error, errorInfo: any) {
-    console.error('Error caught by boundary:', error, errorInfo)
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // Use logger instead of console.error in production
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error caught by boundary:', error, errorInfo)
+    }
   }
 
   render() {

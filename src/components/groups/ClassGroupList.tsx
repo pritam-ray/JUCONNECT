@@ -29,7 +29,7 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
   const [activeTab, setActiveTab] = useState<'my-groups' | 'all-groups'>('my-groups')
   const [error, setError] = useState<string | null>(null)
 
-  const fetchGroups = async () => {
+  const fetchGroups = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -73,11 +73,11 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     fetchGroups()
-  }, [user])
+  }, [user, fetchGroups])
 
   // Real-time group handlers
   const handleGroupCreate = useCallback((newGroup: any) => {

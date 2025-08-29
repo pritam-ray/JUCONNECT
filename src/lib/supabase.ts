@@ -35,7 +35,7 @@ export const isSupabaseConfigured = (): boolean => {
 }
 
 // Helper function to check if user is admin
-const isAdmin = async (userId: string): Promise<boolean> => {
+export const isAdmin = async (userId: string): Promise<boolean> => {
   if (!supabase) return false
   
   const { data } = await supabase

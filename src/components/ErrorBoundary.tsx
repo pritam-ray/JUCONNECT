@@ -1,12 +1,15 @@
 import { Component, ReactNode } from 'react'
+import { logger } from '../utils/logger'
 
 interface Props {
   children: ReactNode
+  fallback?: ReactNode
 }
 
 interface State {
   hasError: boolean
   error?: Error
+  errorInfo?: any
 }
 
 class ErrorBoundary extends Component<Props, State> {
@@ -20,11 +23,36 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error('Error caught by boundary:', error, errorInfo)
+    this.setState({ errorInfo })
+    
+    // Log error details
+    logger.error('Error caught by boundary:', {
+      error: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+      errorBoundary: true
+    })
+    
+    // Report critical errors
+    if (error.message.includes('infinite recursion') || 
+        error.message.includes('Maximum call stack') ||
+        error.message.includes('out of memory')) {
+      console.error('CRITICAL ERROR:', error.message)
+    }
   }
 
   render() {
     if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback
+      }
+
+      const errorMessage = this.state.error?.message || 'Unknown error'
+      const isDBError = errorMessage.includes('infinite recursion') || 
+                       errorMessage.includes('Database configuration')
+      const isMemoryError = errorMessage.includes('Maximum call stack') ||
+                           errorMessage.includes('out of memory')
+
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6">
@@ -36,22 +64,65 @@ class ErrorBoundary extends Component<Props, State> {
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-gray-800">
-                  Something went wrong
+                  {isDBError ? 'Database Configuration Issue' : 
+                   isMemoryError ? 'Performance Issue Detected' :
+                   'Application Error'}
                 </h3>
               </div>
             </div>
+            
             <div className="text-sm text-gray-600 mb-4">
-              <p>The application encountered an error:</p>
-              <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto">
-                {this.state.error?.message || 'Unknown error'}
-              </pre>
+              {isDBError ? (
+                <div>
+                  <p className="mb-2">There's a database configuration issue that needs to be resolved.</p>
+                  <p className="text-xs text-gray-500">This usually relates to database policies that need to be updated.</p>
+                </div>
+              ) : isMemoryError ? (
+                <div>
+                  <p className="mb-2">The application encountered a performance issue.</p>
+                  <p className="text-xs text-gray-500">This might be due to too many active connections or memory usage.</p>
+                </div>
+              ) : (
+                <div>
+                  <p className="mb-2">The application encountered an unexpected error:</p>
+                  <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto max-h-20">
+                    {errorMessage}
+                  </pre>
+                </div>
+              )}
             </div>
-            <button
-              onClick={() => window.location.reload()}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-            >
-              Reload Page
-            </button>
+            
+            <div className="flex space-x-3">
+              <button
+                onClick={() => window.location.reload()}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+              >
+                Reload App
+              </button>
+              <button
+                onClick={() => {
+                  // Clear all storage and reload
+                  localStorage.clear()
+                  sessionStorage.clear()
+                  window.location.href = '/'
+                }}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+              >
+                Reset & Reload
+              </button>
+            </div>
+            
+            {process.env.NODE_ENV === 'development' && (
+              <details className="mt-4">
+                <summary className="text-xs text-gray-500 cursor-pointer">Debug Info</summary>
+                <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto max-h-32">
+                  {JSON.stringify({ 
+                    error: this.state.error?.stack, 
+                    componentStack: this.state.errorInfo?.componentStack 
+                  }, null, 2)}
+                </pre>
+              </details>
+            )}
           </div>
         </div>
       )

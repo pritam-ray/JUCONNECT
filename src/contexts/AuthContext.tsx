@@ -129,7 +129,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let mounted = true
-    let sessionCheckInterval: NodeJS.Timeout
+    let sessionCheckInterval: NodeJS.Timeout | null = null
+    let authSubscription: any = null
 
     const initializeAuth = async () => {
       try {
@@ -153,7 +154,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const maxRetries = 3
         let session = null
         
-        while (retryCount < maxRetries && !session) {
+        while (retryCount < maxRetries && !session && mounted) {
           try {
             const { data: { session: currentSession }, error } = await supabase.auth.getSession()
             if (error) throw error
@@ -181,13 +182,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setLoading(false)
         }
 
-        // Set up periodic session validation
-        sessionCheckInterval = setInterval(() => {
-          if (session && !isSessionValid()) {
-            console.log('Session expired, refreshing...')
-            refreshSession()
-          }
-        }, 5 * 60 * 1000) // Check every 5 minutes
+        // Set up periodic session validation with cleanup
+        if (session && mounted) {
+          sessionCheckInterval = setInterval(() => {
+            if (mounted && session && !isSessionValid()) {
+              console.log('Session expired, refreshing...')
+              refreshSession()
+            }
+          }, 5 * 60 * 1000) // Check every 5 minutes
+        }
 
         // Listen for auth changes with enhanced error handling
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -212,10 +215,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           }
         )
+        
+        authSubscription = subscription
 
         // Handle page visibility changes for session management
         const handleVisibilityChange = () => {
-          if (document.visibilityState === 'visible' && session && !isSessionValid()) {
+          if (mounted && document.visibilityState === 'visible' && session && !isSessionValid()) {
             refreshSession()
           }
         }
@@ -223,11 +228,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         document.addEventListener('visibilitychange', handleVisibilityChange)
 
         return () => {
-          subscription.unsubscribe()
           document.removeEventListener('visibilitychange', handleVisibilityChange)
-          if (sessionCheckInterval) {
-            clearInterval(sessionCheckInterval)
-          }
         }
       } catch (error) {
         console.error('Error initializing auth:', error)
@@ -243,6 +244,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       mounted = false
       if (sessionCheckInterval) {
         clearInterval(sessionCheckInterval)
+      }
+      if (authSubscription) {
+        authSubscription.unsubscribe()
       }
     }
   }, [refreshProfile, isSessionValid, refreshSession])

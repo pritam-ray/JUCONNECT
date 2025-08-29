@@ -52,8 +52,10 @@ class EnhancedRealtimeService {
   }
   private statusCallbacks: ((status: RealtimeConnectionStatus) => void)[] = []
   private reconnectTimeouts: Map<string, NodeJS.Timeout> = new Map()
+  private healthCheckInterval: NodeJS.Timeout | null = null
   private readonly maxRetries: number = 5
   private readonly retryDelay: number = 2000
+  private isDestroyed = false
 
   constructor() {
     this.setupConnectionMonitoring()
@@ -73,10 +75,37 @@ class EnhancedRealtimeService {
       return
     }
 
-    // Monitor connection status
-    setInterval(() => {
-      this.checkConnectionHealth()
+    // Monitor connection status with proper cleanup
+    this.healthCheckInterval = setInterval(() => {
+      if (!this.isDestroyed) {
+        this.checkConnectionHealth()
+      }
     }, 30000) // Check every 30 seconds
+  }
+
+  /**
+   * Destroy the service and cleanup all resources
+   */
+  public destroy() {
+    this.isDestroyed = true
+    
+    // Clear health check interval
+    if (this.healthCheckInterval) {
+      clearInterval(this.healthCheckInterval)
+      this.healthCheckInterval = null
+    }
+    
+    // Clear all reconnection timeouts
+    this.reconnectTimeouts.forEach((timeout) => {
+      clearTimeout(timeout)
+    })
+    this.reconnectTimeouts.clear()
+    
+    // Unsubscribe from all channels
+    this.unsubscribeAll()
+    
+    // Clear status callbacks
+    this.statusCallbacks = []
   }
 
   /**

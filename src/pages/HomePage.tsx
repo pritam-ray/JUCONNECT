@@ -512,23 +512,9 @@ const HomePage: React.FC = () => {
                   >
                     ✕
                   </button>
-                </Badge>
-              )}
-              
-              {selectedContentType && (
-                <Badge variant="premium" className="flex items-center gap-2">
-                  {contentTypes.find(t => t.value === selectedContentType)?.icon}
-                  {contentTypes.find(t => t.value === selectedContentType)?.label}
-                  <button
-                    onClick={() => setSelectedContentType('')}
-                    className="ml-1 hover:text-red-500 transition-colors"
-                    title="Remove type filter"
-                  >
-                    ✕
-                  </button>
-                </Badge>
-              )}
-              
+              <p className="text-secondary-600 mb-8 leading-relaxed">
+                We cannot connect to the server right now. Please check your internet connection and try again.
+              </p>
               <Button
                 variant="ghost"
                 size="sm"

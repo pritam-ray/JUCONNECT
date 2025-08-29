@@ -141,7 +141,7 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
       await fetchGroups()
     } catch (error: any) {
       console.error('Failed to join group:', error)
-      alert(error.message || 'Failed to join group')
+      alert(error.message || 'Could not join the group. Please try again.')
     } finally {
       setJoining(null)
     }

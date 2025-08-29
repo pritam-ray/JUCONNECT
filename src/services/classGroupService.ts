@@ -409,11 +409,11 @@ export const sendGroupMessage = async (
     if (error) {
       console.error('Error sending message:', error)
       if (error.code === '42P01') {
-        throw new Error('Group messages table does not exist. Please contact administrator.')
+        throw new Error('There is a technical issue. Please try again later.')
       } else if (error.code === '42501') {
-        throw new Error('Permission denied. You may not be a member of this group.')
+        throw new Error('You are already in this group')
       } else {
-        throw new Error(`Failed to send message: ${error.message}`)
+        throw new Error('Could not join the group. Please try again.')
       }
     }
     

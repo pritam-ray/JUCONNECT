@@ -267,12 +267,12 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-4 sm:space-y-0">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Class Groups</h2>
-          <p className="text-gray-600">Join your class groups to collaborate and share resources</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Class Groups</h2>
+          <p className="text-sm sm:text-base text-gray-600">Join your class groups to collaborate and share resources</p>
         </div>
         
         {user && !isGuest && (
@@ -287,8 +287,8 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <div className="flex flex-col md:flex-row gap-4">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
@@ -296,16 +296,16 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
               placeholder="Search groups..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base"
             />
           </div>
           
-          <div className="flex items-center space-x-2">
-            <Filter className="h-4 w-4 text-gray-400" />
+          <div className="flex items-center space-x-2 min-w-0">
+            <Filter className="h-4 w-4 text-gray-400 flex-shrink-0" />
             <select
               value={selectedYear || ''}
               onChange={(e) => setSelectedYear(e.target.value ? parseInt(e.target.value) : null)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
             >
               <option value="">All Years</option>
               {years.map(year => (
@@ -341,7 +341,7 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
       </div>
 
       {/* Groups List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {activeTab === 'my-groups' ? (
           filteredGroups(userGroups).length === 0 ? (
             <div className="col-span-full text-center py-12">
@@ -444,7 +444,7 @@ const GroupCard: React.FC<GroupCardProps> = ({
   userId
 }) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center space-x-2 mb-2">

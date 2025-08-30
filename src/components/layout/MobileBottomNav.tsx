@@ -18,8 +18,8 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onAuthRequired }) => 
 
   const isActive = (path: string) => {
     // Special handling for chat routes
-    if (path === '/chat?tab=private') {
-      return location.pathname === '/chat' && location.search.includes('tab=private')
+    if (path === '/chat') {
+      return location.pathname === '/chat'
     }
     return location.pathname === path
   }
@@ -28,7 +28,7 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onAuthRequired }) => 
     { name: 'Home', href: '/', icon: Home, requiresAuth: false },
     { name: 'Categories', href: '/categories', icon: FileText, requiresAuth: false },
     { name: 'Groups', href: '/groups', icon: Users, requiresAuth: true },
-    { name: 'Messages', href: '/chat?tab=private', icon: Mail, requiresAuth: true },
+    { name: 'Messages', href: '/chat', icon: Mail, requiresAuth: true },
     { name: 'Upload', href: '/upload', icon: Upload, requiresAuth: true }
   ]
 

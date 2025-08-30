@@ -306,7 +306,11 @@ const UnifiedChatInterface: React.FC = () => {
 
   // Use mobile interface for small screens
   if (isMobile) {
-    return <MobileChatInterface onClose={() => {/* No action needed for unified interface */}} />
+    return (
+      <div className="h-full">
+        <MobileChatInterface onClose={() => {/* No action needed for unified interface */}} />
+      </div>
+    )
   }
 
   const renderGlobalChat = () => (

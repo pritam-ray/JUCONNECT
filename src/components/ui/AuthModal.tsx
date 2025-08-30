@@ -40,7 +40,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const { refreshProfile } = useAuth()
+  const { forceRefreshProfile, user, isGuest } = useAuth()
 
   const [formData, setFormData] = useState({
     email: '',
@@ -100,6 +100,8 @@ const AuthModal: React.FC<AuthModalProps> = ({
     setLoading(true)
 
     try {
+      console.log('🔐 Starting authentication process...')
+      
       if (mode === 'signup') {
         await signUp(
           formData.email,
@@ -112,20 +114,20 @@ const AuthModal: React.FC<AuthModalProps> = ({
         await signIn(formData.email, formData.password)
       }
 
-      await refreshProfile()
-      onSuccess?.()
-      onClose()
+      console.log('✅ Authentication successful, waiting for auth state update...')
       
-      // Reset form
-      setFormData({
-        email: '',
-        password: '',
-        fullName: '',
-        username: '',
-        mobileNumber: '',
-      })
-      setErrors({})
+      // Force an immediate page reload to ensure auth state is properly reflected
+      // This is a more reliable approach than waiting for state propagation
+      console.log('🔄 Forcing page reload to update auth state...')
+      
+      // Small delay to ensure the sign-in request completes
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Reload the page to force fresh auth state detection
+      window.location.reload()
+      
     } catch (err: any) {
+      console.error('❌ Authentication failed:', err)
       const friendlyError = err.message || 'Something went wrong. Please try again.'
       setError(friendlyError)
     } finally {

@@ -14,7 +14,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const { refreshProfile } = useAuth()
+  const { forceRefreshProfile } = useAuth()
 
   const [formData, setFormData] = useState({
     email: '',
@@ -86,8 +86,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         await signIn(formData.email, formData.password)
       }
 
-      await refreshProfile()
-      onSuccess?.()
+      console.log('✅ Authentication successful, reloading page to update UI...')
+      
+      // Force page reload to ensure proper auth state
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      window.location.reload()
+      
     } catch (err: any) {
       const friendlyError = err.message || 'Something went wrong. Please try again.'
       setError(friendlyError)

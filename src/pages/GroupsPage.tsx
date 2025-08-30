@@ -35,7 +35,7 @@ const GroupsPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Mobile View */}
       {isMobile ? (
-        <div className="h-screen">
+        <div className="h-screen flex flex-col">
           {selectedGroup ? (
             <GroupChatInterface
               group={selectedGroup}
@@ -43,7 +43,7 @@ const GroupsPage: React.FC = () => {
               onLeaveGroup={handleLeaveGroup}
             />
           ) : (
-            <div className="p-4 pb-20">
+            <div className="flex-1 overflow-y-auto p-4 pb-20">
               <ClassGroupList key={refreshKey} onGroupSelect={handleGroupSelect} />
             </div>
           )}

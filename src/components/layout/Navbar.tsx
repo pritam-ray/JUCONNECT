@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { BookOpen, Menu, X, User, LogOut, Upload, Settings, FileText, Shield, Sparkles, Mail, Users } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
@@ -14,12 +14,18 @@ const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showAdminPanel, setShowAdminPanel] = useState(false)
-  const { user, profile, isGuest, signOut } = useAuth()
+  const { user, profile, isGuest, signOut, debugAuthState } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
 
   // Get unread message count with rate limiting
   const { totalUnreadCount } = usePrivateMessages(user?.id || null)
+
+  // Debug auth state changes
+  useEffect(() => {
+    console.log('🔍 Navbar: Auth state changed')
+    debugAuthState()
+  }, [user, isGuest, debugAuthState])
 
   const isActive = (path: string) => location.pathname === path
 
@@ -32,8 +38,14 @@ const Navbar: React.FC = () => {
   ]
 
   const handleSignOut = async () => {
-    await signOut()
-    setIsOpen(false)
+    try {
+      setIsOpen(false)
+      console.log('🚪 User initiated sign out')
+      await signOut()
+    } catch (error) {
+      console.error('Error during sign out:', error)
+      setIsOpen(false)
+    }
   }
 
   const handleNavClick = (e: React.MouseEvent, requiresAuth: boolean = false) => {

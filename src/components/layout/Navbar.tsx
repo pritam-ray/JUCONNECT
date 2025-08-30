@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { BookOpen, Menu, X, User, LogOut, Upload, Settings, FileText, Shield, Sparkles, Mail, Users } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { cn } from '../../utils/cn'
+import { appState } from '../../utils/appState'
 import AuthModal from '../ui/AuthModal'
 import AdminPanel from '../admin/AdminPanel'
 import Button from '../ui/Button'
@@ -17,7 +18,7 @@ const Navbar: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
 
-  // Get unread message count
+  // Get unread message count with rate limiting
   const { totalUnreadCount } = usePrivateMessages(user?.id || null)
 
   const isActive = (path: string) => location.pathname === path

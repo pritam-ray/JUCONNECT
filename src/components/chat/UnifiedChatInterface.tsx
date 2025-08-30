@@ -142,7 +142,7 @@ const UnifiedChatInterface: React.FC = () => {
       try {
         setGlobalLoading(true)
         const initialMessages = await getChatMessages()
-        setGlobalMessages(initialMessages ? initialMessages.reverse() : [])
+        setGlobalMessages(initialMessages || [])
       } catch (error) {
         console.error('Failed to load global messages:', error)
         setError('Failed to load chat messages')

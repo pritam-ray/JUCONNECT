@@ -1,329 +1,46 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
 export interface Database {
   public: {
     Tables: {
-      private_messages: {
-        Row: {
-          id: string
-          sender_id: string | null
-          recipient_id: string | null
-          message: string
-          is_read: boolean
-          is_deleted_by_sender: boolean
-          is_deleted_by_recipient: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          sender_id?: string | null
-          recipient_id?: string | null
-          message: string
-          is_read?: boolean
-          is_deleted_by_sender?: boolean
-          is_deleted_by_recipient?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          sender_id?: string | null
-          recipient_id?: string | null
-          message?: string
-          is_read?: boolean
-          is_deleted_by_sender?: boolean
-          is_deleted_by_recipient?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      content_reports: {
-        Row: {
-          id: string
-          content_id: string
-          reported_by: string
-          reason: string
-          description: string | null
-          status: 'pending' | 'reviewed' | 'resolved' | 'dismissed'
-          reviewed_by: string | null
-          admin_notes: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          content_id: string
-          reported_by: string
-          reason: string
-          description?: string | null
-          status?: 'pending' | 'reviewed' | 'resolved' | 'dismissed'
-          reviewed_by?: string | null
-          admin_notes?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          content_id?: string
-          reported_by?: string
-          reason?: string
-          description?: string | null
-          status?: 'pending' | 'reviewed' | 'resolved' | 'dismissed'
-          reviewed_by?: string | null
-          admin_notes?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      chat_reports: {
-        Row: {
-          id: string
-          message_id: string
-          reported_by: string
-          reason: string
-          description: string | null
-          status: 'pending' | 'reviewed' | 'resolved' | 'dismissed'
-          reviewed_by: string | null
-          admin_notes: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          message_id: string
-          reported_by: string
-          reason: string
-          description?: string | null
-          status?: 'pending' | 'reviewed' | 'resolved' | 'dismissed'
-          reviewed_by?: string | null
-          admin_notes?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          message_id?: string
-          reported_by?: string
-          reason?: string
-          description?: string | null
-          status?: 'pending' | 'reviewed' | 'resolved' | 'dismissed'
-          reviewed_by?: string | null
-          admin_notes?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      user_blocks: {
-        Row: {
-          id: string
-          blocker_id: string
-          blocked_id: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          blocker_id: string
-          blocked_id: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          blocker_id?: string
-          blocked_id?: string
-          created_at?: string
-        }
-      }
-      file_security_scans: {
-        Row: {
-          id: string
-          content_id: string
-          scan_status: 'pending' | 'clean' | 'infected' | 'suspicious' | 'error'
-          scan_results: any
-          scanned_at: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          content_id: string
-          scan_status?: 'pending' | 'clean' | 'infected' | 'suspicious' | 'error'
-          scan_results?: any
-          scanned_at?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          content_id?: string
-          scan_status?: 'pending' | 'clean' | 'infected' | 'suspicious' | 'error'
-          scan_results?: any
-          scanned_at?: string | null
-          created_at?: string
-        }
-      }
       profiles: {
         Row: {
           id: string
           username: string
-          mobile_number: string
           full_name: string
+          mobile_number: string
+          avatar_url: string | null
           is_admin: boolean
           created_at: string
           updated_at: string
-          avatar_url: string | null
-          bio: string | null
-          is_online: boolean
-          last_seen: string
         }
         Insert: {
           id: string
           username: string
-          mobile_number: string
           full_name: string
+          mobile_number: string
+          avatar_url?: string | null
           is_admin?: boolean
           created_at?: string
           updated_at?: string
-          avatar_url?: string | null
-          bio?: string | null
-          is_online?: boolean
-          last_seen?: string
         }
         Update: {
           id?: string
           username?: string
-          mobile_number?: string
           full_name?: string
+          mobile_number?: string
+          avatar_url?: string | null
           is_admin?: boolean
           created_at?: string
           updated_at?: string
-          avatar_url?: string | null
-          bio?: string | null
-          is_online?: boolean
-          last_seen?: string
         }
-      }
-      categories: {
-        Row: {
-          id: string
-          name: string
-          slug: string
-          description: string | null
-          parent_id: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          slug: string
-          description?: string | null
-          parent_id?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          slug?: string
-          description?: string | null
-          parent_id?: string | null
-          created_at?: string
-        }
-      }
-      content: {
-        Row: {
-          id: string
-          title: string
-          description: string | null
-          content_type: 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'assignments' | 'other'
-          category_id: string | null
-          uploaded_by: string | null
-          file_url: string | null
-          file_size: number | null
-          file_type: 'pdf' | 'doc' | 'docx' | 'txt' | 'jpg' | 'png' | null
-          external_url: string | null
-          tags: string[]
-          year: number | null
-          semester: number | null
-          is_approved: boolean
-          view_count: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          title: string
-          description?: string | null
-          content_type: 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'assignments' | 'other'
-          category_id?: string | null
-          uploaded_by?: string | null
-          file_url?: string | null
-          file_size?: number | null
-          file_type?: 'pdf' | 'doc' | 'docx' | 'txt' | 'jpg' | 'png' | null
-          external_url?: string | null
-          tags?: string[]
-          year?: number | null
-          semester?: number | null
-          is_approved?: boolean
-          view_count?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          title?: string
-          description?: string | null
-          content_type?: 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'assignments' | 'other'
-          category_id?: string | null
-          uploaded_by?: string | null
-          file_url?: string | null
-          file_size?: number | null
-          file_type?: 'pdf' | 'doc' | 'docx' | 'txt' | 'jpg' | 'png' | null
-          external_url?: string | null
-          tags?: string[]
-          year?: number | null
-          semester?: number | null
-          is_approved?: boolean
-          view_count?: number
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      educational_links: {
-        Row: {
-          id: string
-          title: string
-          url: string
-          description: string | null
-          platform: string
-          thumbnail_url: string | null
-          category_id: string | null
-          uploaded_by: string | null
-          is_approved: boolean
-          tags: string[]
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          title: string
-          url: string
-          description?: string | null
-          platform: string
-          thumbnail_url?: string | null
-          category_id?: string | null
-          uploaded_by?: string | null
-          is_approved?: boolean
-          tags?: string[]
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          title?: string
-          url?: string
-          description?: string | null
-          platform?: string
-          thumbnail_url?: string | null
-          category_id?: string | null
-          uploaded_by?: string | null
-          is_approved?: boolean
-          tags?: string[]
-          created_at?: string
-        }
+        Relationships: []
       }
       chat_messages: {
         Row: {
@@ -331,6 +48,7 @@ export interface Database {
           user_id: string | null
           message: string
           is_reported: boolean
+          is_flagged: boolean
           created_at: string
         }
         Insert: {
@@ -338,6 +56,7 @@ export interface Database {
           user_id?: string | null
           message: string
           is_reported?: boolean
+          is_flagged?: boolean
           created_at?: string
         }
         Update: {
@@ -345,96 +64,64 @@ export interface Database {
           user_id?: string | null
           message?: string
           is_reported?: boolean
+          is_flagged?: boolean
           created_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
       }
-      update_requests: {
+      private_messages: {
         Row: {
           id: string
-          user_id: string | null
-          content_type: 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'assignments'
-          content_id: string | null
-          issue_description: string
-          suggested_changes: string | null
-          status: 'pending' | 'approved' | 'rejected'
-          admin_notes: string | null
-          reviewed_by: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id?: string | null
-          content_type: 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'assignments'
-          content_id?: string | null
-          issue_description: string
-          suggested_changes?: string | null
-          status?: 'pending' | 'approved' | 'rejected'
-          admin_notes?: string | null
-          reviewed_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string | null
-          content_type?: 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'assignments'
-          content_id?: string | null
-          issue_description?: string
-          suggested_changes?: string | null
-          status?: 'pending' | 'approved' | 'rejected'
-          admin_notes?: string | null
-          reviewed_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      file_uploads: {
-        Row: {
-          id: string
-          user_id: string | null
-          original_filename: string
-          stored_filename: string
-          file_size: number
-          file_type: 'pdf' | 'doc' | 'docx' | 'txt' | 'jpg' | 'png'
-          upload_path: string
-          is_processed: boolean
+          sender_id: string
+          recipient_id: string
+          message: string
+          is_read: boolean
+          is_deleted_by_sender: boolean
+          is_deleted_by_recipient: boolean
           created_at: string
         }
         Insert: {
           id?: string
-          user_id?: string | null
-          original_filename: string
-          stored_filename: string
-          file_size: number
-          file_type: 'pdf' | 'doc' | 'docx' | 'txt' | 'jpg' | 'png'
-          upload_path: string
-          is_processed?: boolean
+          sender_id: string
+          recipient_id: string
+          message: string
+          is_read?: boolean
+          is_deleted_by_sender?: boolean
+          is_deleted_by_recipient?: boolean
           created_at?: string
         }
         Update: {
           id?: string
-          user_id?: string | null
-          original_filename?: string
-          stored_filename?: string
-          file_size?: number
-          file_type?: 'pdf' | 'doc' | 'docx' | 'txt' | 'jpg' | 'png'
-          upload_path?: string
-          is_processed?: boolean
+          sender_id?: string
+          recipient_id?: string
+          message?: string
+          is_read?: boolean
+          is_deleted_by_sender?: boolean
+          is_deleted_by_recipient?: boolean
           created_at?: string
         }
+        Relationships: []
       }
       class_groups: {
         Row: {
           id: string
           name: string
           description: string | null
+          subject: string
           year: number
           section: string
-          subject: string | null
-          created_by: string
-          is_active: boolean
-          member_count: number
+          semester: string
+          is_private: boolean
+          password_hash: string | null
+          max_members: number | null
+          creator_id: string
           created_at: string
           updated_at: string
         }
@@ -442,12 +129,14 @@ export interface Database {
           id?: string
           name: string
           description?: string | null
+          subject: string
           year: number
           section: string
-          subject?: string | null
-          created_by: string
-          is_active?: boolean
-          member_count?: number
+          semester: string
+          is_private?: boolean
+          password_hash?: string | null
+          max_members?: number | null
+          creator_id: string
           created_at?: string
           updated_at?: string
         }
@@ -455,41 +144,45 @@ export interface Database {
           id?: string
           name?: string
           description?: string | null
+          subject?: string
           year?: number
           section?: string
-          subject?: string | null
-          created_by?: string
-          is_active?: boolean
-          member_count?: number
+          semester?: string
+          is_private?: boolean
+          password_hash?: string | null
+          max_members?: number | null
+          creator_id?: string
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       group_members: {
         Row: {
           id: string
           group_id: string
           user_id: string
-          role: 'admin' | 'member'
-          joined_at: string
+          role: string
           is_active: boolean
+          joined_at: string
         }
         Insert: {
           id?: string
           group_id: string
           user_id: string
-          role?: 'admin' | 'member'
-          joined_at?: string
+          role?: string
           is_active?: boolean
+          joined_at?: string
         }
         Update: {
           id?: string
           group_id?: string
           user_id?: string
-          role?: 'admin' | 'member'
-          joined_at?: string
+          role?: string
           is_active?: boolean
+          joined_at?: string
         }
+        Relationships: []
       }
       group_messages: {
         Row: {
@@ -497,110 +190,23 @@ export interface Database {
           group_id: string
           user_id: string
           message: string
-          message_type: 'text' | 'file' | 'link'
-          file_url: string | null
-          file_name: string | null
-          file_size: number | null
-          reply_to: string | null
-          is_edited: boolean
           created_at: string
-          updated_at: string
         }
         Insert: {
           id?: string
           group_id: string
           user_id: string
           message: string
-          message_type?: 'text' | 'file' | 'link'
-          file_url?: string | null
-          file_name?: string | null
-          file_size?: number | null
-          reply_to?: string | null
-          is_edited?: boolean
           created_at?: string
-          updated_at?: string
         }
         Update: {
           id?: string
           group_id?: string
           user_id?: string
           message?: string
-          message_type?: 'text' | 'file' | 'link'
-          file_url?: string | null
-          file_name?: string | null
-          file_size?: number | null
-          reply_to?: string | null
-          is_edited?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      group_files: {
-        Row: {
-          id: string
-          group_id: string
-          uploaded_by: string
-          file_name: string
-          file_url: string
-          file_size: number
-          file_type: string
-          description: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          group_id: string
-          uploaded_by: string
-          file_name: string
-          file_url: string
-          file_size: number
-          file_type: string
-          description?: string | null
           created_at?: string
         }
-        Update: {
-          id?: string
-          group_id?: string
-          uploaded_by?: string
-          file_name?: string
-          file_url?: string
-          file_size?: number
-          file_type?: string
-          description?: string | null
-          created_at?: string
-        }
-      }
-      group_announcements: {
-        Row: {
-          id: string
-          group_id: string
-          created_by: string
-          title: string
-          content: string
-          is_important: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          group_id: string
-          created_by: string
-          title: string
-          content: string
-          is_important?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          group_id?: string
-          created_by?: string
-          title?: string
-          content?: string
-          is_important?: boolean
-          created_at?: string
-          updated_at?: string
-        }
+        Relationships: []
       }
       group_message_reads: {
         Row: {
@@ -621,37 +227,332 @@ export interface Database {
           user_id?: string
           read_at?: string
         }
+        Relationships: []
+      }
+      group_files: {
+        Row: {
+          id: string
+          group_id: string
+          user_id: string
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          group_id: string
+          user_id: string
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          group_id?: string
+          user_id?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      group_announcements: {
+        Row: {
+          id: string
+          group_id: string
+          user_id: string
+          title: string
+          content: string
+          is_pinned: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          group_id: string
+          user_id: string
+          title: string
+          content: string
+          is_pinned?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          group_id?: string
+          user_id?: string
+          title?: string
+          content?: string
+          is_pinned?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      categories: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+          description: string | null
+          color: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug: string
+          description?: string | null
+          color?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+          description?: string | null
+          color?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      content: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          content_type: string
+          category_id: string | null
+          file_path: string | null
+          file_size: number | null
+          uploader_id: string | null
+          is_approved: boolean
+          download_count: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          content_type: string
+          category_id?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          uploader_id?: string | null
+          is_approved?: boolean
+          download_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          content_type?: string
+          category_id?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          uploader_id?: string | null
+          is_approved?: boolean
+          download_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      chat_reports: {
+        Row: {
+          id: string
+          message_id: string
+          reporter_id: string
+          reason: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          message_id: string
+          reporter_id: string
+          reason: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          message_id?: string
+          reporter_id?: string
+          reason?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      content_reports: {
+        Row: {
+          id: string
+          content_id: string
+          reporter_id: string
+          reason: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          content_id: string
+          reporter_id: string
+          reason: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          content_id?: string
+          reporter_id?: string
+          reason?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      user_activity_logs: {
+        Row: {
+          id: string
+          user_id: string | null
+          activity_type: string
+          activity_data: Json
+          ip_address: string | null
+          user_agent: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          activity_type: string
+          activity_data?: Json
+          ip_address?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          activity_type?: string
+          activity_data?: Json
+          ip_address?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      error_logs: {
+        Row: {
+          id: string
+          user_id: string | null
+          error_type: string
+          error_message: string
+          error_stack: string | null
+          context: Json
+          severity: string
+          resolved: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          error_type: string
+          error_message: string
+          error_stack?: string | null
+          context?: Json
+          severity?: string
+          resolved?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          error_type?: string
+          error_message?: string
+          error_stack?: string | null
+          context?: Json
+          severity?: string
+          resolved?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      cleanup_logs: {
+        Row: {
+          id: string
+          cleanup_type: string
+          records_affected: number
+          status: string
+          error_message: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          cleanup_type: string
+          records_affected?: number
+          status?: string
+          error_message?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          cleanup_type?: string
+          records_affected?: number
+          status?: string
+          error_message?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      user_engagement_metrics: {
+        Row: {
+          id: string
+          user_id: string
+          total_uploads: number
+          total_downloads: number
+          total_messages: number
+          total_groups_joined: number
+          last_activity: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          total_uploads?: number
+          total_downloads?: number
+          total_messages?: number
+          total_groups_joined?: number
+          last_activity?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          total_uploads?: number
+          total_downloads?: number
+          total_messages?: number
+          total_groups_joined?: number
+          last_activity?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      delete_old_chat_messages: {
-        Args: Record<string, never>
-        Returns: undefined
-      }
-      get_user_groups: {
-        Args: {
-          user_id: string
-        }
-        Returns: {
-          group_id: string
-          group_name: string
-          group_description: string | null
-          year: number
-          section: string
-          subject: string | null
-          member_count: number
-          user_role: string
-          unread_count: number
-        }[]
-      }
+      [_ in never]: never
     }
     Enums: {
-      content_type: 'question_paper' | 'notes' | 'syllabus' | 'educational_link' | 'assignments' | 'other'
-      request_status: 'pending' | 'approved' | 'rejected'
-      file_type: 'pdf' | 'doc' | 'docx' | 'txt' | 'jpg' | 'png'
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
     }
   }
 }

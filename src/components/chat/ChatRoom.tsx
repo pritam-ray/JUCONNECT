@@ -50,8 +50,7 @@ const ChatRoom: React.FC = () => {
       try {
         setLoading(true)
         const initialMessages = await getChatMessages()
-        // Reverse to show oldest first (newest at bottom)
-        setMessages(initialMessages ? initialMessages.reverse() : [])
+        setMessages((initialMessages || []) as OptimisticChatMessage[])
       } catch (error) {
         console.error('Failed to load messages:', error)
         setError('Could not load chat messages. Please refresh the page.')

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import { User, Calendar, Eye, Upload, TrendingUp, Edit3, FileText, BarChart3 } from 'lucide-react'
 import { getUserProfile, getUserStats, getUserContent, updateUserProfile, UserStats } from '../services/userService'
@@ -36,13 +36,7 @@ const UserProfilePage: React.FC = () => {
 
   const isOwnProfile = currentUser?.id === userId
 
-  useEffect(() => {
-    if (userId) {
-      fetchUserData()
-    }
-  }, [userId])
-
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     if (!userId) return
     
     setLoading(true)
@@ -63,16 +57,15 @@ const UserProfilePage: React.FC = () => {
         })
       }
       
-      // Fetch user content
-      fetchUserContent()
+      // User content will be fetched separately
     } catch (error) {
       console.error('Failed to fetch user data:', error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId])
 
-  const fetchUserContent = async () => {
+  const fetchUserContent = useCallback(async () => {
     if (!userId) return
     
     setContentLoading(true)
@@ -84,7 +77,19 @@ const UserProfilePage: React.FC = () => {
     } finally {
       setContentLoading(false)
     }
-  }
+  }, [userId])
+
+  useEffect(() => {
+    if (userId) {
+      fetchUserData()
+    }
+  }, [userId, fetchUserData])
+
+  useEffect(() => {
+    if (userId) {
+      fetchUserContent()
+    }
+  }, [userId, fetchUserContent])
 
   const handleEditProfile = async (e: React.FormEvent) => {
     e.preventDefault()

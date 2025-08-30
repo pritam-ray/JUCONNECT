@@ -1,6 +1,55 @@
 import { supabase } from '../lib/supabase'
 import { Database } from '../types/database.types'
 
+// Rate limiting to prevent excessive API calls
+const API_CALL_LIMITS = {
+  getAllGroups: { calls: 0, lastReset: Date.now(), maxCalls: 2, resetInterval: 60000 }, // Reduced to 2 calls per minute
+  getUserGroups: { calls: 0, lastReset: Date.now(), maxCalls: 3, resetInterval: 60000 }, // Reduced to 3 calls per minute
+}
+
+// Simple cache to reduce API calls
+const CACHE = {
+  allGroups: { data: null as ClassGroupWithDetails[] | null, timestamp: 0, ttl: 30000 }, // 30 seconds TTL
+  userGroups: new Map<string, { data: ClassGroupWithDetails[] | null, timestamp: number }>(), // Per-user cache
+}
+
+const getCachedData = (key: 'allGroups', userId?: string): ClassGroupWithDetails[] | null => {
+  if (key === 'allGroups') {
+    const cache = CACHE.allGroups
+    if (cache.data && Date.now() - cache.timestamp < cache.ttl) {
+      console.log('Returning cached all groups data')
+      return cache.data
+    }
+  }
+  return null
+}
+
+const setCachedData = (key: 'allGroups', data: ClassGroupWithDetails[], userId?: string) => {
+  if (key === 'allGroups') {
+    CACHE.allGroups = { data, timestamp: Date.now(), ttl: 30000 }
+  }
+}
+
+const checkRateLimit = (key: keyof typeof API_CALL_LIMITS): boolean => {
+  const limit = API_CALL_LIMITS[key]
+  const now = Date.now()
+  
+  // Reset counter if interval has passed
+  if (now - limit.lastReset > limit.resetInterval) {
+    limit.calls = 0
+    limit.lastReset = now
+  }
+  
+  // Check if we've exceeded the limit
+  if (limit.calls >= limit.maxCalls) {
+    console.warn(`Rate limit exceeded for ${key}. Please wait before making more requests.`)
+    return false
+  }
+  
+  limit.calls++
+  return true
+}
+
 type ClassGroup = Database['public']['Tables']['class_groups']['Row']
 type GroupMember = Database['public']['Tables']['group_members']['Row']
 type GroupMessage = Database['public']['Tables']['group_messages']['Row']
@@ -75,6 +124,18 @@ export const getAllClassGroups = async (): Promise<ClassGroupWithDetails[]> => {
     return []
   }
 
+  // Check cache first
+  const cachedData = getCachedData('allGroups')
+  if (cachedData) {
+    return cachedData
+  }
+
+  // Check rate limit
+  if (!checkRateLimit('getAllGroups')) {
+    console.warn('getAllClassGroups: Rate limit exceeded, returning cached/empty data')
+    return CACHE.allGroups.data || []
+  }
+
   try {
     console.log('Fetching all class groups...')
     
@@ -98,13 +159,19 @@ export const getAllClassGroups = async (): Promise<ClassGroupWithDetails[]> => {
     }
     
     console.log('Fetched groups:', data?.length || 0)
-    return (data || []).map(group => ({
+    const processedData = (data || []).map(group => ({
       ...group,
       is_member: false,
       user_role: undefined,
       unread_count: 0,
-      join_status: group.is_password_protected ? '🔒 Password Protected' : 'Open to Join'
+      join_status: group.is_password_protected ? '🔒 Password Protected' : 'Open to Join',
+      password_hash: null // Add missing property
     }))
+    
+    // Cache the result
+    setCachedData('allGroups', processedData)
+    
+    return processedData
   } catch (error) {
     console.error('Error fetching all groups:', error)
     return []
@@ -115,6 +182,12 @@ export const getAllClassGroups = async (): Promise<ClassGroupWithDetails[]> => {
 export const getUserGroups = async (userId: string): Promise<ClassGroupWithDetails[]> => {
   if (!supabase || !userId) {
     console.error('Supabase not available or no user ID provided')
+    return []
+  }
+
+  // Check rate limit
+  if (!checkRateLimit('getUserGroups')) {
+    console.warn('getUserGroups: Rate limit exceeded, returning cached/empty data')
     return []
   }
 
@@ -446,12 +519,12 @@ export const getGroupMessages = async (
         )
       `)
       .eq('group_id', groupId)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: true })
       .range(offset, offset + limit - 1)
 
     if (error) throw error
     
-    return (data || []).reverse()
+    return data || []
   } catch (error) {
     console.error('Error fetching group messages:', error)
     return []

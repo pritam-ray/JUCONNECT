@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { X, Send, Search, User, MessageCircle, Clock } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { usePrivateMessages } from '../../hooks/usePrivateMessages'
@@ -65,7 +65,7 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
   }, [initialRecipientId, isOpen])
 
   // Search users
-  const handleSearch = async (query: string) => {
+  const handleSearch = useCallback(async (query: string) => {
     if (!query.trim() || !user) return
 
     try {
@@ -77,7 +77,7 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
     } finally {
       setSearching(false)
     }
-  }
+  }, [user])
 
   // Debounced search
   useEffect(() => {
@@ -90,7 +90,7 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
     }, 300)
 
     return () => clearTimeout(timer)
-  }, [searchQuery])
+  }, [searchQuery, handleSearch])
 
   // Send message
   const handleSendMessage = async () => {

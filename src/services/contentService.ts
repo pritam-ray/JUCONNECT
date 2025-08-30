@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { Database } from '../types/database.types'
+import { apiCache } from '../utils/apiCache'
 
 type Content = Database['public']['Tables']['content']['Row']
 type ContentInsert = Database['public']['Tables']['content']['Insert']
@@ -31,23 +32,33 @@ export const getApprovedContent = async (
     return []
   }
 
-  try {
-    if (!supabase) {
-      console.warn('Supabase client is not available')
-      return []
-    }
-    let query = supabase
-      .from('content')
-      .select(`
-        *,
-        categories (
-          id,
-          name,
-          slug
-        ),
-        profiles (
-          id,
-          username,
+  // Create cache key for this specific request
+  const cacheKey = apiCache.generateKey('approved_content', {
+    contentType,
+    categoryId, 
+    searchQuery,
+    limit,
+    offset
+  })
+
+  return apiCache.getOrFetch(cacheKey, async () => {
+    try {
+      if (!supabase) {
+        console.warn('Supabase client is not available')
+        return []
+      }
+      let query = supabase
+        .from('content')
+        .select(`
+          *,
+          categories (
+            id,
+            name,
+            slug
+          ),
+          profiles (
+            id,
+            username,
           full_name
         )
       `)
@@ -72,13 +83,14 @@ export const getApprovedContent = async (
 
     if (error) throw error
     return data || []
-  } catch (error: any) {
-    logger.error('Failed to fetch content:', error)
-    if (error.message?.includes('Failed to fetch') || error.name === 'TypeError') {
-      throw new Error('Connection problem. Please check your internet.')
+    } catch (error: any) {
+      console.error('Failed to fetch content:', error)
+      if (error.message?.includes('Failed to fetch') || error.name === 'TypeError') {
+        throw new Error('Connection problem. Please check your internet.')
+      }
+      throw new Error('Could not load content. Please try again.')
     }
-    throw new Error('Could not load content. Please try again.')
-  }
+  }, 30000) // Cache for 30 seconds
 }
 
 const getUserContent = async (userId: string): Promise<ContentWithCategory[]> => {

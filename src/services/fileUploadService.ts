@@ -10,18 +10,11 @@
  */
 
 import { supabase } from '../lib/supabase'
-import { Database } from '../types/database.types'
 import { 
   validateFileName, 
-  validateFileContent, 
-  performVirusScan, 
-  storeSecurityScanResult,
-  validateMetadata 
+  validateFileContent
 } from './securityService'
 import { logger } from '../utils/logger'
-
-type FileUpload = Database['public']['Tables']['file_uploads']['Row']
-type FileUploadInsert = Database['public']['Tables']['file_uploads']['Insert']
 
 // File size limits in bytes (5MB max for all file types)
 const FILE_SIZE_LIMIT = 5 * 1024 * 1024 // 5MB
@@ -146,8 +139,18 @@ export const uploadFile = async (
   options: FileUploadOptions = {}
 ): Promise<FileUploadResult> => {
   const { onProgress, onError, bucket = 'files', folder = 'general' } = options
+  let uploadSession: any = null
 
   try {
+    // Create upload tracking session
+    const { fileUploadTrackingService } = await import('./enhancedServices')
+    uploadSession = await fileUploadTrackingService.createUploadSession(
+      userId,
+      file.name,
+      file.size,
+      file.type
+    )
+
     // Validation stage
     onProgress?.({
       loaded: 0,
@@ -157,8 +160,15 @@ export const uploadFile = async (
       message: 'Checking file...'
     })
 
+    if (uploadSession) {
+      await fileUploadTrackingService.updateUploadProgress(uploadSession.id, 5, 'pending')
+    }
+
     if (!supabase) {
       const error = 'File upload is not available right now. Please try again later'
+      if (uploadSession) {
+        await fileUploadTrackingService.markUploadFailed(uploadSession.id, error)
+      }
       onError?.(error)
       return { success: false, error }
     }
@@ -166,6 +176,9 @@ export const uploadFile = async (
     // Validate file
     const validation = validateFile(file)
     if (!validation.isValid) {
+      if (uploadSession) {
+        await fileUploadTrackingService.markUploadFailed(uploadSession.id, validation.error!)
+      }
       onError?.(validation.error!)
       return { success: false, error: validation.error }
     }
@@ -206,7 +219,7 @@ export const uploadFile = async (
     const uploadPath = `${folder}/${fileName}`
 
     // Upload to Supabase storage with progress tracking
-    const { data: storageData, error: storageError } = await supabase.storage
+    const { error: storageError } = await supabase.storage
       .from(bucket)
       .upload(uploadPath, file, {
         cacheControl: '3600',
@@ -251,13 +264,19 @@ export const uploadFile = async (
       return { success: false, error }
     }
 
+    // Normalize file type for database (convert jpeg to jpg for consistency)
+    const normalizedFileType = fileExtension === 'jpeg' ? 'jpg' : 
+                              fileExtension === 'gif' ? 'jpg' :  // Convert gif to jpg
+                              fileExtension === 'webp' ? 'jpg' : // Convert webp to jpg
+                              fileExtension
+
     // Save upload record to database
     const uploadRecord = {
       user_id: userId,
       original_filename: file.name,
       stored_filename: fileName,
       file_size: file.size,
-      file_type: fileExtension as AllowedFileType,
+      file_type: normalizedFileType as 'pdf' | 'doc' | 'docx' | 'txt' | 'jpg' | 'png',
       upload_path: uploadPath,
       is_processed: false
     }
@@ -291,6 +310,24 @@ export const uploadFile = async (
       message: 'Upload complete!'
     })
 
+    // Mark upload session as completed and log activity
+    if (uploadSession) {
+      await fileUploadTrackingService.updateUploadProgress(uploadSession.id, 100, 'completed')
+    }
+
+    // Log upload activity
+    const { activityService } = await import('./enhancedServices')
+    await activityService.logActivity(
+      userId,
+      'upload',
+      { 
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: fileExtension,
+        uploadPath 
+      }
+    ).catch(err => console.warn('Failed to log upload activity:', err))
+
     return {
       success: true,
       fileUrl: urlData.publicUrl,
@@ -302,6 +339,26 @@ export const uploadFile = async (
   } catch (error) {
     const errorMessage = 'An unexpected error occurred during upload. Please try again'
     logger.error('File upload error:', error)
+    
+    // Mark upload session as failed and log error
+    if (uploadSession) {
+      const { fileUploadTrackingService } = await import('./enhancedServices')
+      await fileUploadTrackingService.markUploadFailed(uploadSession.id, errorMessage)
+    }
+
+    // Log error to enhanced error reporting
+    const { enhancedErrorReporting } = await import('./enhancedServices')
+    await enhancedErrorReporting.reportError(error, {
+      userId,
+      operation: 'file_upload',
+      component: 'fileUploadService',
+      metadata: { 
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type
+      }
+    })
+    
     onError?.(errorMessage)
     
     onProgress?.({
@@ -314,72 +371,4 @@ export const uploadFile = async (
 
     return { success: false, error: errorMessage }
   }
-}
-
-const deleteFile = async (uploadId: string, userId: string): Promise<void> => {
-  try {
-    // Get file info first
-    const { data: fileData, error: fetchError } = await supabase
-      .from('file_uploads')
-      .select('upload_path')
-      .eq('id', uploadId)
-      .eq('user_id', userId)
-      .single()
-
-    if (fetchError) throw fetchError
-
-    // Delete from storage
-    const { error: storageError } = await supabase.storage
-      .from('files')
-      .remove([fileData.upload_path])
-
-    if (storageError) {
-      console.error('Storage deletion error:', storageError)
-    }
-
-    // Delete from database
-    const { error: dbError } = await supabase
-      .from('file_uploads')
-      .delete()
-      .eq('id', uploadId)
-      .eq('user_id', userId)
-
-    if (dbError) throw dbError
-  } catch (error) {
-    console.error('File deletion error:', error)
-    throw error
-  }
-}
-
-const getUserFiles = async (userId: string): Promise<FileUpload[]> => {
-  const { data, error } = await supabase
-    .from('file_uploads')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-
-  if (error) throw error
-  return data || []
-}
-
-const getFileUrl = async (uploadId: string): Promise<string | null> => {
-  const { data, error } = await supabase
-    .from('file_uploads')
-    .select('upload_path')
-    .eq('id', uploadId)
-    .single()
-
-  if (error) {
-    console.error('Error fetching file path:', error)
-    return null
-  }
-  
-  if (!data?.upload_path) return null
-
-  // Get public URL from Supabase storage
-  const { data: urlData } = supabase.storage
-    .from('files')
-    .getPublicUrl(data.upload_path)
-
-  return urlData.publicUrl
 }

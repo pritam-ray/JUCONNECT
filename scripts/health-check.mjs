@@ -73,6 +73,5 @@ function checkProjectHealth() {
   console.log('\n✨ Health check complete!')
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  checkProjectHealth()
-}
+// Always run the health check when this script is executed directly
+checkProjectHealth()

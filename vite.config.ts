@@ -5,6 +5,15 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   base: process.env.GITHUB_ACTIONS ? '/JUCONNECT/' : '/',
+  // DISABLE HMR to prevent excessive reloads during development
+  server: {
+    hmr: false,
+    // Reduce polling that might cause excessive requests
+    watch: {
+      usePolling: false,
+      interval: 1000
+    }
+  },
   optimizeDeps: {
     exclude: ['lucide-react'],
   },

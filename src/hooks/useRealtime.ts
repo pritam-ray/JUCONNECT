@@ -46,6 +46,16 @@ export const useRealtimeGroupMessages = (
           try {
             logger.debug('New message received:', payload.new.id)
             if (!supabase) return
+            
+            // Rate limiting - prevent excessive message fetching
+            const now = Date.now()
+            const lastFetch = parseInt(sessionStorage.getItem(`last-msg-fetch-${groupId}`) || '0')
+            if (now - lastFetch < 1000) { // 1 second between message fetches
+              console.log('Message fetch rate limited')
+              return
+            }
+            sessionStorage.setItem(`last-msg-fetch-${groupId}`, now.toString())
+            
             // Fetch complete message with profile data
             const { data, error } = await supabase
               .from('group_messages')
@@ -234,14 +244,28 @@ export const useRealtimeGroups = (
 ) => {
   const channelRef = useRef<any>(null)
   const { enabled = true, onError } = options
+  const isSubscribedRef = useRef(false) // Prevent multiple subscriptions
+  const lastCallRef = useRef<number>(0) // Rate limiting
 
   useEffect(() => {
-    if (!enabled || !isSupabaseConfigured() || !supabase) return
+    if (!enabled || !isSupabaseConfigured() || !supabase || isSubscribedRef.current) return
+
+    // Rate limiting: only allow one subscription every 5 seconds
+    const now = Date.now()
+    if (now - lastCallRef.current < 5000) {
+      return
+    }
+    lastCallRef.current = now
+
+    logger.debug('Setting up real-time updates for groups')
 
     // Clean up existing subscription
     if (channelRef.current) {
       supabase.removeChannel(channelRef.current)
+      channelRef.current = null
     }
+
+    isSubscribedRef.current = true
 
     const channel = supabase
       .channel('groups_updates')
@@ -250,14 +274,14 @@ export const useRealtimeGroups = (
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'groups'
+          table: 'class_groups'
         },
         async (payload) => {
           try {
             if (!supabase) return
             // Fetch complete group data with member count
             const { data, error } = await supabase
-              .from('groups')
+              .from('class_groups')
               .select(`
                 *,
                 group_members (count)
@@ -278,7 +302,7 @@ export const useRealtimeGroups = (
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'groups'
+          table: 'class_groups'
         },
         (payload) => {
           onGroupUpdate?.(payload.new)
@@ -289,7 +313,7 @@ export const useRealtimeGroups = (
         {
           event: 'DELETE',
           schema: 'public',
-          table: 'groups'
+          table: 'class_groups'
         },
         (payload) => {
           onGroupDelete?.(payload.old.id)
@@ -302,9 +326,11 @@ export const useRealtimeGroups = (
     return () => {
       if (channelRef.current && supabase) {
         supabase.removeChannel(channelRef.current)
+        channelRef.current = null
       }
+      isSubscribedRef.current = false
     }
-  }, [enabled, onGroupCreate, onGroupUpdate, onGroupDelete, onError])
+  }, [enabled, onError, onGroupCreate, onGroupDelete, onGroupUpdate]) // Include all callback dependencies
 }
 
 /**

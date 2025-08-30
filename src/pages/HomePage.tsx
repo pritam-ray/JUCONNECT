@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Search, Filter, BookOpen, FileText, Users, TrendingUp, Sparkles, Star, Zap, Shield } from 'lucide-react'
 import { getApprovedContent, getContentStats, ContentWithCategory } from '../services/contentService'
 import { getAllCategories, CategoryWithChildren } from '../services/categoryService'
 import { isSupabaseConfigured } from '../lib/supabase'
+import { appState } from '../utils/appState'
 import { useAuth } from '../contexts/AuthContext'
 import ContentCard from '../components/content/ContentCard'
 import ContentViewer from '../components/content/ContentViewer'
@@ -93,10 +94,16 @@ const HomePage: React.FC = () => {
   ]
 
   useEffect(() => {
+    // Prevent duplicate component mounting
+    if (!appState.markComponentMounted('HomePage')) {
+      return
+    }
+
     const fetchData = async () => {
       setConnectionError(false)
       
       if (!isSupabaseConfigured()) {
+        console.log('Supabase not configured, showing demo content')
         setConnectionError(true)
         setLoading(false)
         return
@@ -112,6 +119,7 @@ const HomePage: React.FC = () => {
         setContent(contentData)
         setCategories(categoriesData)
         setStats(statsData)
+        setConnectionError(false) // Clear any previous error
       } catch (error) {
         console.error('Failed to fetch data:', error)
         setConnectionError(true)
@@ -121,7 +129,12 @@ const HomePage: React.FC = () => {
     }
 
     fetchData()
-  }, [])
+
+    // Cleanup on unmount
+    return () => {
+      appState.markComponentUnmounted('HomePage')
+    }
+  }, []) // Remove any dependencies to prevent re-runs
 
   useEffect(() => {
     const fetchFilteredContent = async () => {
@@ -143,21 +156,27 @@ const HomePage: React.FC = () => {
       }
     }
 
-    // Fetch when filters change or when search query is set (not input)
+    // Only fetch when filters change and we're not showing all content
     if (searchQuery || selectedCategory || selectedContentType) {
       fetchFilteredContent()
-    } else {
-      // Reset to all content when filters are cleared
-      const fetchAllContent = async () => {
-        if (!isSupabaseConfigured()) return
-        
-        try {
-          const data = await getApprovedContent()
-          setContent(data)
-        } catch (error) {
-          console.error('Failed to fetch content:', error)
-        }
+    }
+  }, [searchQuery, selectedCategory, selectedContentType])
+
+  // Separate useEffect for resetting to all content
+  useEffect(() => {
+    const fetchAllContent = async () => {
+      if (!isSupabaseConfigured()) return
+      
+      try {
+        const data = await getApprovedContent()
+        setContent(data)
+      } catch (error) {
+        console.error('Failed to fetch content:', error)
       }
+    }
+
+    // Only fetch all content when all filters are cleared
+    if (!searchQuery && !selectedCategory && !selectedContentType) {
       fetchAllContent()
     }
   }, [searchQuery, selectedCategory, selectedContentType])

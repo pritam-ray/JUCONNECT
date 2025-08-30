@@ -29,9 +29,18 @@ export const usePrivateMessages = (userId: string | null) => {
   // Get total unread message count
   const totalUnreadCount = conversations.reduce((total, conv) => total + conv.unreadCount, 0)
 
-  // Load conversations
+  // Load conversations with rate limiting
   const loadConversations = useCallback(async () => {
     if (!userId) return
+
+    // Rate limiting - only allow loading conversations once every 5 seconds
+    const now = Date.now()
+    const lastLoad = parseInt(sessionStorage.getItem(`last-conversations-load-${userId}`) || '0')
+    if (now - lastLoad < 5000) {
+      console.log('Conversations load rate limited')
+      return
+    }
+    sessionStorage.setItem(`last-conversations-load-${userId}`, now.toString())
 
     try {
       setLoading(true)
@@ -88,16 +97,31 @@ export const usePrivateMessages = (userId: string | null) => {
     }
   }, [userId, loadConversations])
 
-  // Set up real-time subscription for this user's messages
+  // Helper to get current conversation user ID
+  const getCurrentConversationUserId = useCallback(() => {
+    if (currentConversation.length === 0) return null
+    const firstMessage = currentConversation[0]
+    return firstMessage.sender_id === userId ? firstMessage.recipient_id : firstMessage.sender_id
+  }, [currentConversation, userId])
+
+  // Set up minimal real-time subscription for this user's messages
+  // ONLY subscribe when user is actively viewing messages
   useEffect(() => {
     if (!userId || !supabase) return
 
+    // SIMPLIFIED: Only minimal real-time subscription
     // Clean up existing subscription
     if (subscriptionRef.current) {
       supabase.removeChannel(subscriptionRef.current)
     }
 
-    // Create new subscription for private messages
+    // Only subscribe if we have active conversations loaded
+    if (conversations.length === 0) {
+      console.log('No conversations loaded, skipping real-time subscription')
+      return
+    }
+
+    // Create simplified subscription for new messages only
     const channel = supabase
       .channel(`private_messages_${userId}`)
       .on(
@@ -106,39 +130,28 @@ export const usePrivateMessages = (userId: string | null) => {
           event: 'INSERT',
           schema: 'public',
           table: 'private_messages',
-          filter: `or(sender_id.eq.${userId},recipient_id.eq.${userId})`
+          filter: `recipient_id.eq.${userId}` // Only listen for messages TO this user
         },
         async (payload) => {
           const newMessage = payload.new as PrivateMessage
           
-          // Refresh conversations to show new message
-          await loadConversations()
+          // Simple notification without immediate reload
+          console.log('New private message received from:', newMessage.sender_id)
           
-          // If this message is for the current conversation, add it
-          const currentOtherUserId = getCurrentConversationUserId()
-          if (currentOtherUserId) {
-            const isCurrentConversation = 
-              (newMessage.sender_id === userId && newMessage.recipient_id === currentOtherUserId) ||
-              (newMessage.sender_id === currentOtherUserId && newMessage.recipient_id === userId)
-            
-            if (isCurrentConversation) {
-              // Reload the current conversation to get the full message with profiles
-              await loadConversation(currentOtherUserId)
+          // Only refresh if this is for an active conversation
+          const isActiveConversation = conversations.some(conv => 
+            conv.otherUser.id === newMessage.sender_id
+          )
+          
+          if (isActiveConversation) {
+            // Debounced refresh - only once every 5 seconds
+            const now = Date.now()
+            const lastUpdate = parseInt(sessionStorage.getItem(`last-rt-update-${userId}`) || '0')
+            if (now - lastUpdate > 5000) {
+              sessionStorage.setItem(`last-rt-update-${userId}`, now.toString())
+              await loadConversations()
             }
           }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'private_messages',
-          filter: `or(sender_id.eq.${userId},recipient_id.eq.${userId})`
-        },
-        async () => {
-          // Refresh conversations when messages are updated (e.g., marked as read)
-          await loadConversations()
         }
       )
       .subscribe()
@@ -150,14 +163,7 @@ export const usePrivateMessages = (userId: string | null) => {
         supabase.removeChannel(subscriptionRef.current)
       }
     }
-  }, [userId, loadConversations, loadConversation])
-
-  // Helper to get current conversation user ID
-  const getCurrentConversationUserId = useCallback(() => {
-    if (currentConversation.length === 0) return null
-    const firstMessage = currentConversation[0]
-    return firstMessage.sender_id === userId ? firstMessage.recipient_id : firstMessage.sender_id
-  }, [currentConversation, userId])
+  }, [userId, loadConversations, loadConversation, getCurrentConversationUserId])
 
   // Load conversations on mount
   useEffect(() => {

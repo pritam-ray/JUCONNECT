@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Navigate } from 'react-router-dom'
 import { Plus, Clock, CheckCircle, XCircle, FileText, MessageSquare, AlertTriangle, Lightbulb, Edit, Trash2, HelpCircle } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
@@ -7,7 +7,6 @@ import {
   createUpdateRequest,
   UpdateRequestWithProfile 
 } from '../services/updateRequestService'
-import { getAllCategories, CategoryWithChildren } from '../services/categoryService'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Modal from '../components/ui/Modal'
@@ -18,7 +17,6 @@ import { formatDistanceToNow } from 'date-fns'
 const MyRequestsPage: React.FC = () => {
   const { user, loading: authLoading, isGuest } = useAuth()
   const [requests, setRequests] = useState<UpdateRequestWithProfile[]>([])
-  const [categories, setCategories] = useState<CategoryWithChildren[]>([])
   const [loading, setLoading] = useState(true)
   const [showNewRequestModal, setShowNewRequestModal] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -30,26 +28,22 @@ const MyRequestsPage: React.FC = () => {
     suggestedChanges: '',
   })
 
-  useEffect(() => {
-    if (user && !isGuest) {
-      fetchData()
-    }
-  }, [user, isGuest])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const [requestsData, categoriesData] = await Promise.all([
-        getUserUpdateRequests(user!.id),
-        getAllCategories()
-      ])
+      const requestsData = await getUserUpdateRequests(user!.id)
       setRequests(requestsData)
-      setCategories(categoriesData)
     } catch (error) {
       console.error('Failed to fetch data:', error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
+
+  useEffect(() => {
+    if (user && !isGuest) {
+      fetchData()
+    }
+  }, [user, isGuest, fetchData])
 
   const handleNewRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

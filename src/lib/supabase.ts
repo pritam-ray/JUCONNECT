@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { Database } from '../types/database.types'
+import { apiTracker } from '../utils/apiTracker'
+import { logger } from '../utils/logger'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -13,12 +15,32 @@ const createSupabaseClient = () => {
   }
 
   try {
-    return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    const client = createClient<Database>(supabaseUrl, supabaseAnonKey, {
       auth: {
         autoRefreshToken: true,
         persistSession: true,
       },
     })
+    
+    // Wrap the from method to track API calls
+    const originalFrom = client.from.bind(client)
+    client.from = (table: any) => {
+      // Track the API call
+      if (!apiTracker.logCall('SELECT', table)) {
+        console.error('🚨 API call blocked due to rate limiting')
+        // Return a mock that throws an error
+        return {
+          select: () => Promise.reject(new Error('Rate limit exceeded')),
+          insert: () => Promise.reject(new Error('Rate limit exceeded')),
+          update: () => Promise.reject(new Error('Rate limit exceeded')),
+          delete: () => Promise.reject(new Error('Rate limit exceeded')),
+        } as any
+      }
+      
+      return originalFrom(table)
+    }
+    
+    return client
   } catch (error) {
     console.error('Failed to create Supabase client:', error)
     return null

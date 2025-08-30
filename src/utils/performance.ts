@@ -3,6 +3,7 @@
  */
 
 import { logger } from './logger'
+import { useCallback, useRef, useEffect } from 'react'
 
 export class PerformanceMonitor {
   private static instance: PerformanceMonitor
@@ -44,6 +45,119 @@ export class PerformanceMonitor {
       this.endTimer(name)
     })
   }
+}
+
+/**
+ * Debounce hook to prevent excessive API calls
+ */
+export const useDebounce = <T extends (...args: any[]) => any>(
+  callback: T,
+  delay: number
+): T => {
+  const timeoutRef = useRef<NodeJS.Timeout>()
+
+  const debouncedCallback = useCallback(
+    (...args: Parameters<T>) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+
+      timeoutRef.current = setTimeout(() => {
+        callback(...args)
+      }, delay)
+    },
+    [callback, delay]
+  ) as T
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
+
+  return debouncedCallback
+}
+
+/**
+ * Hook to prevent memory leaks from async operations
+ */
+export const useAsyncOperation = () => {
+  const isMountedRef = useRef(true)
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
+  const execute = useCallback(
+    async <T>(asyncFn: () => Promise<T>): Promise<T | null> => {
+      try {
+        const result = await asyncFn()
+        return isMountedRef.current ? result : null
+      } catch (error) {
+        if (isMountedRef.current) {
+          throw error
+        }
+        return null
+      }
+    },
+    []
+  )
+
+  return { execute, isMounted: () => isMountedRef.current }
+}
+
+/**
+ * Rate limiter for error logging to prevent spam
+ */
+class ErrorRateLimiter {
+  private errorCounts: Map<string, { count: number; resetTime: number }> = new Map()
+  private readonly maxErrorsPerMinute = 10
+  private readonly windowMs = 60 * 1000 // 1 minute
+
+  public shouldLogError(errorKey: string): boolean {
+    const now = Date.now()
+    const errorData = this.errorCounts.get(errorKey)
+
+    if (!errorData || now > errorData.resetTime) {
+      // New error or time window expired
+      this.errorCounts.set(errorKey, {
+        count: 1,
+        resetTime: now + this.windowMs
+      })
+      return true
+    }
+
+    if (errorData.count < this.maxErrorsPerMinute) {
+      errorData.count++
+      return true
+    }
+
+    // Rate limit exceeded
+    return false
+  }
+
+  public cleanup() {
+    const now = Date.now()
+    for (const [key, data] of this.errorCounts.entries()) {
+      if (now > data.resetTime) {
+        this.errorCounts.delete(key)
+      }
+    }
+  }
+}
+
+export const errorRateLimiter = new ErrorRateLimiter()
+
+// Cleanup expired rate limit entries every 5 minutes
+if (typeof window !== 'undefined') {
+  setInterval(() => {
+    errorRateLimiter.cleanup()
+  }, 5 * 60 * 1000)
 }
 
 // Web Vitals monitoring

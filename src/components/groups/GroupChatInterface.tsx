@@ -4,10 +4,6 @@ import {
   Paperclip, 
   Users, 
   ArrowLeft, 
-  Reply,
-  Download,
-  File,
-  Image,
   X,
   LogOut,
   Crown
@@ -25,7 +21,7 @@ import {
 } from '../../services/classGroupService'
 import { uploadGroupFile } from '../../services/groupFileService'
 import { debugGroupAccess } from '../../services/debugGroupService'
-import { useRealtimeGroupMessages, useRealtimeGroupMembers } from '../../hooks/useRealtime'
+import { useRealtimeGroupMessages } from '../../hooks/useRealtime'
 import { useAuth } from '../../contexts/AuthContext'
 import Button from '../ui/Button'
 import LoadingSpinner from '../ui/LoadingSpinner'
@@ -119,28 +115,32 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     )
   }, [])
 
-  // Set up real-time subscriptions
+    // ESSENTIAL: Keep only real-time messages for active chat
   useRealtimeGroupMessages(
-    group.id,
+    group?.id || null,
     handleNewMessage,
     handleMessageUpdate,
     handleMessageDelete,
     {
-      enabled: !!group.id && !!user,
+      enabled: !!group?.id && !!user,
       onError: (error) => console.error('Real-time messages error:', error)
     }
   )
 
+  // DISABLED: Real-time member updates (reduce API load)
+  // Members can be refreshed manually when needed
+  /*
   useRealtimeGroupMembers(
-    group.id,
-    handleMemberJoin,
-    handleMemberLeave,
-    handleMemberUpdate,
+    group?.id || null,
     {
-      enabled: !!group.id && !!user,
+      onMemberJoin: handleMemberJoin,
+      onMemberLeave: handleMemberLeave,
+      onMemberUpdate: handleMemberUpdate,
+      enabled: !!group?.id && !!user && !isGuest,
       onError: (error) => console.error('Real-time members error:', error)
     }
   )
+  */
 
   // Main useEffect for initialization
   useEffect(() => {
@@ -151,14 +151,31 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
       // Debug group access
       debugGroupAccess(group.id, user.id)
       
-      loadMessages()
-      loadMembers()
-      checkAdminStatus()
-
-      // Mark messages as read when component mounts
-      markGroupMessagesAsRead(group.id, user.id)
+      // Initialize all data inline to avoid dependency issues
+      const initializeData = async () => {
+        try {
+          // Load messages
+          const messagesData = await getGroupMessages(group.id)
+          setMessages(messagesData)
+          
+          // Load members  
+          const membersData = await getGroupMembers(group.id)
+          setMembers(membersData)
+          
+          // Check admin status
+          const adminStatus = await isGroupAdmin(group.id, user.id)
+          setIsUserAdmin(adminStatus || group.creator_id === user.id)
+          
+          // Mark messages as read
+          markGroupMessagesAsRead(group.id, user.id)
+        } catch (error) {
+          console.error('Error initializing group data:', error)
+        }
+      }
+      
+      initializeData()
     }
-  }, [group.id, user])
+  }, [group.id, group.creator_id, group.name, user?.id, user]) // Include all used properties
 
   useEffect(() => {
     scrollToBottom()
@@ -169,10 +186,10 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     
     try {
       const adminStatus = await isGroupAdmin(group.id, user.id)
-      setIsUserAdmin(adminStatus || group.created_by === user.id)
+      setIsUserAdmin(adminStatus || group.creator_id === user.id)
     } catch (error) {
       console.error('Error checking admin status:', error)
-      setIsUserAdmin(group.created_by === user.id)
+      setIsUserAdmin(group.creator_id === user.id)
     }
   }
 
@@ -219,14 +236,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
       group_id: group.id,
       user_id: user.id,
       message: newMessage.trim(),
-      message_type: 'text',
-      file_url: null,
-      file_name: null,
-      file_size: null,
-      reply_to: replyTo?.id || null,
-      is_edited: false,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
       profiles: {
         id: user.id,
         username: user.email?.split('@')[0] || 'user',
@@ -324,45 +334,6 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     }
   }
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-  }
-
-  const getFileIcon = (fileName: string) => {
-    const extension = fileName.split('.').pop()?.toLowerCase()
-    switch (extension) {
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-      case 'gif':
-        return <Image className="w-4 h-4" />
-      default:
-        return <File className="w-4 h-4" />
-    }
-  }
-
-  const handleFileDownload = async (message: GroupMessageWithProfile) => {
-    if (!message.file_url) return
-    
-    try {
-      const response = await fetch(message.file_url)
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = message.file_name || 'download'
-      a.click()
-      window.URL.revokeObjectURL(url)
-    } catch (error) {
-      console.error('Error downloading file:', error)
-      setError('Failed to download file')
-    }
-  }
-
   const renderMessage = (message: OptimisticGroupMessage) => {
     const isOwn = message.user_id === user?.id
     const isOptimistic = message.isOptimistic
@@ -383,41 +354,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
             </p>
           )}
           
-          {message.reply_to && (
-            <div className="text-xs opacity-75 mb-2 p-2 bg-black bg-opacity-20 rounded">
-              Replying to a message...
-            </div>
-          )}
-          
-          {message.message_type === 'file' && message.file_url ? (
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                {getFileIcon(message.file_name || '')}
-                <span className="text-sm font-medium">
-                  {message.file_name}
-                </span>
-              </div>
-              {message.file_size && (
-                <p className="text-xs opacity-75">
-                  {formatFileSize(message.file_size)}
-                </p>
-              )}
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handleFileDownload(message)}
-                  className="text-xs bg-black bg-opacity-20 hover:bg-opacity-30 px-2 py-1 rounded flex items-center space-x-1"
-                >
-                  <Download className="w-3 h-3" />
-                  <span>Download</span>
-                </button>
-              </div>
-              {message.message !== `Shared a file: ${message.file_name}` && (
-                <p className="text-sm">{message.message}</p>
-              )}
-            </div>
-          ) : (
-            <p className="text-sm">{message.message}</p>
-          )}
+          <p className="text-sm">{message.message}</p>
           
           <p className="text-xs opacity-75 mt-1">
             {new Date(message.created_at).toLocaleTimeString([], { 
@@ -426,16 +363,6 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
             })}
             {isOptimistic && ' (sending...)'}
           </p>
-          
-          {!isOwn && (
-            <button
-              onClick={() => setReplyTo(message)}
-              className="text-xs opacity-75 hover:opacity-100 mt-1 flex items-center space-x-1"
-            >
-              <Reply className="w-3 h-3" />
-              <span>Reply</span>
-            </button>
-          )}
         </div>
       </div>
     )
@@ -466,7 +393,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
           <div>
             <h2 className="text-lg font-semibold text-gray-900">{group.name}</h2>
             <p className="text-sm text-gray-500">
-              {group.year && group.section ? `Year ${group.year} - Section ${group.section}` : ''}
+              {group.year ? `Year ${group.year} - ${group.semester}` : ''}
               {group.subject ? ` • ${group.subject}` : ''}
             </p>
           </div>

@@ -20,7 +20,6 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
   onFileRemove,
   selectedFile,
   accept = ".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif",
-  maxSize = 5 * 1024 * 1024, // 5MB
   disabled = false,
   uploading = false,
   uploadProgress = 0,
@@ -83,7 +82,8 @@ const FileUploadZone: React.FC<FileUploadZoneProps> = ({
   }
 
   const getFileIcon = (fileName: string) => {
-    const extension = fileName.split('.').pop()?.toLowerCase()
+    // Extension could be used for different file type icons in the future
+    fileName.split('.').pop()?.toLowerCase()
     return <FileText className="h-6 w-6 text-blue-600" />
   }
 

@@ -25,13 +25,49 @@ class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: any) {
     this.setState({ errorInfo })
     
+    // Enhanced error handling with specific error type detection
+    const errorMessage = error.message
+    const isMemoryError = errorMessage.includes('memory') || errorMessage.includes('leak') || errorMessage.includes('Maximum call stack')
+    const isAuthError = errorMessage.includes('auth') || errorMessage.includes('session')
+    const isDatabaseError = errorMessage.includes('infinite recursion') || 
+                           errorMessage.includes('database') || 
+                           errorMessage.includes('supabase')
+    
     // Log error details
     logger.error('Error caught by boundary:', {
-      error: error.message,
+      error: errorMessage,
       stack: error.stack,
       componentStack: errorInfo.componentStack,
-      errorBoundary: true
+      errorBoundary: true,
+      isMemoryError,
+      isAuthError,
+      isDatabaseError,
+      timestamp: new Date().toISOString()
     })
+
+    // Log to enhanced error reporting system
+    import('../services/enhancedServices').then(({ enhancedErrorReporting }) => {
+      enhancedErrorReporting.reportError(error, {
+        operation: 'component_render',
+        component: 'ErrorBoundary',
+        metadata: {
+          componentStack: errorInfo.componentStack,
+          isMemoryError,
+          isAuthError,
+          isDatabaseError
+        }
+      })
+    }).catch(reportingError => {
+      console.warn('Failed to log to enhanced error reporting:', reportingError)
+    })
+
+    // Auto-reload on critical errors
+    if (isDatabaseError && errorMessage.includes('infinite recursion')) {
+      logger.warn('Infinite recursion detected, auto-reloading in 3 seconds...')
+      setTimeout(() => {
+        window.location.reload()
+      }, 3000)
+    }
     
     // Report critical errors
     if (error.message.includes('infinite recursion') || 

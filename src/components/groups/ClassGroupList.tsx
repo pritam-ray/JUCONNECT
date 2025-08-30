@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Plus, Users, BookOpen, Search, Filter, Clock, Lock, Crown } from 'lucide-react'
 import { getAllClassGroups, getUserGroups, joinClassGroup, ClassGroupWithDetails } from '../../services/classGroupService'
 import { useRealtimeGroups } from '../../hooks/useRealtime'
@@ -28,8 +28,22 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
   const [selectedYear, setSelectedYear] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState<'my-groups' | 'all-groups'>('my-groups')
   const [error, setError] = useState<string | null>(null)
+  const isMountedRef = useRef(true)
 
-  const fetchGroups = async () => {
+  // Store user ID separately to avoid useCallback dependency issues
+  const userId = user?.id
+  
+  // Fetch function with rate limiting to prevent excessive API calls
+  const fetchGroups = useCallback(async () => {
+    // Rate limiting - only allow fetching groups once every 10 seconds
+    const now = Date.now()
+    const lastFetch = parseInt(sessionStorage.getItem('last-groups-fetch') || '0')
+    if (now - lastFetch < 10000) {
+      console.log('Groups fetch rate limited')
+      return
+    }
+    sessionStorage.setItem('last-groups-fetch', now.toString())
+
     try {
       setLoading(true)
       setError(null)
@@ -48,9 +62,9 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
       }
       
       // Only fetch user groups if user is authenticated and not a guest
-      if (user && !isGuest) {
+      if (userId && !isGuest) {
         try {
-          userGroupsData = await getUserGroups(user.id)
+          userGroupsData = await getUserGroups(userId)
           console.log('User groups fetched:', userGroupsData.length)
         } catch (error: any) {
           console.error('Failed to fetch user groups:', error)
@@ -73,11 +87,21 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId, isGuest])
 
   useEffect(() => {
+    // Don't fetch if auth is still loading
+    if (authLoading) return
+    
     fetchGroups()
-  }, [user])
+  }, [fetchGroups, authLoading])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   // Real-time group handlers
   const handleGroupCreate = useCallback((newGroup: any) => {
@@ -102,18 +126,20 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
     setUserGroups(prev => prev.filter(group => group.id !== groupId))
   }, [])
 
-  // Set up real-time group subscriptions
+  // DISABLED: Real-time group subscriptions to reduce API calls
+  // Only enable when specifically needed for messaging
+  /*
   useRealtimeGroups(
-    handleGroupCreate,
-    handleGroupUpdate,
-    handleGroupDelete,
+    user && !isGuest ? user.id : null,
     {
-      enabled: true,
+      onGroupCreate: handleGroupCreate,
+      onGroupUpdate: handleGroupUpdate,
+      onGroupDelete: handleGroupDelete,
+      enabled: !authLoading && !!user && !isGuest,
       onError: (error) => console.error('Real-time groups error:', error)
     }
   )
-
-  // Don't render anything if auth is still loading
+  */  // Don't render anything if auth is still loading
   if (authLoading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -400,7 +426,7 @@ const GroupCard: React.FC<GroupCardProps> = ({
         <div className="flex-1">
           <div className="flex items-center space-x-2 mb-2">
             <Badge variant="primary">
-              Year {group.year} - Section {group.section}
+              Year {group.year} - {group.semester}
             </Badge>
             {group.user_role === 'admin' && (
               <Badge variant="warning">
@@ -408,7 +434,7 @@ const GroupCard: React.FC<GroupCardProps> = ({
                 Admin
               </Badge>
             )}
-            {group.created_by === userId && (
+            {group.creator_id === userId && (
               <Badge variant="success">
                 <Crown className="h-3 w-3 mr-1" />
                 Creator
@@ -448,7 +474,7 @@ const GroupCard: React.FC<GroupCardProps> = ({
         </div>
         <div className="flex items-center space-x-1">
           <Clock className="h-3 w-3" />
-          <span>{formatDistanceToNow(new Date(group.updated_at), { addSuffix: true })}</span>
+          <span>{formatDistanceToNow(new Date(group.updated_at || group.created_at || new Date()), { addSuffix: true })}</span>
         </div>
       </div>
 

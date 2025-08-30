@@ -27,7 +27,7 @@ export const getChatMessages = async (
       )
     `)
     .eq('is_reported', false)
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: true })
     .range(offset, offset + limit - 1)
 
   if (error) throw error

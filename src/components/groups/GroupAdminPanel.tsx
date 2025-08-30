@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { 
   Crown, 
   UserMinus, 
@@ -55,20 +55,7 @@ const GroupAdminPanel: React.FC<GroupAdminPanelProps> = ({
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  useEffect(() => {
-    if (isOpen && user) {
-      fetchData()
-    }
-  }, [isOpen, user, group.id])
-
-  useEffect(() => {
-    if (user) {
-      setIsUserCreator(group.created_by === user.id)
-      checkAdminStatus()
-    }
-  }, [user, group.created_by])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!user) return
     
     try {
@@ -85,9 +72,9 @@ const GroupAdminPanel: React.FC<GroupAdminPanelProps> = ({
     } finally {
       setLoading(false)
     }
-  }
+  }, [user, group.id])
 
-  const checkAdminStatus = async () => {
+  const checkAdminStatus = useCallback(async () => {
     if (!user) return
     
     try {
@@ -96,7 +83,20 @@ const GroupAdminPanel: React.FC<GroupAdminPanelProps> = ({
     } catch (err) {
       console.error('Error checking admin status:', err)
     }
-  }
+  }, [user, group.id])
+
+  useEffect(() => {
+    if (isOpen && user) {
+      fetchData()
+    }
+  }, [isOpen, user, group.id, fetchData])
+
+  useEffect(() => {
+    if (user) {
+      setIsUserCreator(group.created_by === user.id)
+      checkAdminStatus()
+    }
+  }, [user, group.created_by, checkAdminStatus])
 
   const handlePromoteToAdmin = async (userId: string) => {
     if (!user) return

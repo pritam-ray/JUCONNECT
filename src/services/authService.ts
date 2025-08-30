@@ -104,9 +104,33 @@ export const signIn = async (email: string, password: string) => {
     }
     
     logger.info('User signed in successfully:', data.user?.id)
+    
+    // Log successful login activity
+    if (data.user) {
+      import('./enhancedServices').then(({ activityService }) => {
+        activityService.logActivity(
+          data.user.id, 
+          'login',
+          { method: 'email_password' },
+          undefined, // IP will be captured on server side if needed
+          navigator.userAgent
+        ).catch(err => console.warn('Failed to log login activity:', err))
+      }).catch(err => console.warn('Failed to import enhanced services:', err))
+    }
+    
     return data
   } catch (error: any) {
     logger.error('Sign in error:', error)
+    
+    // Log failed login attempt
+    import('./enhancedServices').then(({ enhancedErrorReporting }) => {
+      enhancedErrorReporting.reportError(error, {
+        operation: 'user_login',
+        component: 'authService',
+        metadata: { email }
+      })
+    }).catch(err => console.warn('Failed to log error:', err))
+    
     if (error instanceof Error) {
       throw error
     }

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { User, Session } from '@supabase/supabase-js'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { Database } from '../types/database.types'
+import { initGuard } from '../utils/initGuard'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
@@ -34,6 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const [isGuest, setIsGuest] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
 
   // Enhanced session validation
   const isSessionValid = useCallback(() => {
@@ -45,6 +47,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     return expiresAt > now
   }, [session, isGuest])
+
+  // Define signOut before functions that use it
+  const signOut = useCallback(async () => {
+    try {
+      if (isSupabaseConfigured() && supabase && !isGuest) {
+        const { error } = await supabase.auth.signOut()
+        if (error) {
+          console.warn('Error during sign out:', error.message)
+        }
+      }
+    } catch (error) {
+      console.error('Error signing out:', error)
+    } finally {
+      setUser(null)
+      setProfile(null)
+      setSession(null)
+      setIsGuest(false)
+      
+      // Clear stored data
+      localStorage.removeItem('ju-connect-guest-mode')
+      sessionStorage.clear()
+    }
+  }, [isGuest])
 
   // Enhanced session refresh
   const refreshSession = useCallback(async () => {
@@ -69,11 +94,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Error refreshing session:', error)
       await signOut()
     }
-  }, [isGuest])
+  }, [isGuest, signOut])
 
   const refreshProfile = useCallback(async () => {
+    // Rate limiting - only allow profile refresh once every 30 seconds
+    const now = Date.now()
+    const lastRefresh = parseInt(localStorage.getItem('last-profile-refresh') || '0')
+    if (now - lastRefresh < 60000) { // Increase to 60 seconds for more aggressive rate limiting
+      console.log('Profile refresh rate limited')
+      return
+    }
+    
     if (user && !isGuest && isSupabaseConfigured() && supabase) {
       try {
+        localStorage.setItem('last-profile-refresh', now.toString())
+        
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
@@ -105,131 +140,108 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('ju-connect-guest-mode', 'true')
   }, [])
 
-  const signOut = useCallback(async () => {
-    try {
-      if (isSupabaseConfigured() && supabase && !isGuest) {
-        const { error } = await supabase.auth.signOut()
-        if (error) {
-          console.warn('Error during sign out:', error.message)
-        }
-      }
-    } catch (error) {
-      console.error('Error signing out:', error)
-    } finally {
-      setUser(null)
-      setProfile(null)
-      setSession(null)
-      setIsGuest(false)
-      
-      // Clear stored data
-      localStorage.removeItem('ju-connect-guest-mode')
-      sessionStorage.clear()
-    }
-  }, [isGuest])
-
   useEffect(() => {
     let mounted = true
     let sessionCheckInterval: NodeJS.Timeout | null = null
     let authSubscription: any = null
 
     const initializeAuth = async () => {
+      // Prevent multiple initializations
+      if (isInitialized) {
+        console.log('🔒 Auth already initialized, skipping...')
+        return
+      }
+
       try {
-        if (!isSupabaseConfigured() || !supabase) {
-          console.warn('Supabase not configured, running in guest mode')
+        console.log('🚀 Initializing Auth...')
+        setIsInitialized(true)
+        await initGuard.initialize(async () => {
+          console.log('🔐 Initializing authentication...')
           
-          // Check if user was in guest mode before
-          const wasGuest = localStorage.getItem('ju-connect-guest-mode') === 'true'
-          if (wasGuest) {
-            setIsGuest(true)
+          if (!isSupabaseConfigured() || !supabase) {
+            console.warn('Supabase not configured, running in guest mode')
+            
+            // Check if user was in guest mode before
+            const wasGuest = localStorage.getItem('ju-connect-guest-mode') === 'true'
+            if (wasGuest) {
+              setIsGuest(true)
+            }
+            
+            if (mounted) {
+              setLoading(false)
+            }
+            return
+          }
+
+          // SIMPLIFIED: Get session ONCE only, no retries
+          let session = null
+          try {
+            const { data: { session: currentSession }, error } = await supabase.auth.getSession()
+            if (error) {
+              console.warn('Session retrieval failed:', error)
+            } else {
+              session = currentSession
+            }
+          } catch (error) {
+            console.error('Failed to retrieve session:', error)
           }
           
           if (mounted) {
+            setSession(session)
+            setUser(session?.user ?? null)
+            
+            if (session?.user) {
+              await refreshProfile()
+            }
+            
             setLoading(false)
           }
-          return
-        }
 
-        // Get initial session with retry mechanism
-        let retryCount = 0
-        const maxRetries = 3
-        let session = null
-        
-        while (retryCount < maxRetries && !session && mounted) {
-          try {
-            const { data: { session: currentSession }, error } = await supabase.auth.getSession()
-            if (error) throw error
-            session = currentSession
-            break
-          } catch (error) {
-            retryCount++
-            if (retryCount < maxRetries) {
-              console.warn(`Session retrieval attempt ${retryCount} failed, retrying...`)
-              await new Promise(resolve => setTimeout(resolve, 1000))
-            } else {
-              console.error('Failed to retrieve session after retries:', error)
+          // Set up periodic session validation with cleanup
+          if (session && mounted) {
+            sessionCheckInterval = setInterval(() => {
+              if (mounted && session && !isSessionValid()) {
+                console.log('Session expired, refreshing...')
+                refreshSession()
+              }
+            }, 5 * 60 * 1000) // Check every 5 minutes
+          }
+
+          // Listen for auth changes with enhanced error handling
+          const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            async (event, session) => {
+              if (!mounted) return
+              
+              console.log('Auth state changed:', event)
+              
+              try {
+                setSession(session)
+                setUser(session?.user ?? null)
+                setIsGuest(false)
+                
+                if (session?.user) {
+                  await refreshProfile()
+                } else {
+                  setProfile(null)
+                  localStorage.removeItem('ju-connect-guest-mode')
+                }
+              } catch (error) {
+                console.error('Error handling auth state change:', error)
+              }
             }
-          }
-        }
-        
-        if (mounted) {
-          setSession(session)
-          setUser(session?.user ?? null)
+          )
           
-          if (session?.user) {
-            await refreshProfile()
-          }
-          
-          setLoading(false)
-        }
+          authSubscription = subscription
 
-        // Set up periodic session validation with cleanup
-        if (session && mounted) {
-          sessionCheckInterval = setInterval(() => {
-            if (mounted && session && !isSessionValid()) {
-              console.log('Session expired, refreshing...')
+          // Handle page visibility changes for session management
+          const handleVisibilityChange = () => {
+            if (mounted && document.visibilityState === 'visible' && session && !isSessionValid()) {
               refreshSession()
             }
-          }, 5 * 60 * 1000) // Check every 5 minutes
-        }
-
-        // Listen for auth changes with enhanced error handling
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          async (event, session) => {
-            if (!mounted) return
-            
-            console.log('Auth state changed:', event)
-            
-            try {
-              setSession(session)
-              setUser(session?.user ?? null)
-              setIsGuest(false)
-              
-              if (session?.user) {
-                await refreshProfile()
-              } else {
-                setProfile(null)
-                localStorage.removeItem('ju-connect-guest-mode')
-              }
-            } catch (error) {
-              console.error('Error handling auth state change:', error)
-            }
           }
-        )
-        
-        authSubscription = subscription
-
-        // Handle page visibility changes for session management
-        const handleVisibilityChange = () => {
-          if (mounted && document.visibilityState === 'visible' && session && !isSessionValid()) {
-            refreshSession()
-          }
-        }
-        
-        document.addEventListener('visibilitychange', handleVisibilityChange)
-
-        return () => {
-          document.removeEventListener('visibilitychange', handleVisibilityChange)
-        }
+          
+          document.addEventListener('visibilitychange', handleVisibilityChange)
+        })
       } catch (error) {
         console.error('Error initializing auth:', error)
         if (mounted) {
@@ -249,7 +261,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         authSubscription.unsubscribe()
       }
     }
-  }, [refreshProfile, isSessionValid, refreshSession])
+  }, [isSessionValid, refreshSession, refreshProfile]) // Include refreshProfile
 
   const value: AuthContextType = {
     user,

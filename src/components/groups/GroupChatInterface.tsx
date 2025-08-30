@@ -6,7 +6,11 @@ import {
   ArrowLeft, 
   X,
   LogOut,
-  Crown
+  Crown,
+  Download,
+  FileText,
+  Image,
+  File
 } from 'lucide-react'
 import { 
   getGroupMessages, 
@@ -23,12 +27,18 @@ import { uploadGroupFile } from '../../services/groupFileService'
 import { debugGroupAccess } from '../../services/debugGroupService'
 import { useRealtimeGroupMessages } from '../../hooks/useRealtime'
 import { useAuth } from '../../contexts/AuthContext'
+import { logDatabaseDiagnostic } from '../../utils/databaseDiagnostic'
 import Button from '../ui/Button'
 import LoadingSpinner from '../ui/LoadingSpinner'
 import GroupAdminPanel from './GroupAdminPanel'
 
 interface OptimisticGroupMessage extends GroupMessageWithProfile {
   isOptimistic?: boolean
+  message_type?: string
+  file_url?: string
+  file_name?: string
+  file_size?: number
+  file_type?: string
 }
 
 interface GroupChatInterfaceProps {
@@ -56,6 +66,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   const [isUserAdmin, setIsUserAdmin] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Real-time message handlers
@@ -151,6 +162,11 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
       // Debug group access
       debugGroupAccess(group.id, user.id)
       
+      // Run database diagnostic in development
+      if (process.env.NODE_ENV === 'development') {
+        logDatabaseDiagnostic()
+      }
+      
       // Initialize all data inline to avoid dependency issues
       const initializeData = async () => {
         try {
@@ -213,7 +229,12 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   }
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      })
+    }
   }
 
   const handleSendMessage = async () => {
@@ -324,9 +345,53 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     }
   }
 
+  // Helper function to get file icon
+  const getFileIcon = (fileName: string) => {
+    const extension = fileName.split('.').pop()?.toLowerCase()
+    
+    switch (extension) {
+      case 'pdf':
+        return <FileText className="h-4 w-4 text-red-500" />
+      case 'doc':
+      case 'docx':
+        return <FileText className="h-4 w-4 text-blue-500" />
+      case 'txt':
+        return <FileText className="h-4 w-4 text-gray-500" />
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+        return <Image className="h-4 w-4 text-green-500" />
+      default:
+        return <File className="h-4 w-4 text-gray-500" />
+    }
+  }
+
+  // Helper function to format file size
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  }
+
+  // Helper function to handle file download
+  const handleFileDownload = (fileUrl: string, fileName: string) => {
+    // Create a temporary anchor element to trigger download
+    const link = document.createElement('a')
+    link.href = fileUrl
+    link.download = fileName
+    link.target = '_blank'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   const renderMessage = (message: OptimisticGroupMessage) => {
     const isOwn = message.user_id === user?.id
     const isOptimistic = message.isOptimistic
+    const isFileMessage = (message as any).message_type === 'file' && (message as any).file_url
 
     return (
       <div
@@ -344,7 +409,33 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
             </p>
           )}
           
-          <p className="text-sm">{message.message}</p>
+          {isFileMessage ? (
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2 p-2 bg-white bg-opacity-10 rounded-md">
+                {getFileIcon((message as any).file_name)}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{(message as any).file_name}</p>
+                  <p className="text-xs opacity-75">
+                    {formatFileSize((message as any).file_size || 0)}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleFileDownload((message as any).file_url, (message as any).file_name)}
+                  className={`p-1 rounded-full hover:bg-white hover:bg-opacity-20 transition-colors ${
+                    isOwn ? 'text-white' : 'text-gray-600'
+                  }`}
+                  title="Download file"
+                >
+                  <Download className="h-4 w-4" />
+                </button>
+              </div>
+              {message.message && message.message !== `📎 ${(message as any).file_name}` && (
+                <p className="text-sm">{message.message}</p>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm">{message.message}</p>
+          )}
           
           <p className="text-xs opacity-75 mt-1">
             {new Date(message.created_at).toLocaleTimeString([], { 
@@ -487,7 +578,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
         {chatLoading ? (
           <div className="flex items-center justify-center h-full">
             <LoadingSpinner />

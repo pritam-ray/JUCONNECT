@@ -167,9 +167,9 @@
 
   /* Mesh Gradient Background */
   .mesh-bg {
-    background: radial-gradient(circle at 20% 80%, rgba(239, 68, 68, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(185, 28, 28, 0.05) 0%, transparent 50%);
+    background: radial-gradient(circle at 20% 80%, rgba(239, 68, 68, 0.05) 0%, transparent 30%),
+                radial-gradient(circle at 80% 20%, rgba(220, 38, 38, 0.05) 0%, transparent 30%),
+                radial-gradient(circle at 40% 40%, rgba(185, 28, 28, 0.03) 0%, transparent 25%);
   }
 
   /* Notification Dot */
@@ -320,6 +320,13 @@
   
   .hero-gradient {
     min-height: 50vh;
+  }
+  
+  /* Smaller circles for mobile */
+  .mesh-bg {
+    background: radial-gradient(circle at 20% 80%, rgba(239, 68, 68, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 80% 20%, rgba(220, 38, 38, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 40% 40%, rgba(185, 28, 28, 0.02) 0%, transparent 15%);
   }
   
   .glass {

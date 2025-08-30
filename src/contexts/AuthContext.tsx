@@ -12,7 +12,6 @@ interface AuthContextType {
   session: Session | null
   loading: boolean
   isGuest: boolean
-  signInAsGuest: () => void
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
   isSessionValid: () => boolean
@@ -63,7 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null)
       setProfile(null)
       setSession(null)
-      setIsGuest(false)
+      setIsGuest(true) // Automatically set as guest after sign out
       
       // Clear stored data
       localStorage.removeItem('ju-connect-guest-mode')
@@ -129,17 +128,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [user, isGuest])
 
-  const signInAsGuest = useCallback(() => {
-    setIsGuest(true)
-    setUser(null)
-    setProfile(null)
-    setSession(null)
-    setLoading(false)
-    
-    // Store guest mode in localStorage for persistence
-    localStorage.setItem('ju-connect-guest-mode', 'true')
-  }, [])
-
   useEffect(() => {
     let mounted = true
     let sessionCheckInterval: NodeJS.Timeout | null = null
@@ -159,15 +147,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.log('🔐 Initializing authentication...')
           
           if (!isSupabaseConfigured() || !supabase) {
-            console.warn('Supabase not configured, running in guest mode')
-            
-            // Check if user was in guest mode before
-            const wasGuest = localStorage.getItem('ju-connect-guest-mode') === 'true'
-            if (wasGuest) {
-              setIsGuest(true)
-            }
+            console.warn('Supabase not configured, setting as guest mode')
             
             if (mounted) {
+              setIsGuest(true)
+              setUser(null)
+              setProfile(null)
+              setSession(null)
               setLoading(false)
             }
             return
@@ -190,7 +176,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setSession(session)
             setUser(session?.user ?? null)
             
-            if (session?.user) {
+            // If no session, automatically set as guest
+            if (!session?.user) {
+              console.log('No authenticated session found, setting as guest')
+              setIsGuest(true)
+            } else {
+              setIsGuest(false)
               await refreshProfile()
             }
             
@@ -217,7 +208,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               try {
                 setSession(session)
                 setUser(session?.user ?? null)
-                setIsGuest(false)
+                
+                // Automatically set guest status based on session
+                if (session?.user) {
+                  setIsGuest(false)
+                  // Clear any guest mode storage
+                  localStorage.removeItem('ju-connect-guest-mode')
+                } else {
+                  console.log('Auth state change: No user session, setting as guest')
+                  setIsGuest(true)
+                }
                 
                 if (session?.user) {
                   await refreshProfile()
@@ -269,7 +269,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     session,
     loading,
     isGuest,
-    signInAsGuest,
     signOut,
     refreshProfile,
     isSessionValid,

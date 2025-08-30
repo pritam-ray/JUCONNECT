@@ -14,7 +14,7 @@ const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showAdminPanel, setShowAdminPanel] = useState(false)
-  const { user, profile, isGuest, signInAsGuest, signOut } = useAuth()
+  const { user, profile, isGuest, signOut } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -33,11 +33,6 @@ const Navbar: React.FC = () => {
 
   const handleSignOut = async () => {
     await signOut()
-    setIsOpen(false)
-  }
-
-  const handleGuestSignIn = () => {
-    signInAsGuest()
     setIsOpen(false)
   }
 
@@ -173,11 +168,15 @@ const Navbar: React.FC = () => {
                     <LogOut className="h-5 w-5" />
                   </button>
                 </div>
+              ) : isGuest ? (
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-secondary-600 hidden xl:block">👋 Guest</span>
+                  <Button size="sm" variant="premium" onClick={() => setShowAuthModal(true)}>
+                    Sign In
+                  </Button>
+                </div>
               ) : (
                 <div className="flex items-center space-x-3">
-                  <Button variant="ghost" onClick={handleGuestSignIn}>
-                    Browse as Guest
-                  </Button>
                   <Button size="sm" variant="premium" onClick={() => setShowAuthModal(true)}>
                     Sign In
                   </Button>
@@ -291,13 +290,9 @@ const Navbar: React.FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <Button
-                      className="w-full"
-                      variant="ghost"
-                      onClick={handleGuestSignIn}
-                    >
-                      Browse as Guest
-                    </Button>
+                    <div className="px-4 py-2 text-sm text-secondary-600 bg-secondary-100 rounded-xl">
+                      👋 Browsing as Guest
+                    </div>
                     <Button
                       className="w-full"
                       variant="premium"

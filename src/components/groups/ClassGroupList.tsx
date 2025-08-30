@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { Plus, Users, BookOpen, Search, Filter, Clock, Lock, Crown } from 'lucide-react'
 import { getAllClassGroups, getUserGroups, joinClassGroup, ClassGroupWithDetails } from '../../services/classGroupService'
 import { useRealtimeGroups } from '../../hooks/useRealtime'
@@ -29,20 +29,37 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
   const [activeTab, setActiveTab] = useState<'my-groups' | 'all-groups'>('my-groups')
   const [error, setError] = useState<string | null>(null)
   const isMountedRef = useRef(true)
+  const fetchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const isFirstMount = useRef(true)
 
-  // Store user ID separately to avoid useCallback dependency issues
-  const userId = user?.id
+  // Store stable values to prevent unnecessary re-renders
+  const stableUserId = useMemo(() => user?.id, [user?.id])
+  const stableIsGuest = useMemo(() => isGuest, [isGuest])
+  const stableAuthLoading = useMemo(() => authLoading, [authLoading])
   
-  // Fetch function with rate limiting to prevent excessive API calls
+  // Fetch function with aggressive rate limiting to prevent excessive API calls
   const fetchGroups = useCallback(async () => {
-    // Rate limiting - only allow fetching groups once every 10 seconds
+    if (!isMountedRef.current) {
+      console.log('ClassGroupList: Component unmounted, skipping fetch')
+      return
+    }
+    
+    // Prevent multiple simultaneous fetches
+    if (fetchTimeoutRef.current) {
+      clearTimeout(fetchTimeoutRef.current)
+    }
+    
+    // Super aggressive rate limiting - only allow fetching groups once every 15 seconds
     const now = Date.now()
     const lastFetch = parseInt(sessionStorage.getItem('last-groups-fetch') || '0')
-    if (now - lastFetch < 10000) {
-      console.log('Groups fetch rate limited')
+    const timeSinceLastFetch = now - lastFetch
+    if (timeSinceLastFetch < 15000) {
+      console.log('Groups fetch rate limited - last fetch was', timeSinceLastFetch / 1000, 'seconds ago, minimum 15 seconds required')
       return
     }
     sessionStorage.setItem('last-groups-fetch', now.toString())
+    
+    console.log('ClassGroupList: Starting fetchGroups with userId:', stableUserId, 'isGuest:', stableIsGuest, 'authLoading:', stableAuthLoading)
 
     try {
       setLoading(true)
@@ -62,9 +79,9 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
       }
       
       // Only fetch user groups if user is authenticated and not a guest
-      if (userId && !isGuest) {
+      if (stableUserId && !stableIsGuest) {
         try {
-          userGroupsData = await getUserGroups(userId)
+          userGroupsData = await getUserGroups(stableUserId)
           console.log('User groups fetched:', userGroupsData.length)
         } catch (error: any) {
           console.error('Failed to fetch user groups:', error)
@@ -87,43 +104,47 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
     } finally {
       setLoading(false)
     }
-  }, [userId, isGuest])
+  }, [stableUserId, stableIsGuest])
 
   useEffect(() => {
     // Don't fetch if auth is still loading
-    if (authLoading) return
+    if (stableAuthLoading) {
+      console.log('ClassGroupList: Skipping fetch - auth still loading')
+      return
+    }
     
-    fetchGroups()
-  }, [fetchGroups, authLoading])
+    // Prevent rapid re-renders on first mount
+    if (isFirstMount.current) {
+      isFirstMount.current = false
+      
+      // Add a delay to prevent rapid successive calls on first mount
+      fetchTimeoutRef.current = setTimeout(() => {
+        console.log('ClassGroupList: First mount - triggering fetchGroups after delay')
+        fetchGroups()
+      }, 500) // Increased delay for first mount
+    } else {
+      // For subsequent calls, use a shorter delay but still prevent spam
+      fetchTimeoutRef.current = setTimeout(() => {
+        console.log('ClassGroupList: Subsequent call - triggering fetchGroups')
+        fetchGroups()
+      }, 300)
+    }
+    
+    return () => {
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current)
+      }
+    }
+  }, [fetchGroups, stableAuthLoading])
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       isMountedRef.current = false
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current)
+      }
     }
-  }, [])
-
-  // Real-time group handlers
-  const handleGroupCreate = useCallback((newGroup: any) => {
-    setAllGroups(prev => [newGroup, ...prev])
-  }, [])
-
-  const handleGroupUpdate = useCallback((updatedGroup: any) => {
-    setAllGroups(prev => 
-      prev.map(group => 
-        group.id === updatedGroup.id ? { ...group, ...updatedGroup } : group
-      )
-    )
-    setUserGroups(prev => 
-      prev.map(group => 
-        group.id === updatedGroup.id ? { ...group, ...updatedGroup } : group
-      )
-    )
-  }, [])
-
-  const handleGroupDelete = useCallback((groupId: string) => {
-    setAllGroups(prev => prev.filter(group => group.id !== groupId))
-    setUserGroups(prev => prev.filter(group => group.id !== groupId))
   }, [])
 
   // DISABLED: Real-time group subscriptions to reduce API calls
@@ -139,8 +160,10 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
       onError: (error) => console.error('Real-time groups error:', error)
     }
   )
-  */  // Don't render anything if auth is still loading
-  if (authLoading) {
+  */
+
+  // Don't render anything if auth is still loading
+  if (stableAuthLoading) {
     return (
       <div className="flex justify-center items-center py-12">
         <LoadingSpinner />
@@ -347,7 +370,7 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
                 onJoin={() => handleJoinGroup(group.id, group)}
                 isJoining={joining === group.id}
                 showJoinButton={false}
-                userId={user?.id}
+                userId={stableUserId}
               />
             ))
           )
@@ -370,7 +393,7 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
                   isJoining={joining === group.id}
                   showJoinButton={!isJoined && !!user && !isGuest}
                   isJoined={isJoined}
-                  userId={user?.id}
+                  userId={stableUserId}
                 />
               )
             })

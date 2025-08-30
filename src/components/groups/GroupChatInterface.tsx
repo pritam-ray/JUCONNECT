@@ -154,6 +154,9 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
       // Initialize all data inline to avoid dependency issues
       const initializeData = async () => {
         try {
+          setChatLoading(true)
+          setError(null)
+          
           // Load messages
           const messagesData = await getGroupMessages(group.id)
           setMessages(messagesData)
@@ -170,6 +173,9 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
           markGroupMessagesAsRead(group.id, user.id)
         } catch (error) {
           console.error('Error initializing group data:', error)
+          setError('Failed to load group data. Please try again.')
+        } finally {
+          setChatLoading(false)
         }
       }
       
@@ -190,22 +196,6 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     } catch (error) {
       console.error('Error checking admin status:', error)
       setIsUserAdmin(group.creator_id === user.id)
-    }
-  }
-
-  const loadMessages = async () => {
-    if (!group.id) return
-    
-    try {
-      console.log('Loading messages for group:', group.id)
-      const groupMessages = await getGroupMessages(group.id)
-      console.log('Loaded messages:', groupMessages.length)
-      setMessages(groupMessages)
-    } catch (error: any) {
-      console.error('Error loading messages:', error)
-      setError('Failed to load messages')
-    } finally {
-      setChatLoading(false)
     }
   }
 
@@ -501,6 +491,24 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
         {chatLoading ? (
           <div className="flex items-center justify-center h-full">
             <LoadingSpinner />
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center h-full text-red-500">
+            <div className="text-center">
+              <p className="text-lg font-medium">Error Loading Messages</p>
+              <p className="text-sm mb-4">{error}</p>
+              <Button 
+                onClick={() => {
+                  setError(null)
+                  setChatLoading(true)
+                  // Trigger a reload by changing a dependency
+                  window.location.reload()
+                }}
+                className="text-sm"
+              >
+                Try Again
+              </Button>
+            </div>
           </div>
         ) : messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-500">

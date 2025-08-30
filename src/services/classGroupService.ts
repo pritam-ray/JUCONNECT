@@ -403,7 +403,15 @@ export const leaveClassGroup = async (groupId: string, userId: string): Promise<
 
 // Get group members
 export const getGroupMembers = async (groupId: string): Promise<GroupMemberWithProfile[]> => {
-  if (!supabase || !groupId) return []
+  if (!supabase) {
+    console.warn('Supabase not available for getGroupMembers')
+    return []
+  }
+  
+  if (!groupId) {
+    console.warn('No group ID provided for getGroupMembers')
+    return []
+  }
 
   try {
     console.log('Fetching group members for:', groupId)
@@ -427,7 +435,7 @@ export const getGroupMembers = async (groupId: string): Promise<GroupMemberWithP
       .order('joined_at', { ascending: true })
 
     if (error) {
-      console.error('Error fetching group members:', error)
+      console.error('Database error in getGroupMembers:', error)
       if (error.code === '42P01') {
         console.warn('group_members table does not exist yet')
         return []
@@ -435,11 +443,17 @@ export const getGroupMembers = async (groupId: string): Promise<GroupMemberWithP
       throw error
     }
     
-    console.log('Fetched group members:', data?.length || 0)
+    console.log('Successfully fetched group members:', data?.length || 0)
     return data || []
   } catch (error) {
     console.error('Error in getGroupMembers:', error)
-    return []
+    
+    // Don't return empty array for unknown errors - let caller handle it
+    if (error instanceof Error && error.message.includes('table does not exist')) {
+      return []
+    }
+    
+    throw error
   }
 }
 
@@ -504,9 +518,19 @@ export const getGroupMessages = async (
   limit: number = 50,
   offset: number = 0
 ): Promise<GroupMessageWithProfile[]> => {
-  if (!supabase) return []
+  if (!supabase) {
+    console.warn('Supabase not available for getGroupMessages')
+    return []
+  }
+
+  if (!groupId) {
+    console.warn('No group ID provided for getGroupMessages')
+    return []
+  }
 
   try {
+    console.log('Fetching messages for group:', groupId)
+    
     const { data, error } = await supabase
       .from('group_messages')
       .select(`
@@ -522,12 +546,30 @@ export const getGroupMessages = async (
       .order('created_at', { ascending: true })
       .range(offset, offset + limit - 1)
 
-    if (error) throw error
+    if (error) {
+      console.error('Database error in getGroupMessages:', error)
+      
+      // Handle specific database errors
+      if (error.code === '42P01') {
+        console.warn('group_messages table does not exist yet')
+        return []
+      }
+      
+      // For other errors, throw to be handled by caller
+      throw error
+    }
     
+    console.log('Successfully fetched messages:', data?.length || 0)
     return data || []
   } catch (error) {
     console.error('Error fetching group messages:', error)
-    return []
+    
+    // Don't return empty array for unknown errors - let caller handle it
+    if (error instanceof Error && error.message.includes('table does not exist')) {
+      return []
+    }
+    
+    throw error
   }
 }
 

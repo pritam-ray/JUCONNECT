@@ -180,8 +180,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (!session?.user) {
               console.log('No authenticated session found, setting as guest')
               setIsGuest(true)
+              console.log('AuthContext: Set isGuest to true - user is null')
             } else {
               setIsGuest(false)
+              console.log('AuthContext: Set isGuest to false - user authenticated')
               await refreshProfile()
             }
             
@@ -212,11 +214,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 // Automatically set guest status based on session
                 if (session?.user) {
                   setIsGuest(false)
+                  console.log('AuthContext: Auth state change - user authenticated, isGuest set to false')
                   // Clear any guest mode storage
                   localStorage.removeItem('ju-connect-guest-mode')
                 } else {
                   console.log('Auth state change: No user session, setting as guest')
                   setIsGuest(true)
+                  console.log('AuthContext: Auth state change - no user, isGuest set to true')
                 }
                 
                 if (session?.user) {

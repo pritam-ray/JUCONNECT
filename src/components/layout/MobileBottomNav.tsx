@@ -27,7 +27,7 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onAuthRequired }) => 
   const navigation = [
     { name: 'Home', href: '/', icon: Home, requiresAuth: false },
     { name: 'Categories', href: '/categories', icon: FileText, requiresAuth: false },
-    { name: 'Groups', href: '/groups', icon: Users, requiresAuth: false },
+    { name: 'Groups', href: '/groups', icon: Users, requiresAuth: true },
     { name: 'Messages', href: '/chat?tab=private', icon: Mail, requiresAuth: true },
     { name: 'Upload', href: '/upload', icon: Upload, requiresAuth: true }
   ]

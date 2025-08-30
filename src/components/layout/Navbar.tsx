@@ -78,7 +78,7 @@ const Navbar: React.FC = () => {
               {/* Desktop Navigation */}
               <div className="hidden lg:ml-8 lg:flex lg:space-x-2">
                 {navigation.map((item) => {
-                  const requiresAuth = ['/upload', '/my-requests'].includes(item.href)
+                  const requiresAuth = ['/upload', '/my-requests', '/groups', '/chat'].includes(item.href)
                   
                   return (
                     <Link
@@ -203,7 +203,7 @@ const Navbar: React.FC = () => {
           <div className="lg:hidden border-t border-white/20 bg-white/95 backdrop-blur-xl animate-fade-in-down">
             <div className="px-4 pt-4 pb-6 space-y-3">
               {navigation.map((item) => {
-                const requiresAuth = ['/upload', '/my-requests'].includes(item.href)
+                const requiresAuth = ['/upload', '/my-requests', '/groups', '/chat'].includes(item.href)
                 
                 return (
                   <Link

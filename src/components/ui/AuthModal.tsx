@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Eye, EyeOff, User, Mail, Phone, Lock, Sparkles, Star } from 'lucide-react'
 import { signIn, signUp } from '../../services/authService'
 import { useAuth } from '../../contexts/AuthContext'
@@ -11,6 +11,7 @@ interface AuthModalProps {
   isOpen: boolean
   onClose: () => void
   defaultMode?: 'signin' | 'signup'
+  initialMode?: 'login' | 'signup'
   onSuccess?: () => void
 }
 
@@ -18,9 +19,24 @@ const AuthModal: React.FC<AuthModalProps> = ({
   isOpen, 
   onClose, 
   defaultMode = 'signin',
+  initialMode,
   onSuccess 
 }) => {
-  const [mode, setMode] = useState<'signin' | 'signup'>(defaultMode)
+  // Map initialMode to internal mode format
+  const getInitialMode = (): 'signin' | 'signup' => {
+    if (initialMode === 'login') return 'signin'
+    if (initialMode === 'signup') return 'signup'
+    return defaultMode
+  }
+  
+  const [mode, setMode] = useState<'signin' | 'signup'>(getInitialMode())
+  
+  // Update mode when initialMode changes
+  useEffect(() => {
+    if (isOpen && initialMode) {
+      setMode(getInitialMode())
+    }
+  }, [isOpen, initialMode])
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')

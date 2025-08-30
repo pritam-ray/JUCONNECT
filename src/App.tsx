@@ -1,5 +1,5 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AuthProvider } from './contexts/AuthContext'
 import ErrorBoundary from './components/ErrorBoundary'
 import Navbar from './components/layout/Navbar'
@@ -7,6 +7,7 @@ import Footer from './components/layout/Footer'
 import MobileBottomNav from './components/layout/MobileBottomNav'
 import AuthModal from './components/ui/AuthModal'
 import PageTransition from './components/ui/PageTransition'
+import AuthGuard from './components/auth/AuthGuard'
 import HomePage from './pages/HomePage'
 import AuthPage from './pages/AuthPage'
 import UploadPage from './pages/UploadPage'
@@ -22,6 +23,22 @@ import GroupsPage from './pages/GroupsPage'
 
 function App() {
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login')
+
+  // Listen for auth modal events from AuthGuard
+  useEffect(() => {
+    const handleOpenAuthModal = (event: CustomEvent) => {
+      const { mode } = event.detail
+      setAuthModalMode(mode || 'login')
+      setShowAuthModal(true)
+    }
+
+    window.addEventListener('openAuthModal', handleOpenAuthModal as EventListener)
+    
+    return () => {
+      window.removeEventListener('openAuthModal', handleOpenAuthModal as EventListener)
+    }
+  }, [])
 
   return (
     <ErrorBoundary>
@@ -34,16 +51,53 @@ function App() {
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/auth" element={<AuthPage />} />
-                  <Route path="/upload" element={<UploadPage />} />
-                  <Route path="/chat" element={<ChatPage />} />
                   <Route path="/categories" element={<CategoriesPage />} />
-                  <Route path="/my-requests" element={<MyRequestsPage />} />
-                  <Route path="/profile/:userId" element={<UserProfilePage />} />
                   <Route path="/help" element={<HelpCenterPage />} />
                   <Route path="/privacy" element={<PrivacyPolicyPage />} />
                   <Route path="/terms" element={<TermsOfServicePage />} />
                   <Route path="/contact" element={<ContactUsPage />} />
-                  <Route path="/groups" element={<GroupsPage />} />
+                  
+                  {/* Protected Routes - Require Authentication */}
+                  <Route 
+                    path="/upload" 
+                    element={
+                      <AuthGuard pageName="the Upload page">
+                        <UploadPage />
+                      </AuthGuard>
+                    } 
+                  />
+                  <Route 
+                    path="/chat" 
+                    element={
+                      <AuthGuard pageName="Messages">
+                        <ChatPage />
+                      </AuthGuard>
+                    } 
+                  />
+                  <Route 
+                    path="/my-requests" 
+                    element={
+                      <AuthGuard pageName="My Requests">
+                        <MyRequestsPage />
+                      </AuthGuard>
+                    } 
+                  />
+                  <Route 
+                    path="/groups" 
+                    element={
+                      <AuthGuard pageName="Groups">
+                        <GroupsPage />
+                      </AuthGuard>
+                    } 
+                  />
+                  <Route 
+                    path="/profile/:userId" 
+                    element={
+                      <AuthGuard pageName="User Profile">
+                        <UserProfilePage />
+                      </AuthGuard>
+                    } 
+                  />
                 </Routes>
               </PageTransition>
             </main>
@@ -53,6 +107,7 @@ function App() {
               isOpen={showAuthModal}
               onClose={() => setShowAuthModal(false)}
               onSuccess={() => setShowAuthModal(false)}
+              initialMode={authModalMode}
             />
           </div>
         </Router>

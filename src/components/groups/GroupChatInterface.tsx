@@ -73,22 +73,38 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   const handleNewMessage = useCallback((message: any) => {
     setMessages(prev => {
       // Check if this message replaces an optimistic one
-      const optimisticIndex = prev.findIndex(msg => 
-        msg.isOptimistic && 
-        msg.user_id === message.user_id &&
-        msg.message === message.message &&
-        Math.abs(new Date(msg.created_at).getTime() - new Date(message.created_at).getTime()) < 5000 // Within 5 seconds
-      )
+      let optimisticIndex = -1
+      
+      // For file messages, match by file name and user
+      if (message.message_type === 'file') {
+        optimisticIndex = prev.findIndex(msg => 
+          msg.isOptimistic && 
+          msg.user_id === message.user_id &&
+          msg.message_type === 'file' &&
+          msg.file_name === message.file_name &&
+          Math.abs(new Date(msg.created_at).getTime() - new Date(message.created_at).getTime()) < 30000 // Within 30 seconds for file uploads
+        )
+      } else {
+        // For text messages, match by content and user
+        optimisticIndex = prev.findIndex(msg => 
+          msg.isOptimistic && 
+          msg.user_id === message.user_id &&
+          msg.message === message.message &&
+          Math.abs(new Date(msg.created_at).getTime() - new Date(message.created_at).getTime()) < 5000 // Within 5 seconds
+        )
+      }
       
       if (optimisticIndex !== -1) {
         // Replace optimistic message with real one
         const newMessages = [...prev]
         newMessages[optimisticIndex] = message
+        console.log('🔄 Replaced optimistic message with real one:', message.id)
         return newMessages
       } else {
         // Add new message if it's not replacing an optimistic one
         const isDuplicate = prev.some(msg => msg.id === message.id)
         if (!isDuplicate) {
+          console.log('📨 Added new real-time message:', message.id)
           return [...prev, message]
         }
         return prev
@@ -291,6 +307,32 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
 
     setUploadingFile(true)
 
+    // Create optimistic file message immediately
+    const tempId = `temp-file-${Date.now()}`
+    const optimisticFileMessage: OptimisticGroupMessage = {
+      id: tempId,
+      group_id: group.id,
+      user_id: user.id,
+      message: `📎 ${file.name}`,
+      message_type: 'file',
+      file_url: 'uploading', // Placeholder to indicate uploading
+      file_name: file.name,
+      file_size: file.size,
+      created_at: new Date().toISOString(),
+      profiles: {
+        id: user.id,
+        username: user.email?.split('@')[0] || 'user',
+        full_name: user.user_metadata?.full_name || 'Unknown User',
+        avatar_url: user.user_metadata?.avatar_url
+      },
+      isOptimistic: true
+    }
+
+    // Add optimistic file message immediately
+    setMessages(prev => [...prev, optimisticFileMessage])
+    setReplyTo(null)
+    scrollToBottom()
+
     try {
       console.log('Uploading file:', file.name)
       const uploadResult = await uploadGroupFile({
@@ -303,16 +345,19 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
       const fileMessage = await sendGroupMessage(
         group.id,
         user.id,
-        `Shared a file: ${file.name}`,
+        `📎 ${file.name}`,
         'file',
         uploadResult,
         replyTo?.id
       )
       
       console.log('File message sent:', fileMessage)
-      setReplyTo(null)
+      
+      // The real-time subscription will replace the optimistic message
     } catch (error: any) {
       console.error('Error uploading file:', error)
+      // Remove optimistic message on error
+      setMessages(prev => prev.filter(msg => msg.id !== tempId))
       setError('Could not upload your file. Please try again.')
     } finally {
       setUploadingFile(false)
@@ -391,7 +436,8 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   const renderMessage = (message: OptimisticGroupMessage) => {
     const isOwn = message.user_id === user?.id
     const isOptimistic = message.isOptimistic
-    const isFileMessage = (message as any).message_type === 'file' && (message as any).file_url
+    const isFileMessage = message.message_type === 'file' && message.file_url
+    const isUploading = isFileMessage && message.file_url === 'uploading'
 
     return (
       <div
@@ -411,25 +457,32 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
           
           {isFileMessage ? (
             <div className="space-y-2">
-              <div className="flex items-center space-x-2 p-2 bg-white bg-opacity-10 rounded-md">
-                {getFileIcon((message as any).file_name)}
+              <div className={`flex items-center space-x-2 p-2 rounded-md ${
+                isOwn ? 'bg-white bg-opacity-10' : 'bg-gray-100'
+              }`}>
+                {getFileIcon(message.file_name || '')}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{(message as any).file_name}</p>
+                  <p className="text-sm font-medium truncate">{message.file_name}</p>
                   <p className="text-xs opacity-75">
-                    {formatFileSize((message as any).file_size || 0)}
+                    {message.file_size ? formatFileSize(message.file_size) : 'Unknown size'}
                   </p>
+                  {isUploading && (
+                    <p className="text-xs opacity-75 animate-pulse">Uploading...</p>
+                  )}
                 </div>
-                <button
-                  onClick={() => handleFileDownload((message as any).file_url, (message as any).file_name)}
-                  className={`p-1 rounded-full hover:bg-white hover:bg-opacity-20 transition-colors ${
-                    isOwn ? 'text-white' : 'text-gray-600'
-                  }`}
-                  title="Download file"
-                >
-                  <Download className="h-4 w-4" />
-                </button>
+                {!isUploading && (
+                  <button
+                    onClick={() => handleFileDownload(message.file_url!, message.file_name!)}
+                    className={`p-1 rounded-full hover:bg-white hover:bg-opacity-20 transition-colors ${
+                      isOwn ? 'text-white' : 'text-gray-600'
+                    }`}
+                    title="Download file"
+                  >
+                    <Download className="h-4 w-4" />
+                  </button>
+                )}
               </div>
-              {message.message && message.message !== `📎 ${(message as any).file_name}` && (
+              {message.message && message.message !== `📎 ${message.file_name}` && (
                 <p className="text-sm">{message.message}</p>
               )}
             </div>
@@ -442,7 +495,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
               hour: '2-digit', 
               minute: '2-digit' 
             })}
-            {isOptimistic && ' (sending...)'}
+            {isOptimistic && (isUploading ? ' (uploading...)' : ' (sending...)')}
           </p>
         </div>
       </div>

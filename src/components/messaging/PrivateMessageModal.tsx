@@ -44,9 +44,19 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
   const [showNewChat, setShowNewChat] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Scroll to bottom when new messages arrive
+  // Scroll to bottom when new messages arrive - only scroll within container
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const element = messagesEndRef.current
+    if (element) {
+      const container = element.parentElement
+      if (container) {
+        // Scroll within the container only, not the entire page
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth'
+        })
+      }
+    }
   }, [currentConversation])
 
   // Load conversation when activeConversation changes

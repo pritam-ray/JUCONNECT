@@ -30,13 +30,14 @@ export const usePrivateMessages = (userId: string | null) => {
   const totalUnreadCount = conversations.reduce((total, conv) => total + conv.unreadCount, 0)
 
   // Load conversations with rate limiting
-  const loadConversations = useCallback(async () => {
+  const loadConversations = useCallback(async (forceReload: boolean = false) => {
     if (!userId) return
 
-    // Rate limiting - only allow loading conversations once every 5 seconds
+    // Rate limiting - only allow loading conversations once every 2 seconds (reduced from 5)
+    // But allow force reload to bypass rate limiting
     const now = Date.now()
     const lastLoad = parseInt(sessionStorage.getItem(`last-conversations-load-${userId}`) || '0')
-    if (now - lastLoad < 5000) {
+    if (!forceReload && now - lastLoad < 2000) {
       console.log('Conversations load rate limited')
       return
     }
@@ -149,7 +150,7 @@ export const usePrivateMessages = (userId: string | null) => {
             const lastUpdate = parseInt(sessionStorage.getItem(`last-rt-update-${userId}`) || '0')
             if (now - lastUpdate > 5000) {
               sessionStorage.setItem(`last-rt-update-${userId}`, now.toString())
-              await loadConversations()
+              await loadConversations(false) // Don't force reload from real-time
             }
           }
         }
@@ -167,7 +168,7 @@ export const usePrivateMessages = (userId: string | null) => {
 
   // Load conversations on mount
   useEffect(() => {
-    loadConversations()
+    loadConversations(false) // Don't force reload on mount
   }, [loadConversations])
 
   // Clear error after 5 seconds
@@ -190,15 +191,24 @@ export const usePrivateMessages = (userId: string | null) => {
     if (!existingConv) {
       // Fetch the other user's profile to create a conversation entry
       try {
+        if (!supabase) return
+        
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id, username, full_name, avatar_url, is_online, last_seen')
+          .select('id, username, full_name, avatar_url')
           .eq('id', otherUserId)
           .single()
         
         if (profile) {
-          const newConversation = {
-            otherUser: profile,
+          const newConversation: Conversation = {
+            otherUser: {
+              id: profile.id,
+              username: profile.username,
+              full_name: profile.full_name,
+              avatar_url: profile.avatar_url || undefined,
+              is_online: false, // Default value since column doesn't exist
+              last_seen: undefined // Default value since column doesn't exist
+            },
             lastMessage: undefined,
             unreadCount: 0
           }

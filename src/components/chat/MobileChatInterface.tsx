@@ -149,9 +149,19 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
     }
   }
 
-  // Auto-scroll to bottom
+  // Auto-scroll to bottom - only scroll within container, not the entire page
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const element = messagesEndRef.current
+    if (element) {
+      const container = element.parentElement
+      if (container) {
+        // Scroll within the container only
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth'
+        })
+      }
+    }
   }, [globalMessages, currentConversation])
 
   // Load global messages on mount
@@ -164,7 +174,7 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
   // Load conversations when accessing private messages
   useEffect(() => {
     if (viewMode === 'private-list' && user?.id && loadConversations) {
-      loadConversations()
+      loadConversations(false) // Use normal loading for mobile
     }
   }, [viewMode, user?.id, loadConversations])
 

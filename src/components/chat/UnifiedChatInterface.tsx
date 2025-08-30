@@ -43,6 +43,9 @@ const UnifiedChatInterface: React.FC = () => {
   const { user, profile, isGuest } = useAuth()
   const location = useLocation()
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const privateInputRef = useRef<HTMLInputElement>(null)
+  const globalInputRef = useRef<HTMLInputElement>(null)
   
   // Get initial tab from URL parameters
   const searchParams = new URLSearchParams(location.search)
@@ -78,8 +81,9 @@ const UnifiedChatInterface: React.FC = () => {
     loading: privateLoading,
     sending: privateSending,
     error: privateError,
-    loadConversation,
-    sendMessage: sendPrivateMessage
+    loadConversations,
+    sendMessage: sendPrivateMessage,
+    startNewConversation
   } = usePrivateMessages(user?.id || null)
 
   // Real-time global message handlers
@@ -131,10 +135,52 @@ const UnifiedChatInterface: React.FC = () => {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Scroll to bottom effect
+  // Scroll to bottom effect - improved to be less aggressive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [globalMessages, currentConversation])
+    // Clear any existing timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current)
+    }
+    
+    // Debounce the scroll behavior
+    scrollTimeoutRef.current = setTimeout(() => {
+      // Only scroll if we have messages and the component is mounted
+      if ((globalMessages.length > 0 && chatMode === 'global') || 
+          (currentConversation && currentConversation.length > 0 && chatMode === 'private')) {
+        
+        // Use requestAnimationFrame to ensure DOM has updated
+        requestAnimationFrame(() => {
+          const element = messagesEndRef.current
+          if (element) {
+            // Get the scrollable container (messages area)
+            const container = element.parentElement
+            if (container) {
+              const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100
+              
+              // Only auto-scroll if user is already near the bottom or it's a new conversation
+              if (isNearBottom || 
+                  (currentConversation && currentConversation.length <= 1) || 
+                  (globalMessages.length <= 1)) {
+                
+                // Scroll within the container only, not the entire page
+                container.scrollTo({
+                  top: container.scrollHeight,
+                  behavior: 'smooth'
+                })
+              }
+            }
+          }
+        })
+      }
+    }, 100) // 100ms debounce
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
+      }
+    }
+  }, [globalMessages.length, currentConversation?.length, chatMode]) // Only depend on message count changes
 
   // Load initial global messages
   useEffect(() => {
@@ -155,6 +201,14 @@ const UnifiedChatInterface: React.FC = () => {
       loadGlobalMessages()
     }
   }, [isMobile])
+
+  // Load conversations when switching to private chat mode
+  useEffect(() => {
+    if (!isMobile && chatMode === 'private' && user?.id && loadConversations) {
+      // Force reload conversations to bypass rate limiting when switching modes
+      loadConversations(true)
+    }
+  }, [chatMode, user?.id, isMobile, loadConversations])
 
   // Clear error after 5 seconds
   useEffect(() => {
@@ -213,6 +267,11 @@ const UnifiedChatInterface: React.FC = () => {
       setGlobalNewMessage('')
 
       await sendChatMessage(optimisticMessage.message, user.id)
+      
+      // Maintain focus on input after sending
+      setTimeout(() => {
+        globalInputRef.current?.focus()
+      }, 50)
     } catch (error) {
       console.error('Failed to send global message:', error)
       setGlobalMessages(prev => prev.filter(msg => msg.id !== tempMessageId))
@@ -231,12 +290,22 @@ const UnifiedChatInterface: React.FC = () => {
       return
     }
 
+    // Store the current message and clear input immediately for better UX
+    const messageToSend = privateNewMessage.trim()
+    setPrivateNewMessage('')
+
     try {
-      await sendPrivateMessage(activeConversation, privateNewMessage.trim())
-      setPrivateNewMessage('')
+      await sendPrivateMessage(activeConversation, messageToSend)
+      
+      // Maintain focus on input after sending
+      setTimeout(() => {
+        privateInputRef.current?.focus()
+      }, 50)
     } catch (error) {
       console.error('Failed to send private message:', error)
       setError('Failed to send private message. Please try again.')
+      // Restore the message if sending failed
+      setPrivateNewMessage(messageToSend)
     }
   }
 
@@ -296,9 +365,13 @@ const UnifiedChatInterface: React.FC = () => {
     }
   }
 
-  const startConversation = (userId: string) => {
+  const startConversation = async (userId: string) => {
     setActiveConversation(userId)
-    loadConversation(userId)
+    try {
+      await startNewConversation(userId)
+    } catch (error) {
+      console.error('Failed to start conversation:', error)
+    }
     setShowNewChat(false)
     setSearchQuery('')
     setSearchResults([])
@@ -337,14 +410,16 @@ const UnifiedChatInterface: React.FC = () => {
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-gray-50 to-white">
         {globalLoading ? (
           <div className="flex justify-center py-12">
             <LoadingSpinner />
           </div>
         ) : globalMessages.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+          <div className="text-center py-12 text-gray-500">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MessageCircle className="h-8 w-8 text-blue-500" />
+            </div>
             <p>No messages yet. Be the first to start the conversation!</p>
           </div>
         ) : (
@@ -376,7 +451,7 @@ const UnifiedChatInterface: React.FC = () => {
                     {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
                   </span>
                 </div>
-                <p className={`text-gray-700 ${message.is_flagged ? 'line-through opacity-60' : ''}`}>
+                <p className={`text-gray-800 leading-relaxed ${message.is_flagged ? 'line-through opacity-60' : ''}`}>
                   {message.message}
                 </p>
                 {message.is_flagged && (
@@ -410,26 +485,27 @@ const UnifiedChatInterface: React.FC = () => {
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-gray-200 bg-white mb-16 md:mb-0">
-        <div className="flex gap-2">
+      <div className="p-6 border-t border-gray-200 bg-white shadow-lg">
+        <div className="flex gap-3">
           <input
+            ref={globalInputRef}
             type="text"
             value={globalNewMessage}
             onChange={(e) => setGlobalNewMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder={isGuest ? "Please sign in to chat" : "Type your message..."}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 bg-white shadow-sm text-gray-900 placeholder-gray-500"
             disabled={isGuest || globalSending}
           />
           <Button
             onClick={handleSendGlobalMessage}
             disabled={!globalNewMessage.trim() || isGuest || globalSending}
-            className="px-4 py-2 rounded-full"
+            className="px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium shadow-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
             {globalSending ? (
               <LoadingSpinner size="sm" />
             ) : (
-              <Send className="h-4 w-4" />
+              <Send className="h-5 w-5" />
             )}
           </Button>
         </div>
@@ -486,10 +562,10 @@ const UnifiedChatInterface: React.FC = () => {
                   <div
                     key={conversation.otherUser.id}
                     onClick={() => startConversation(conversation.otherUser.id)}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                    className="flex items-center gap-4 p-4 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 cursor-pointer transition-all duration-200 border border-transparent hover:border-blue-100 hover:shadow-sm"
                   >
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
                         <User className="h-6 w-6 text-white" />
                       </div>
                     </div>
@@ -593,7 +669,32 @@ const UnifiedChatInterface: React.FC = () => {
 
     // Active conversation view
     const conversation = conversations.find(c => c.otherUser.id === activeConversation)
-    if (!conversation) return null
+    
+    // If conversation doesn't exist, check if we have search results to get user info
+    const otherUser = conversation?.otherUser || searchResults.find(u => u.id === activeConversation)
+    
+    if (!otherUser && !conversation) {
+      return (
+        <div className="flex flex-col h-full">
+          <div className="p-4 border-b border-gray-200 bg-white">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setActiveConversation(null)}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Loading...</h2>
+              </div>
+            </div>
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <LoadingSpinner />
+          </div>
+        </div>
+      )
+    }
 
     return (
       <div className="flex flex-col h-full">
@@ -610,37 +711,49 @@ const UnifiedChatInterface: React.FC = () => {
               <User className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">{conversation.otherUser.full_name}</h2>
-              <p className="text-sm text-gray-500">@{conversation.otherUser.username}</p>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {conversation?.otherUser.full_name || otherUser?.full_name || 'User'}
+              </h2>
+              <p className="text-sm text-gray-500">
+                @{conversation?.otherUser.username || otherUser?.username || 'username'}
+              </p>
             </div>
           </div>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {currentConversation ? (
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-gray-50 to-white">
+          {currentConversation && currentConversation.length > 0 ? (
             currentConversation.map((message) => {
               const isOwn = message.sender_id === user?.id
               return (
                 <div
                   key={message.id}
-                  className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                  className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-3`}
                 >
                   <div
-                    className={`max-w-xs md:max-w-md px-4 py-2 rounded-2xl ${
+                    className={`max-w-xs md:max-w-md px-6 py-3 rounded-2xl shadow-sm ${
                       isOwn
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-gray-100 text-gray-900'
+                        ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white'
+                        : 'bg-white border border-gray-200 text-gray-900'
                     }`}
                   >
-                    <p>{message.message}</p>
-                    <p className={`text-xs mt-1 ${isOwn ? 'text-primary-100' : 'text-gray-500'}`}>
+                    <p className="leading-relaxed">{message.message}</p>
+                    <p className={`text-xs mt-2 ${isOwn ? 'text-blue-100' : 'text-gray-500'}`}>
                       {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
                     </p>
                   </div>
                 </div>
               )
             })
+          ) : currentConversation ? (
+            <div className="text-center py-12 text-gray-500">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MessageCircle className="h-8 w-8 text-blue-500" />
+              </div>
+              <p className="text-lg font-medium text-gray-700">No messages yet</p>
+              <p className="text-sm text-gray-500">Start a conversation!</p>
+            </div>
           ) : (
             <div className="flex justify-center py-12">
               <LoadingSpinner />
@@ -650,26 +763,27 @@ const UnifiedChatInterface: React.FC = () => {
         </div>
 
         {/* Input */}
-        <div className="p-4 border-t border-gray-200 bg-white mb-16 md:mb-0">
-          <div className="flex gap-2">
+        <div className="p-6 border-t border-gray-200 bg-white shadow-lg">
+          <div className="flex gap-3">
             <input
+              ref={privateInputRef}
               type="text"
               value={privateNewMessage}
               onChange={(e) => setPrivateNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type your message..."
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 bg-white shadow-sm text-gray-900 placeholder-gray-500"
               disabled={privateSending}
             />
             <Button
               onClick={handleSendPrivateMessage}
               disabled={!privateNewMessage.trim() || privateSending}
-              className="px-4 py-2 rounded-full"
+              className="px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium shadow-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {privateSending ? (
                 <LoadingSpinner size="sm" />
               ) : (
-                <Send className="h-4 w-4" />
+                <Send className="h-5 w-5" />
               )}
             </Button>
           </div>
@@ -679,17 +793,37 @@ const UnifiedChatInterface: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6 md:py-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden h-[80vh]">
-          {/* Tab Navigation */}
-          <div className="flex border-b border-gray-200">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 py-6 md:py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
+          {/* Header with gradient background */}
+          <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                  <MessageCircle className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-white">JU Connect Chat</h1>
+                  <p className="text-white/80 text-sm">Connect with your community</p>
+                </div>
+              </div>
+              {totalUnreadCount > 0 && (
+                <div className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  {totalUnreadCount} unread
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Tab Navigation with enhanced design */}
+          <div className="flex bg-gray-50/50 border-b border-gray-200/50">
             <button
               onClick={() => setChatMode('global')}
-              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
+              className={`flex-1 px-6 py-4 text-sm font-semibold transition-all duration-200 ${
                 chatMode === 'global'
-                  ? 'text-primary-600 border-b-2 border-primary-600 bg-primary-50'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  ? 'text-blue-600 border-b-3 border-blue-600 bg-blue-50/50'
+                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100/50'
               }`}
             >
               <div className="flex items-center justify-center gap-2">
@@ -699,17 +833,17 @@ const UnifiedChatInterface: React.FC = () => {
             </button>
             <button
               onClick={() => setChatMode('private')}
-              className={`flex-1 px-6 py-4 text-sm font-medium transition-colors relative ${
+              className={`flex-1 px-6 py-4 text-sm font-semibold transition-all duration-200 relative ${
                 chatMode === 'private'
-                  ? 'text-primary-600 border-b-2 border-primary-600 bg-primary-50'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  ? 'text-purple-600 border-b-3 border-purple-600 bg-purple-50/50'
+                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100/50'
               }`}
             >
               <div className="flex items-center justify-center gap-2">
                 <MessageCircle className="h-4 w-4" />
                 Private Messages
                 {totalUnreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full min-w-[20px] h-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {totalUnreadCount}
                   </span>
                 )}
@@ -717,8 +851,8 @@ const UnifiedChatInterface: React.FC = () => {
             </button>
           </div>
 
-          {/* Chat Content */}
-          <div className="h-full">
+          {/* Chat Content Area with proper height */}
+          <div className="h-[calc(75vh)] flex flex-col">
             {chatMode === 'global' ? renderGlobalChat() : renderPrivateChat()}
           </div>
         </div>

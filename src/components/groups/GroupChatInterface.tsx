@@ -3,14 +3,14 @@ import {
   Send, 
   Paperclip, 
   Users, 
-  ArrowLeft, 
-  X,
-  LogOut,
+  ArrowLeft,
   Crown,
   Download,
   FileText,
   Image,
-  File
+  File,
+  LogOut,
+  X
 } from 'lucide-react'
 import { 
   getGroupMessages, 
@@ -125,22 +125,22 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     setMessages(prev => prev.filter(msg => msg.id !== messageId))
   }, [])
 
-  // Real-time member handlers
-  const handleMemberJoin = useCallback((member: any) => {
-    setMembers(prev => [...prev, member])
-  }, [])
+  // Real-time member handlers (disabled to reduce API load)
+  // const handleMemberJoin = useCallback((member: any) => {
+  //   setMembers(prev => [...prev, member])
+  // }, [])
 
-  const handleMemberLeave = useCallback((userId: string) => {
-    setMembers(prev => prev.filter(member => member.user_id !== userId))
-  }, [])
+  // const handleMemberLeave = useCallback((userId: string) => {
+  //   setMembers(prev => prev.filter(member => member.user_id !== userId))
+  // }, [])
 
-  const handleMemberUpdate = useCallback((updatedMember: any) => {
-    setMembers(prev => 
-      prev.map(member => 
-        member.user_id === updatedMember.user_id ? { ...member, ...updatedMember } : member
-      )
-    )
-  }, [])
+  // const handleMemberUpdate = useCallback((updatedMember: any) => {
+  //   setMembers(prev => 
+  //     prev.map(member => 
+  //       member.user_id === updatedMember.user_id ? { ...member, ...updatedMember } : member
+  //     )
+  //   )
+  // }, [])
 
     // ESSENTIAL: Keep only real-time messages for active chat
   useRealtimeGroupMessages(
@@ -203,6 +203,12 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
           
           // Mark messages as read
           markGroupMessagesAsRead(group.id, user.id)
+          
+          // Scroll to bottom after messages are loaded
+          setTimeout(() => {
+            scrollToBottom()
+          }, 100) // Small delay to ensure DOM is updated
+          
         } catch (error) {
           console.error('Error initializing group data:', error)
           setError('Failed to load group data. Please try again.')
@@ -216,8 +222,24 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   }, [group.id, group.creator_id, group.name, user?.id, user]) // Include all used properties
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    // Only auto-scroll when not loading and we have messages
+    if (!chatLoading && messages.length > 0) {
+      // Use setTimeout to ensure DOM is fully rendered
+      setTimeout(() => {
+        scrollToBottom()
+      }, 50)
+    }
+  }, [messages, chatLoading])
+
+  // Additional effect to scroll when loading finishes
+  useEffect(() => {
+    if (!chatLoading && messages.length > 0) {
+      console.log('Chat loading finished, scrolling to bottom with', messages.length, 'messages')
+      setTimeout(() => {
+        scrollToBottom()
+      }, 200) // Longer delay to ensure all messages are rendered
+    }
+  }, [chatLoading, messages.length])
 
   const checkAdminStatus = async () => {
     if (!user) return
@@ -246,10 +268,18 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
 
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTo({
-        top: messagesContainerRef.current.scrollHeight,
-        behavior: 'smooth'
+      const container = messagesContainerRef.current
+      console.log('Scrolling to bottom - ScrollHeight:', container.scrollHeight, 'ClientHeight:', container.clientHeight)
+      
+      // Use requestAnimationFrame to ensure smooth scrolling after render
+      requestAnimationFrame(() => {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth'
+        })
       })
+    } else {
+      console.warn('Messages container ref not available for scrolling')
     }
   }
 

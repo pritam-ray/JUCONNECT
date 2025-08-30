@@ -397,16 +397,16 @@ const HomePage: React.FC = () => {
             </button>
 
             {/* Dots */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-0.5">
               {heroImages.map((_, i) => (
                 <button
                   key={i}
                   aria-label={`Go to slide ${i + 1}`}
                   onClick={() => { goto(i); pauseTemporarily() }}
-                  className={`h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full transition-all duration-300 ${
+                  className={`h-0.5 w-0.5 sm:h-1 sm:w-1 rounded-full transition-all duration-300 ${
                     slide === i 
-                      ? 'bg-red-500 scale-110 sm:scale-125' 
-                      : 'bg-white/60 hover:bg-white/90 hover:scale-105 sm:hover:scale-110'
+                      ? 'bg-red-500 scale-125 sm:scale-150' 
+                      : 'bg-white/60 hover:bg-white/90 hover:scale-110'
                   }`}
                 />
               ))}

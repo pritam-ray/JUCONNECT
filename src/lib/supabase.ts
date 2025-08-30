@@ -56,42 +56,17 @@ export const isSupabaseConfigured = (): boolean => {
   return !!(url && key && supabase)
 }
 
-// Enhanced session management
-export const getSession = async () => {
-  if (!supabase) return null
+// Helper function to check if user is admin
+export const isAdmin = async (userId: string): Promise<boolean> => {
+  if (!supabase) return false
   
-  try {
-    const { data: { session }, error } = await supabase.auth.getSession()
-    if (error) {
-      logger.warn('Failed to get session:', error.message)
-      return null
-    }
-    return session
-  } catch (error) {
-    logger.error('Failed to get session:', error)
-    return null
-  }
-}
-
-// Refresh session if needed
-export const refreshSession = async () => {
-  if (!supabase) return null
+  const { data } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', userId)
+    .single()
   
-  try {
-    const { data: { session }, error } = await supabase.auth.refreshSession()
-    if (error) {
-      logger.warn('Failed to refresh session:', error.message)
-      return null
-    }
-    
-    if (session) {
-      logger.info('Session refreshed successfully')
-    }
-    return session
-  } catch (error) {
-    logger.error('Failed to refresh session:', error)
-    return null
-  }
+  return data?.is_admin || false
 }
 
 // Helper function to get user profile

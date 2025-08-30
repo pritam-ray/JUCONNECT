@@ -65,13 +65,13 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [isUserAdmin, setIsUserAdmin] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [realtimeConnected, setRealtimeConnected] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Real-time message handlers
   const handleNewMessage = useCallback((message: any) => {
-    console.log('🎯 handleNewMessage called with:', message)
     setMessages(prev => {
       // Check if this message replaces an optimistic one
       let optimisticIndex = -1
@@ -143,7 +143,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   //   )
   // }, [])
 
-    // ESSENTIAL: Keep only real-time messages for active chat
+        // ESSENTIAL: Keep only real-time messages for active chat
   console.log('🔌 Setting up real-time messages for group:', group?.id, 'user:', user?.id)
   useRealtimeGroupMessages(
     group?.id || null,
@@ -153,8 +153,14 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     {
       enabled: !!group?.id && !!user,
       onError: (error) => console.error('❌ Real-time messages error:', error),
-      onConnected: () => console.log('✅ Real-time messages connected for group:', group?.id),
-      onDisconnected: () => console.log('⚠️ Real-time messages disconnected for group:', group?.id)
+      onConnected: () => {
+        console.log('✅ Real-time messages connected for group:', group?.id)
+        setRealtimeConnected(true)
+      },
+      onDisconnected: () => {
+        console.log('⚠️ Real-time messages disconnected for group:', group?.id)
+        setRealtimeConnected(false)
+      }
     }
   )
 

@@ -319,6 +319,18 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     setReplyTo(null)
     scrollToBottom()
 
+    // Fallback: Remove optimistic state after 10 seconds if no real-time update
+    const fallbackTimeout = setTimeout(() => {
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === tempId 
+            ? { ...msg, isOptimistic: false }
+            : msg
+        )
+      )
+      console.log('⚠️ Message confirmed via fallback timeout (realtime may be disabled)')
+    }, 10000)
+
     try {
       const sentMessage = await sendGroupMessage(
         group.id,
@@ -331,6 +343,29 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
       
       // The real-time subscription will handle updating the message
       console.log('Message sent successfully:', sentMessage.id)
+      
+      // Clear the fallback timeout since message was sent successfully
+      clearTimeout(fallbackTimeout)
+      
+      // If realtime didn't trigger within 3 seconds, manually replace optimistic message
+      setTimeout(() => {
+        setMessages(prev => {
+          const stillOptimistic = prev.find(msg => msg.id === tempId && msg.isOptimistic)
+          if (stillOptimistic) {
+            console.log('🔄 Manually replacing optimistic message (realtime not received)')
+            return prev.map(msg => 
+              msg.id === tempId 
+                ? { 
+                    ...sentMessage, 
+                    profiles: optimisticMessage.profiles,
+                    isOptimistic: false 
+                  }
+                : msg
+            )
+          }
+          return prev
+        })
+      }, 3000)
     } catch (error: any) {
       console.error('Error sending message:', error)
       // Remove optimistic message on error

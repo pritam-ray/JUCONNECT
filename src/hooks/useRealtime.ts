@@ -23,8 +23,17 @@ export const useRealtimeGroupMessages = (
   const { enabled = true, onError, onConnected, onDisconnected } = options
 
   useEffect(() => {
-    if (!enabled || !groupId || !isSupabaseConfigured() || !supabase) return
+    if (!enabled || !groupId || !isSupabaseConfigured() || !supabase) {
+      console.log('🚫 Real-time setup skipped:', {
+        enabled,
+        groupId,
+        configured: isSupabaseConfigured(),
+        supabase: !!supabase
+      })
+      return
+    }
 
+    console.log('🔌 Setting up real-time updates for group messages:', groupId)
     logger.debug('Setting up real-time updates for group messages:', groupId)
 
     // Clean up existing subscription
@@ -47,14 +56,15 @@ export const useRealtimeGroupMessages = (
             logger.debug('New message received:', payload.new.id)
             if (!supabase) return
             
-            // Rate limiting - prevent excessive message fetching
-            const now = Date.now()
-            const lastFetch = parseInt(sessionStorage.getItem(`last-msg-fetch-${groupId}`) || '0')
-            if (now - lastFetch < 1000) { // 1 second between message fetches
-              console.log('Message fetch rate limited')
-              return
-            }
-            sessionStorage.setItem(`last-msg-fetch-${groupId}`, now.toString())
+            // Temporarily disable rate limiting for debugging real-time issues
+            // const now = Date.now()
+            // const lastFetch = parseInt(sessionStorage.getItem(`last-msg-fetch-${groupId}`) || '0')
+            // if (now - lastFetch < 200) { // Reduced to 200ms between message fetches
+            //   console.log('Message fetch rate limited (200ms cooldown)')
+            //   return
+            // }
+            // sessionStorage.setItem(`last-msg-fetch-${groupId}`, now.toString())
+            console.log('🔔 Processing new real-time message:', payload.new.id)
             
             // Fetch complete message with profile data
             const { data, error } = await supabase
@@ -72,6 +82,13 @@ export const useRealtimeGroupMessages = (
               .single()
 
             if (error) {
+              console.error('❌ Error loading new message details:', error)
+              console.error('❌ Error details:', {
+                message: error.message,
+                code: error.code,
+                details: error.details,
+                hint: error.hint
+              })
               logger.error('Error loading new message:', error)
               onError?.(new Error('Could not load new message'))
               return
@@ -110,14 +127,18 @@ export const useRealtimeGroupMessages = (
         }
       )
       .subscribe((status) => {
+        console.log('🔔 Real-time connection status for group', groupId, ':', status)
         logger.debug('Real-time connection status:', status)
         if (status === 'SUBSCRIBED') {
+          console.log('✅ Real-time updates connected for group:', groupId)
           logger.info('Real-time updates connected')
           onConnected?.()
         } else if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Real-time updates failed for group:', groupId)
           logger.error('Real-time updates failed')
           onError?.(new Error('Live updates are not working right now'))
         } else if (status === 'CLOSED') {
+          console.warn('⚠️ Real-time updates disconnected for group:', groupId)
           logger.warn('Real-time updates disconnected')
           onDisconnected?.()
         }

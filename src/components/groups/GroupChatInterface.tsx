@@ -71,6 +71,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
 
   // Real-time message handlers
   const handleNewMessage = useCallback((message: any) => {
+    console.log('🎯 handleNewMessage called with:', message)
     setMessages(prev => {
       // Check if this message replaces an optimistic one
       let optimisticIndex = -1
@@ -143,6 +144,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   // }, [])
 
     // ESSENTIAL: Keep only real-time messages for active chat
+  console.log('🔌 Setting up real-time messages for group:', group?.id, 'user:', user?.id)
   useRealtimeGroupMessages(
     group?.id || null,
     handleNewMessage,
@@ -150,7 +152,9 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     handleMessageDelete,
     {
       enabled: !!group?.id && !!user,
-      onError: (error) => console.error('Real-time messages error:', error)
+      onError: (error) => console.error('❌ Real-time messages error:', error),
+      onConnected: () => console.log('✅ Real-time messages connected for group:', group?.id),
+      onDisconnected: () => console.log('⚠️ Real-time messages disconnected for group:', group?.id)
     }
   )
 

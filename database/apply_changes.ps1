@@ -14,6 +14,17 @@ if (-not (Test-Path $SqlFile)) {
 
 Write-Host "Applying database changes from: $SqlFile" -ForegroundColor Yellow
 
+# Load environment variables from .env file
+if (Test-Path ".env") {
+    Get-Content ".env" | ForEach-Object {
+        if ($_ -match "^([^=]+)=(.*)$") {
+            $name = $matches[1]
+            $value = $matches[2]
+            [Environment]::SetEnvironmentVariable($name, $value, "Process")
+        }
+    }
+}
+
 # Get Supabase project details from environment or config
 $supabaseUrl = $env:VITE_SUPABASE_URL
 if (-not $supabaseUrl) {

@@ -35,7 +35,7 @@ FROM class_groups g
 JOIN group_members gm ON g.id = gm.group_id 
 JOIN profiles p ON gm.user_id = p.id
 LEFT JOIN group_members members ON g.id = members.group_id AND members.is_active = true
-WHERE gm.role = 'admin' OR g.creator_id = gm.user_id
+WHERE gm.role = 'admin'
 GROUP BY g.id, g.name, gm.user_id, p.username, p.full_name;
 
 -- 6. Add foreign key relationships for profiles

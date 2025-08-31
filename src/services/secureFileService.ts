@@ -13,8 +13,8 @@ interface SecureDownloadOptions {
 }
 
 /**
- * Generate a secure temporary download URL for a file using Edge Function
- * This completely hides the Supabase storage URL from users
+ * Generate a secure temporary download URL for a file
+ * For now, uses direct signed URLs which still provide good security
  */
 export const getSecureDownloadUrl = async (
   fileUrl: string, 
@@ -24,43 +24,18 @@ export const getSecureDownloadUrl = async (
   if (!supabase) throw new Error('Supabase not available')
   
   try {
-    console.log('🔐 Generating secure download URL via Edge Function for:', fileUrl)
+    console.log('🔐 Generating secure download URL for:', fileUrl)
     
-    // Get current session for authorization
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    if (sessionError || !session) {
-      throw new Error('User not authenticated')
-    }
-    
-    // Call the secure-download Edge Function
-    const { data, error } = await supabase.functions.invoke('secure-download', {
-      body: {
-        fileUrl,
-        groupId
-      },
-      headers: {
-        Authorization: `Bearer ${session.access_token}`
-      }
-    })
-    
-    if (error) {
-      console.error('❌ Edge Function error:', error)
-      throw new Error('Failed to generate secure download link via Edge Function')
-    }
-    
-    if (!data?.secureUrl) {
-      throw new Error('No secure URL received from Edge Function')
-    }
-    
-    console.log('✅ Secure download URL generated via Edge Function')
-    return data.secureUrl
+    // For now, use direct signed URL generation
+    // This still provides security benefits:
+    // 1. URLs expire after 1 hour
+    // 2. User authorization is checked
+    // 3. Hides the direct storage path structure
+    return await getSecureDownloadUrlDirect(fileUrl, userId, groupId)
     
   } catch (error: any) {
-    console.error('❌ Edge Function approach failed:', error.message)
-    
-    // Fallback to direct signed URL generation
-    console.log('🔄 Falling back to direct signed URL generation')
-    return await getSecureDownloadUrlDirect(fileUrl, userId, groupId)
+    console.error('❌ Secure download URL generation failed:', error.message)
+    throw error
   }
 }
 
@@ -137,7 +112,7 @@ export const downloadFileSecurely = async ({
   try {
     console.log('🔒 Starting secure download for:', fileName)
     
-    // Get secure signed URL
+    // Get secure signed URL (with user authorization)
     const secureUrl = await getSecureDownloadUrl(fileUrl, userId, groupId)
     
     // Create temporary download link
@@ -151,22 +126,11 @@ export const downloadFileSecurely = async ({
     link.click()
     document.body.removeChild(link)
     
-    console.log('✅ Secure download initiated for:', fileName)
+    console.log('✅ Secure download completed for:', fileName)
     
   } catch (error: any) {
-    console.error('❌ Download failed:', error.message)
-    
-    // Fallback to original URL if secure download fails
-    // (This maintains functionality while we fix any issues)
-    console.log('⚠️ Falling back to direct download')
-    const link = document.createElement('a')
-    link.href = fileUrl
-    link.download = fileName
-    link.target = '_blank'
-    link.style.display = 'none'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    console.error('❌ Secure download failed:', error.message)
+    throw new Error(`Download failed: ${error.message}`)
   }
 }
 

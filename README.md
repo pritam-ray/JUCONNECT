@@ -220,7 +220,7 @@ JU_CONNECT/
 ### 🏠 Homepage
 *Modern landing page with feature highlights and easy navigation*
 
-![Homepage Screenshot](https://via.placeholder.com/800x500/4F46E5/FFFFFF?text=JU+CONNECT+Homepage)
+![Homepage Screenshot](https://mnycotjmvsairaqgjaux.supabase.co/storage/v1/object/sign/gitimages/Screenshot%202025-08-31%20223759.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMDQyMzRjNy05NTk3LTRiYzktOTk1Ni04OGJjZThiZWFiYTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJnaXRpbWFnZXMvU2NyZWVuc2hvdCAyMDI1LTA4LTMxIDIyMzc1OS5wbmciLCJpYXQiOjE3NTY2NjAzMjIsImV4cCI6MTkxNDM0MDMyMn0.AzmJxzcEW18i9E_NGDlSbZup-0b8HsSYcktalO4BMDE)
 
 ### 🔐 Authentication
 *Secure login and registration with email verification*
@@ -423,5 +423,6 @@ Built with ❤️ for the JECRC University community
 [🔝 Back to Top](#-ju-connect---jecrc-university-resource-hub)
 
 </div>
+
 
 

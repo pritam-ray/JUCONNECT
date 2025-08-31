@@ -28,6 +28,7 @@ import { debugGroupAccess } from '../../services/debugGroupService'
 import { useRealtimeGroupMessages } from '../../hooks/useRealtime'
 import { useAuth } from '../../contexts/AuthContext'
 import { logDatabaseDiagnostic } from '../../utils/databaseDiagnostic'
+import { downloadFileSecurely } from '../../services/secureFileService'
 import Button from '../ui/Button'
 import LoadingSpinner from '../ui/LoadingSpinner'
 import GroupAdminPanel from './GroupAdminPanel'
@@ -523,16 +524,29 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  // Helper function to handle file download
-  const handleFileDownload = (fileUrl: string, fileName: string) => {
-    // Create a temporary anchor element to trigger download
-    const link = document.createElement('a')
-    link.href = fileUrl
-    link.download = fileName
-    link.target = '_blank'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+  // Helper function to handle secure file download
+  const handleFileDownload = async (fileUrl: string, fileName: string) => {
+    if (!user) {
+      console.error('❌ User not authenticated for download')
+      return
+    }
+    
+    try {
+      console.log('🔒 Initiating secure download for:', fileName)
+      
+      // Use secure download service to hide Supabase URLs
+      await downloadFileSecurely({
+        fileUrl,
+        fileName,
+        userId: user.id,
+        groupId: group.id
+      })
+      
+      console.log('✅ Secure download completed for:', fileName)
+    } catch (error: any) {
+      console.error('❌ Download failed:', error.message)
+      // Error handling is done inside downloadFileSecurely with fallback
+    }
   }
 
   const renderMessage = (message: OptimisticGroupMessage) => {

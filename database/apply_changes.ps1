@@ -12,7 +12,7 @@ if (-not (Test-Path $SqlFile)) {
     exit 1
 }
 
-Write-Host "🔄 Applying database changes from: $SqlFile" -ForegroundColor Yellow
+Write-Host "Applying database changes from: $SqlFile" -ForegroundColor Yellow
 
 # Get Supabase project details from environment or config
 $supabaseUrl = $env:VITE_SUPABASE_URL
@@ -25,16 +25,16 @@ if (-not $supabaseUrl) {
 $dbHost = $supabaseUrl -replace "https://", "" -replace "\.supabase\.co.*", ".supabase.co"
 $projectRef = $supabaseUrl -replace "https://", "" -replace "\.supabase\.co.*", ""
 
-Write-Host "📡 Connecting to database: $dbHost" -ForegroundColor Cyan
-Write-Host "📄 SQL file: $SqlFile" -ForegroundColor Cyan
+Write-Host "Connecting to database: $dbHost" -ForegroundColor Cyan
+Write-Host "SQL file: $SqlFile" -ForegroundColor Cyan
 
 # Apply the SQL file using psql (you'll be prompted for password)
 $env:PGPASSWORD = $null  # Clear any existing password
 psql -h "db.$dbHost" -p 5432 -d postgres -U postgres -f $SqlFile
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "✅ Database changes applied successfully!" -ForegroundColor Green
+    Write-Host "Database changes applied successfully!" -ForegroundColor Green
 } else {
-    Write-Host "❌ Failed to apply database changes!" -ForegroundColor Red
+    Write-Host "Failed to apply database changes!" -ForegroundColor Red
     exit 1
 }

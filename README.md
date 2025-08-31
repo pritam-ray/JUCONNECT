@@ -220,32 +220,56 @@ JU_CONNECT/
 ### 🏠 Homepage
 *Modern landing page with feature highlights and easy navigation*
 
+<<<<<<< HEAD
 ![Homepage Screenshot](https://mnycotjmvsairaqgjaux.supabase.co/storage/v1/object/sign/gitimages/Screenshot%202025-08-31%20223759.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMDQyMzRjNy05NTk3LTRiYzktOTk1Ni04OGJjZThiZWFiYTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJnaXRpbWFnZXMvU2NyZWVuc2hvdCAyMDI1LTA4LTMxIDIyMzc1OS5wbmciLCJpYXQiOjE3NTY2NjAzMjIsImV4cCI6MTkxNDM0MDMyMn0.AzmJxzcEW18i9E_NGDlSbZup-0b8HsSYcktalO4BMDE)
+=======
+![Homepage Screenshot](https://via.placeholder.com/800x500/4F46E5/FFFFFF?text=JU+CONNECT+Homepage)
+>>>>>>> 7e5a935 (docs: add placeholder screenshots to README)
 
 ### 🔐 Authentication
 *Secure login and registration with email verification*
 
+<<<<<<< HEAD
 ![Authentication Screenshot](https://mnycotjmvsairaqgjaux.supabase.co/storage/v1/object/sign/gitimages/Screenshot%202025-08-31%20224703.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMDQyMzRjNy05NTk3LTRiYzktOTk1Ni04OGJjZThiZWFiYTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJnaXRpbWFnZXMvU2NyZWVuc2hvdCAyMDI1LTA4LTMxIDIyNDcwMy5wbmciLCJpYXQiOjE3NTY2NjA2NTMsImV4cCI6MTkxNDM0MDY1M30.cnpgF0Ob0_G77nELSpoeKCjJE_xH5ssu5833hQrTOEI)
+=======
+![Authentication Screenshot](https://via.placeholder.com/600x400/10B981/FFFFFF?text=Login+%26+Register)
+>>>>>>> 7e5a935 (docs: add placeholder screenshots to README)
 
 ### 💬 Real-time Chat
 *Instant messaging with file sharing capabilities*
 
+<<<<<<< HEAD
 ![Chat Interface Screenshot](https://mnycotjmvsairaqgjaux.supabase.co/storage/v1/object/sign/gitimages/Screenshot%202025-08-31%20223935.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMDQyMzRjNy05NTk3LTRiYzktOTk1Ni04OGJjZThiZWFiYTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJnaXRpbWFnZXMvU2NyZWVuc2hvdCAyMDI1LTA4LTMxIDIyMzkzNS5wbmciLCJpYXQiOjE3NTY2NjA3NTMsImV4cCI6MTkxNDM0MDc1M30.09LamMNN3sSXVqXUj62RUf3fHplvbjvsuQxe-bn-CmQ)
+=======
+![Chat Interface Screenshot](https://via.placeholder.com/800x600/3B82F6/FFFFFF?text=Real-time+Chat+Interface)
+>>>>>>> 7e5a935 (docs: add placeholder screenshots to README)
 
 ### 👥 Group Discussions
 *Subject-wise group chats for collaborative learning*
 
+<<<<<<< HEAD
 ![Group Chat Screenshot](https://mnycotjmvsairaqgjaux.supabase.co/storage/v1/object/sign/gitimages/Screenshot%202025-08-31%20223852.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMDQyMzRjNy05NTk3LTRiYzktOTk1Ni04OGJjZThiZWFiYTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJnaXRpbWFnZXMvU2NyZWVuc2hvdCAyMDI1LTA4LTMxIDIyMzg1Mi5wbmciLCJpYXQiOjE3NTY2NjA3OTQsImV4cCI6MTkxNDM0MDc5NH0.2_4jvB-42UwNoO_ntnEJ1S8DdycY6Qe1NouYR3aU4uE)
+=======
+![Group Chat Screenshot](https://via.placeholder.com/800x600/8B5CF6/FFFFFF?text=Group+Discussions)
+>>>>>>> 7e5a935 (docs: add placeholder screenshots to README)
 
 ### 📚 Resource Library
 *Organized study materials with search and filter options*
 
+<<<<<<< HEAD
 ![Resource Library Screenshot](https://mnycotjmvsairaqgjaux.supabase.co/storage/v1/object/sign/gitimages/Screenshot%202025-08-31%20223819.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMDQyMzRjNy05NTk3LTRiYzktOTk1Ni04OGJjZThiZWFiYTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJnaXRpbWFnZXMvU2NyZWVuc2hvdCAyMDI1LTA4LTMxIDIyMzgxOS5wbmciLCJpYXQiOjE3NTY2NjA4NjYsImV4cCI6MTkxNDM0MDg2Nn0.UHn_Hv0wguip3QV2-HixXxLu2-EhbNey3moh2iglf5w)
+=======
+![Resource Library Screenshot](https://via.placeholder.com/800x500/F59E0B/FFFFFF?text=Resource+Library)
+>>>>>>> 7e5a935 (docs: add placeholder screenshots to README)
 
 ### 📱 Mobile Experience
 *Responsive design optimized for mobile devices*
 
+<<<<<<< HEAD
 ![Mobile Screenshot](https://mnycotjmvsairaqgjaux.supabase.co/storage/v1/object/sign/gitimages/Screenshot%202025-08-31%20224011.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMDQyMzRjNy05NTk3LTRiYzktOTk1Ni04OGJjZThiZWFiYTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJnaXRpbWFnZXMvU2NyZWVuc2hvdCAyMDI1LTA4LTMxIDIyNDAxMS5wbmciLCJpYXQiOjE3NTY2NjA2OTgsImV4cCI6MTkxNDM0MDY5OH0.Fom7NwQskDgIQWOXiO3SqgOjNverT0M1vYQ8SkzDfCY)
+=======
+![Mobile Screenshot](https://via.placeholder.com/300x600/EF4444/FFFFFF?text=Mobile+View)
+>>>>>>> 7e5a935 (docs: add placeholder screenshots to README)
 
 </details>
 
@@ -425,5 +449,8 @@ Built with ❤️ for the JECRC University community
 </div>
 
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 7e5a935 (docs: add placeholder screenshots to README)

@@ -225,27 +225,27 @@ JU_CONNECT/
 ### 🔐 Authentication
 *Secure login and registration with email verification*
 
-![Authentication Screenshot](https://via.placeholder.com/600x400/10B981/FFFFFF?text=Login+%26+Register)
+![Authentication Screenshot](https://mnycotjmvsairaqgjaux.supabase.co/storage/v1/object/sign/gitimages/Screenshot%202025-08-31%20224703.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMDQyMzRjNy05NTk3LTRiYzktOTk1Ni04OGJjZThiZWFiYTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJnaXRpbWFnZXMvU2NyZWVuc2hvdCAyMDI1LTA4LTMxIDIyNDcwMy5wbmciLCJpYXQiOjE3NTY2NjA2NTMsImV4cCI6MTkxNDM0MDY1M30.cnpgF0Ob0_G77nELSpoeKCjJE_xH5ssu5833hQrTOEI)
 
 ### 💬 Real-time Chat
 *Instant messaging with file sharing capabilities*
 
-![Chat Interface Screenshot](https://via.placeholder.com/800x600/3B82F6/FFFFFF?text=Real-time+Chat+Interface)
+![Chat Interface Screenshot](https://mnycotjmvsairaqgjaux.supabase.co/storage/v1/object/sign/gitimages/Screenshot%202025-08-31%20223935.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMDQyMzRjNy05NTk3LTRiYzktOTk1Ni04OGJjZThiZWFiYTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJnaXRpbWFnZXMvU2NyZWVuc2hvdCAyMDI1LTA4LTMxIDIyMzkzNS5wbmciLCJpYXQiOjE3NTY2NjA3NTMsImV4cCI6MTkxNDM0MDc1M30.09LamMNN3sSXVqXUj62RUf3fHplvbjvsuQxe-bn-CmQ)
 
 ### 👥 Group Discussions
 *Subject-wise group chats for collaborative learning*
 
-![Group Chat Screenshot](https://via.placeholder.com/800x600/8B5CF6/FFFFFF?text=Group+Discussions)
+![Group Chat Screenshot](https://mnycotjmvsairaqgjaux.supabase.co/storage/v1/object/sign/gitimages/Screenshot%202025-08-31%20223852.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMDQyMzRjNy05NTk3LTRiYzktOTk1Ni04OGJjZThiZWFiYTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJnaXRpbWFnZXMvU2NyZWVuc2hvdCAyMDI1LTA4LTMxIDIyMzg1Mi5wbmciLCJpYXQiOjE3NTY2NjA3OTQsImV4cCI6MTkxNDM0MDc5NH0.2_4jvB-42UwNoO_ntnEJ1S8DdycY6Qe1NouYR3aU4uE)
 
 ### 📚 Resource Library
 *Organized study materials with search and filter options*
 
-![Resource Library Screenshot](https://via.placeholder.com/800x500/F59E0B/FFFFFF?text=Resource+Library)
+![Resource Library Screenshot](https://mnycotjmvsairaqgjaux.supabase.co/storage/v1/object/sign/gitimages/Screenshot%202025-08-31%20223819.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMDQyMzRjNy05NTk3LTRiYzktOTk1Ni04OGJjZThiZWFiYTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJnaXRpbWFnZXMvU2NyZWVuc2hvdCAyMDI1LTA4LTMxIDIyMzgxOS5wbmciLCJpYXQiOjE3NTY2NjA4NjYsImV4cCI6MTkxNDM0MDg2Nn0.UHn_Hv0wguip3QV2-HixXxLu2-EhbNey3moh2iglf5w)
 
 ### 📱 Mobile Experience
 *Responsive design optimized for mobile devices*
 
-![Mobile Screenshot](https://via.placeholder.com/300x600/EF4444/FFFFFF?text=Mobile+View)
+![Mobile Screenshot](https://mnycotjmvsairaqgjaux.supabase.co/storage/v1/object/sign/gitimages/Screenshot%202025-08-31%20224011.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMDQyMzRjNy05NTk3LTRiYzktOTk1Ni04OGJjZThiZWFiYTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJnaXRpbWFnZXMvU2NyZWVuc2hvdCAyMDI1LTA4LTMxIDIyNDAxMS5wbmciLCJpYXQiOjE3NTY2NjA2OTgsImV4cCI6MTkxNDM0MDY5OH0.Fom7NwQskDgIQWOXiO3SqgOjNverT0M1vYQ8SkzDfCY)
 
 </details>
 
@@ -423,6 +423,7 @@ Built with ❤️ for the JECRC University community
 [🔝 Back to Top](#-ju-connect---jecrc-university-resource-hub)
 
 </div>
+
 
 
 

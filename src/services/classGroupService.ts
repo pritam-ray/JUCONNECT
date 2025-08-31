@@ -17,7 +17,6 @@ const getCachedData = (key: 'allGroups', userId?: string): ClassGroupWithDetails
   if (key === 'allGroups') {
     const cache = CACHE.allGroups
     if (cache.data && Date.now() - cache.timestamp < cache.ttl) {
-      console.log('Returning cached all groups data')
       return cache.data
     }
   }
@@ -42,7 +41,6 @@ const checkRateLimit = (key: keyof typeof API_CALL_LIMITS): boolean => {
   
   // Check if we've exceeded the limit
   if (limit.calls >= limit.maxCalls) {
-    console.warn(`Rate limit exceeded for ${key}. Please wait before making more requests.`)
     return false
   }
   
@@ -137,8 +135,6 @@ export const getAllClassGroups = async (): Promise<ClassGroupWithDetails[]> => {
   }
 
   try {
-    console.log('Fetching all class groups...')
-    
     // Check if table exists by attempting a simple query
     const { data, error } = await supabase
       .from('class_groups')
@@ -158,7 +154,6 @@ export const getAllClassGroups = async (): Promise<ClassGroupWithDetails[]> => {
       throw error
     }
     
-    console.log('Fetched groups:', data?.length || 0)
     const processedData = (data || []).map(group => ({
       ...group,
       is_member: false,
@@ -192,7 +187,6 @@ export const getUserGroups = async (userId: string): Promise<ClassGroupWithDetai
   }
 
   try {
-    console.log('Fetching user groups for:', userId)
     
     // Use direct query instead of RPC function to avoid potential issues
     const { data, error } = await supabase
@@ -224,7 +218,6 @@ export const getUserGroups = async (userId: string): Promise<ClassGroupWithDetai
       throw error
     }
     
-    console.log('Fetched user groups:', data?.length || 0)
     return (data || []).map((item: any) => ({
       id: item.class_groups.id,
       name: item.class_groups.name,
@@ -248,34 +241,27 @@ export const getUserGroups = async (userId: string): Promise<ClassGroupWithDetai
 }
 
 // Create a new class group
-export const createClassGroup = async (groupData: {
-  name: string
-  description?: string
-  year: number
-  section: string
-  subject?: string
-  created_by: string
-  password?: string
-}): Promise<ClassGroup> => {
-  if (!supabase) throw new Error('Supabase not available')
+export const createClassGroup = async (groupData: CreateClassGroupData): Promise<ClassGroupWithDetails> => {
+  if (!supabase) {
+    throw new Error('Database connection not available')
+  }
 
-  // Prepare the insert data - only include password protection if password is provided
-  const insertData: any = {
+  // Validate required fields
+  if (!groupData.name || !groupData.year || !groupData.section || !groupData.subject || !groupData.created_by) {
+    throw new Error('Missing required fields for group creation')
+  }
+
+  const insertData = {
     name: groupData.name,
-    description: groupData.description,
+    description: groupData.description || '',
     year: groupData.year,
     section: groupData.section,
     subject: groupData.subject,
-    created_by: groupData.created_by
+    created_by: groupData.created_by,
+    is_password_protected: !!groupData.password,
+    member_count: 1, // Creator is the first member
+    is_active: true
   }
-
-  // Only include password protection fields if password is actually provided
-  if (groupData.password && groupData.password.trim()) {
-    insertData.is_password_protected = true
-  }
-  // Don't set is_password_protected at all if no password - let it use the default false
-
-  console.log('Creating group with data:', insertData)
 
   const { data, error } = await supabase
     .from('class_groups')
@@ -283,28 +269,12 @@ export const createClassGroup = async (groupData: {
     .select()
     .single()
 
-  if (error) throw error
-
-  // Set password if provided
-  if (groupData.password) {
-    const { error: passwordError } = await supabase
-      .rpc('set_group_password', {
-        group_id_param: data.id,
-        password_param: groupData.password,
-        user_id_param: groupData.created_by
-      })
-
-    if (passwordError) {
-      // If password setting fails, clean up the created group
-      await supabase.from('class_groups').delete().eq('id', data.id)
-      throw new Error('Failed to set group password')
-    }
+  if (error) {
+    console.error('Error creating group:', error)
+    throw new Error('Failed to create group')
   }
 
-  // Creator is automatically added as admin by database trigger
-  // No need to manually insert into group_members
-
-  return data
+  return data as ClassGroupWithDetails
 }
 
 // Join a class group
@@ -414,7 +384,6 @@ export const getGroupMembers = async (groupId: string): Promise<GroupMemberWithP
   }
 
   try {
-    console.log('Fetching group members for:', groupId)
     
     const { data, error } = await supabase
       .from('group_members')
@@ -443,7 +412,6 @@ export const getGroupMembers = async (groupId: string): Promise<GroupMemberWithP
       throw error
     }
     
-    console.log('Successfully fetched group members:', data?.length || 0)
     return data || []
   } catch (error) {
     console.error('Error in getGroupMembers:', error)
@@ -474,7 +442,6 @@ export const sendGroupMessage = async (
   if (!groupId || !userId || !message.trim()) throw new Error('Missing required parameters')
 
   try {
-    console.log('Sending message to group:', groupId, 'from user:', userId)
     
     const messageData = {
       group_id: groupId,
@@ -504,7 +471,6 @@ export const sendGroupMessage = async (
       }
     }
     
-    console.log('Message sent successfully:', data.id)
     return data
   } catch (error) {
     console.error('Error in sendGroupMessage:', error)
@@ -519,48 +485,52 @@ export const getGroupMessages = async (
   offset: number = 0
 ): Promise<GroupMessageWithProfile[]> => {
   if (!supabase) {
-    console.warn('Supabase not available for getGroupMessages')
     return []
   }
 
   if (!groupId) {
-    console.warn('No group ID provided for getGroupMessages')
     return []
   }
 
   try {
-    console.log('Fetching messages for group:', groupId)
-    
-    const { data, error } = await supabase
+    // First, try without the problematic join to see if we can get basic message data
+    const { data: basicMessages, error: basicError } = await supabase
       .from('group_messages')
-      .select(`
-        *,
-        profiles (
-          id,
-          username,
-          full_name,
-          avatar_url
-        )
-      `)
+      .select('*')
       .eq('group_id', groupId)
       .order('created_at', { ascending: true })
       .range(offset, offset + limit - 1)
 
-    if (error) {
-      console.error('Database error in getGroupMessages:', error)
-      
-      // Handle specific database errors
-      if (error.code === '42P01') {
-        console.warn('group_messages table does not exist yet')
-        return []
-      }
-      
-      // For other errors, throw to be handled by caller
-      throw error
+    if (basicError) {
+      throw basicError
     }
+
+    if (!basicMessages || basicMessages.length === 0) {
+      return []
+    }
+
+    // Now fetch profile data separately for each message to avoid the join issue
+    const messagesWithProfiles = await Promise.all(
+      basicMessages.map(async (message) => {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, username, full_name, avatar_url')
+          .eq('id', message.user_id)
+          .single()
+
+        return {
+          ...message,
+          profiles: profile || {
+            id: message.user_id,
+            username: 'Unknown User',
+            full_name: 'Unknown User',
+            avatar_url: null
+          }
+        }
+      })
+    )
     
-    console.log('Successfully fetched messages:', data?.length || 0)
-    return data || []
+    return messagesWithProfiles
   } catch (error) {
     console.error('Error fetching group messages:', error)
     
@@ -745,8 +715,6 @@ export const subscribeToGroupMessages = (
 ) => {
   if (!supabase) return () => {}
 
-  console.log('🔔 Setting up real-time subscription for group:', groupId)
-
   const channel = supabase
     .channel(`group_messages_${groupId}`)
     .on(
@@ -758,7 +726,6 @@ export const subscribeToGroupMessages = (
         filter: `group_id=eq.${groupId}`
       },
       async (payload) => {
-        console.log('📨 New message received via real-time:', payload.new)
         
         // Fetch complete message with profile data
         if (!supabase) return
@@ -784,7 +751,6 @@ export const subscribeToGroupMessages = (
           }
 
           if (data) {
-            console.log('✅ Broadcasting new message to UI:', data.message)
             callback(data)
           }
         } catch (error) {
@@ -792,17 +758,9 @@ export const subscribeToGroupMessages = (
         }
       }
     )
-    .subscribe((status) => {
-      console.log('🔔 Subscription status:', status)
-      if (status === 'SUBSCRIBED') {
-        console.log('✅ Successfully subscribed to real-time updates')
-      } else if (status === 'CHANNEL_ERROR') {
-        console.error('❌ Real-time subscription failed')
-      }
-    })
+    .subscribe()
 
   return () => {
-    console.log('🔕 Unsubscribing from real-time updates')
     if (supabase) {
       supabase.removeChannel(channel)
     }

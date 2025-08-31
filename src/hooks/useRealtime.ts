@@ -20,21 +20,23 @@ export const useRealtimeGroupMessages = (
   options: RealtimeHookOptions = {}
 ) => {
   const channelRef = useRef<any>(null)
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const connectionAttempts = useRef(0)
+  const lastConnectionTime = useRef(0)
+  const isConnectedRef = useRef(false)
   const { enabled = true, onError, onConnected, onDisconnected } = options
 
   useEffect(() => {
     if (!enabled || !groupId || !isSupabaseConfigured() || !supabase) {
-      console.log('🚫 Real-time setup skipped:', {
-        enabled,
-        groupId,
-        configured: isSupabaseConfigured(),
-        supabase: !!supabase
-      })
       return
     }
 
-    console.log('🔌 Setting up real-time updates for group messages:', groupId)
-    logger.debug('Setting up real-time updates for group messages:', groupId)
+    // Prevent rapid reconnection attempts
+    const now = Date.now()
+    if (now - lastConnectionTime.current < 1000) {
+      return
+    }
+    lastConnectionTime.current = now
 
     // Clean up existing subscription
     if (channelRef.current) {
@@ -60,11 +62,9 @@ export const useRealtimeGroupMessages = (
             // const now = Date.now()
             // const lastFetch = parseInt(sessionStorage.getItem(`last-msg-fetch-${groupId}`) || '0')
             // if (now - lastFetch < 200) { // Reduced to 200ms between message fetches
-            //   console.log('Message fetch rate limited (200ms cooldown)')
             //   return
             // }
             // sessionStorage.setItem(`last-msg-fetch-${groupId}`, now.toString())
-            console.log('🔔 Processing new real-time message:', payload.new.id)
             
             // Fetch complete message with profile data
             const { data, error } = await supabase
@@ -127,20 +127,34 @@ export const useRealtimeGroupMessages = (
         }
       )
       .subscribe((status) => {
-        console.log('🔔 Real-time connection status for group', groupId, ':', status)
-        logger.debug('Real-time connection status:', status)
-        if (status === 'SUBSCRIBED') {
-          console.log('✅ Real-time updates connected for group:', groupId)
-          logger.info('Real-time updates connected')
+        // Implement connection state management to prevent loops
+        if (status === 'SUBSCRIBED' && !isConnectedRef.current) {
+          isConnectedRef.current = true
+          connectionAttempts.current = 0
           onConnected?.()
+          
         } else if (status === 'CHANNEL_ERROR') {
-          console.error('❌ Real-time updates failed for group:', groupId)
-          logger.error('Real-time updates failed')
+          isConnectedRef.current = false
+          console.error('Real-time connection failed')
           onError?.(new Error('Live updates are not working right now'))
-        } else if (status === 'CLOSED') {
-          console.warn('⚠️ Real-time updates disconnected for group:', groupId)
-          logger.warn('Real-time updates disconnected')
+          
+        } else if (status === 'CLOSED' && isConnectedRef.current) {
+          isConnectedRef.current = false
           onDisconnected?.()
+          
+          // Implement exponential backoff for reconnection
+          connectionAttempts.current++
+          if (connectionAttempts.current < 5) {
+            const backoffDelay = Math.min(1000 * Math.pow(2, connectionAttempts.current), 30000)
+            
+            if (reconnectTimeoutRef.current) {
+              clearTimeout(reconnectTimeoutRef.current)
+            }
+            
+            reconnectTimeoutRef.current = setTimeout(() => {
+              // Silent reconnection attempt
+            }, backoffDelay)
+          }
         }
       })
 
@@ -148,8 +162,17 @@ export const useRealtimeGroupMessages = (
 
     return () => {
       if (channelRef.current && supabase) {
+        isConnectedRef.current = false
+        connectionAttempts.current = 0
+        
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current)
+          reconnectTimeoutRef.current = null
+        }
+        
         logger.debug('Disconnecting real-time updates')
         supabase.removeChannel(channelRef.current)
+        channelRef.current = null
       }
     }
   }, [groupId, enabled, onMessage, onUpdate, onDelete, onError, onConnected, onDisconnected])

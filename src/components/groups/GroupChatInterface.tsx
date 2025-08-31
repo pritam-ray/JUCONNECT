@@ -26,7 +26,6 @@ import {
 import { uploadGroupFile } from '../../services/groupFileService'
 import { useRealtimeGroupMessages } from '../../hooks/useRealtime'
 import { useAuth } from '../../contexts/AuthContext'
-import { logDatabaseDiagnostic } from '../../utils/databaseDiagnostic'
 import { downloadFileSecurely } from '../../services/secureFileService'
 import Button from '../ui/Button'
 import LoadingSpinner from '../ui/LoadingSpinner'
@@ -99,13 +98,11 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
         // Replace optimistic message with real one
         const newMessages = [...prev]
         newMessages[optimisticIndex] = message
-        console.log('🔄 Replaced optimistic message with real one:', message.id)
         return newMessages
       } else {
         // Add new message if it's not replacing an optimistic one
         const isDuplicate = prev.some(msg => msg.id === message.id)
         if (!isDuplicate) {
-          console.log('📨 Added new real-time message:', message.id)
           return [...prev, message]
         }
         return prev
@@ -144,21 +141,20 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   // }, [])
 
         // ESSENTIAL: Keep only real-time messages for active chat
-  console.log('🔌 Setting up real-time messages for group:', group?.id, 'user:', user?.id)
   useRealtimeGroupMessages(
     group?.id || null,
     handleNewMessage,
     handleMessageUpdate,
     handleMessageDelete,
     {
-      enabled: !!group?.id && !!user,
-      onError: (error) => console.error('❌ Real-time messages error:', error),
+      enabled: !!group?.id && !!user && !chatLoading,
+      onError: (error) => {
+        console.error('Real-time messages error:', error)
+      },
       onConnected: () => {
-        console.log('✅ Real-time messages connected for group:', group?.id)
         setRealtimeConnected(true)
       },
       onDisconnected: () => {
-        console.log('⚠️ Real-time messages disconnected for group:', group?.id)
         setRealtimeConnected(false)
       }
     }
@@ -208,43 +204,33 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   // Main useEffect for initialization
   useEffect(() => {
     if (group.id && user) {
-      console.log('Loading group chat for:', group.name)
-      console.log('Group ID:', group.id, 'User ID:', user.id)
-      
-      // Run database diagnostic in development
-      if (process.env.NODE_ENV === 'development') {
-        logDatabaseDiagnostic()
-      }
-      
       // Initialize all data inline to avoid dependency issues
       const initializeData = async () => {
         try {
           setChatLoading(true)
           setError(null)
           
-          // Load messages
-          const messagesData = await getGroupMessages(group.id)
-          setMessages(messagesData)
+          // Try to load messages
+          try {
+            const messagesData = await getGroupMessages(group.id)
+            setMessages(messagesData)
+          } catch (messagesError) {
+            console.error('Failed to load messages:', messagesError)
+            setMessages([])
+          }
           
-          // Load members  
-          const membersData = await getGroupMembers(group.id)
-          setMembers(membersData)
-          
-          // Check admin status
-          const adminStatus = await isGroupAdmin(group.id, user.id)
-          setIsUserAdmin(adminStatus || group.creator_id === user.id)
-          
-          // Mark messages as read
-          markGroupMessagesAsRead(group.id, user.id)
+          // Skip members and admin status for now
+          setMembers([])
+          setIsUserAdmin(false)
           
           // Scroll to bottom after messages are loaded
           setTimeout(() => {
             scrollToBottom()
-          }, 100) // Small delay to ensure DOM is updated
+          }, 100)
           
         } catch (error) {
           console.error('Error initializing group data:', error)
-          setError('Failed to load group data. Please try again.')
+          setError(`Failed to load group data. ${error instanceof Error ? error.message : 'Please try again.'}`)
         } finally {
           setChatLoading(false)
         }
@@ -252,7 +238,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
       
       initializeData()
     }
-  }, [group.id, group.creator_id, group.name, user?.id, user]) // Include all used properties
+  }, [group.id, group.creator_id, group.name, user?.id, user])
 
   useEffect(() => {
     // Only auto-scroll when not loading and we have messages

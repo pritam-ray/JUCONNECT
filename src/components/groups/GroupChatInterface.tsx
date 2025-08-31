@@ -552,7 +552,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
         key={message.id}
         className={`flex mb-4 ${isOwn ? 'justify-end' : 'justify-start'}`}
       >
-        <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+        <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg break-words overflow-hidden ${
           isOwn 
             ? `bg-blue-600 text-white ${isOptimistic ? 'opacity-70' : ''}` 
             : 'bg-gray-200 text-gray-800'
@@ -570,7 +570,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
               }`}>
                 {getFileIcon(message.file_name || '')}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{message.file_name}</p>
+                  <p className="text-sm font-medium break-words">{message.file_name}</p>
                   <p className="text-xs opacity-75">
                     {message.file_size ? formatFileSize(message.file_size) : 'Unknown size'}
                   </p>
@@ -591,11 +591,11 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
                 )}
               </div>
               {message.message && message.message !== `📎 ${message.file_name}` && (
-                <p className="text-sm">{message.message}</p>
+                <p className="text-sm break-words">{message.message}</p>
               )}
             </div>
           ) : (
-            <p className="text-sm">{message.message}</p>
+            <p className="text-sm break-words">{message.message}</p>
           )}
           
           <p className="text-xs opacity-75 mt-1">

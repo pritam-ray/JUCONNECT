@@ -732,13 +732,13 @@ const UnifiedChatInterface: React.FC = () => {
                   className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-3`}
                 >
                   <div
-                    className={`max-w-xs md:max-w-md px-6 py-3 rounded-2xl shadow-sm ${
+                    className={`max-w-xs md:max-w-md px-6 py-3 rounded-2xl shadow-sm break-words overflow-hidden ${
                       isOwn
                         ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white'
                         : 'bg-white border border-gray-200 text-gray-900'
                     }`}
                   >
-                    <p className="leading-relaxed">{message.message}</p>
+                    <p className="leading-relaxed break-words">{message.message}</p>
                     <p className={`text-xs mt-2 ${isOwn ? 'text-blue-100' : 'text-gray-500'}`}>
                       {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
                     </p>

@@ -298,13 +298,13 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
                         </div>
                       )}
                       <div
-                        className={`px-4 py-3 rounded-2xl ${
+                        className={`px-4 py-3 rounded-2xl break-words overflow-hidden ${
                           isOwn
                             ? 'bg-blue-500 text-white'
                             : 'bg-white text-gray-900 shadow-sm border border-gray-100'
                         }`}
                       >
-                        <p className="text-sm">{message.message}</p>
+                        <p className="text-sm break-words">{message.message}</p>
                         <p className={`text-xs mt-1 ${isOwn ? 'text-blue-100' : 'text-gray-500'}`}>
                           {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
                         </p>
@@ -534,13 +534,13 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
                     className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[85%] px-4 py-3 rounded-2xl ${
+                      className={`max-w-[85%] px-4 py-3 rounded-2xl break-words overflow-hidden ${
                         isOwn
                           ? 'bg-purple-500 text-white'
                           : 'bg-white text-gray-900 shadow-sm border border-gray-100'
                       }`}
                     >
-                      <p className="text-sm">{message.message}</p>
+                      <p className="text-sm break-words">{message.message}</p>
                       <p className={`text-xs mt-1 ${isOwn ? 'text-purple-100' : 'text-gray-500'}`}>
                         {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
                       </p>

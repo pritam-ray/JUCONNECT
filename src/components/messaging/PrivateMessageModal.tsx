@@ -310,13 +310,13 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
                       className={`flex ${message.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl break-words overflow-hidden ${
                           message.sender_id === user?.id
                             ? 'bg-primary-600 text-white'
                             : 'bg-gray-100 text-gray-900'
                         }`}
                       >
-                        <p className="text-sm">{message.message}</p>
+                        <p className="text-sm break-words">{message.message}</p>
                         <p
                           className={`text-xs mt-1 ${
                             message.sender_id === user?.id ? 'text-primary-100' : 'text-gray-500'

@@ -26,3 +26,26 @@ dist-ssr
 
 # Local Netlify folder
 .netlify
+
+# Documentation and summary files (exclude from repo)
+*_SUMMARY.md
+*_REPORT.md
+*_INSTRUCTIONS.md
+*_GUIDE.md
+DEPLOYMENT_*.md
+BUG_FIX_*.md
+CODE_QUALITY_*.md
+FILE_ORGANIZATION_*.md
+GROUP_*.md
+ENHANCED_*.md
+SECURITY_*.md
+REALTIME_*.md
+UI_IMPROVEMENTS_*.md
+
+# Temporary files and scripts
+*.mjs
+quick_*.js
+apply-migration.js
+cleanup.sh
+lint-*.txt
+*.tmp

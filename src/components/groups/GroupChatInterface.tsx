@@ -24,7 +24,6 @@ import {
   GroupMemberWithProfile
 } from '../../services/classGroupService'
 import { uploadGroupFile } from '../../services/groupFileService'
-import { debugGroupAccess } from '../../services/debugGroupService'
 import { useRealtimeGroupMessages } from '../../hooks/useRealtime'
 import { useAuth } from '../../contexts/AuthContext'
 import { logDatabaseDiagnostic } from '../../utils/databaseDiagnostic'
@@ -211,9 +210,6 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     if (group.id && user) {
       console.log('Loading group chat for:', group.name)
       console.log('Group ID:', group.id, 'User ID:', user.id)
-      
-      // Debug group access
-      debugGroupAccess(group.id, user.id)
       
       // Run database diagnostic in development
       if (process.env.NODE_ENV === 'development') {

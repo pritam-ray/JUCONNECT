@@ -32,7 +32,7 @@ JU CONNECT is a comprehensive web application designed specifically for JECRC Un
 
 ## ✨ Features
 
-### � **Resource Management**
+### ⚙️ **Resource Management**
 - **File Upload & Sharing**: Upload and share PDFs, images, documents, and more
 - **Categorized Content**: Organized by subjects, semester, and resource types
 - **Advanced Search**: Find exactly what you need with powerful search functionality
@@ -51,7 +51,7 @@ JU CONNECT is a comprehensive web application designed specifically for JECRC Un
 - **Admin Controls**: Group moderation and management tools
 - **Activity Tracking**: Stay updated with recent activities
 
-### � **Security & Privacy**
+### 🔐 **Security & Privacy**
 - **Secure Authentication**: Email-based user registration and login
 - **Data Privacy**: Your personal information is protected
 - **File Security**: Secure file storage with access controls
@@ -374,8 +374,8 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 **Pritam Ray**
 - GitHub: [@pritam-ray](https://github.com/pritam-ray)
-- LinkedIn: [Connect with me](https://linkedin.com/in/pritam-ray)
-- Email: pritam.ray@example.com
+- LinkedIn: [pritamray](https://www.linkedin.com/in/pritamray/)
+- Email: impritamray@gmail.com
 
 ---
 
@@ -411,4 +411,5 @@ Built with ❤️ for the JECRC University community
 [🔝 Back to Top](#-ju-connect---jecrc-university-resource-hub)
 
 </div>
+
 

@@ -49,3 +49,9 @@ apply-migration.js
 cleanup.sh
 lint-*.txt
 *.tmp
+
+# Exclude development and testing folders
+stress-testing/
+supabase/
+.github/
+database/

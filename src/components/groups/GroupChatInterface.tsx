@@ -179,6 +179,32 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   )
   */
 
+  // Auto-cleanup optimistic messages that are stuck
+  useEffect(() => {
+    const cleanupInterval = setInterval(() => {
+      setMessages(prev => {
+        const now = Date.now()
+        let hasChanges = false
+        
+        const cleanedMessages = prev.map(msg => {
+          if (msg.isOptimistic) {
+            const messageAge = now - new Date(msg.created_at).getTime()
+            if (messageAge > 10000) { // 10 seconds old
+              console.log('🧹 Auto-cleaning stuck optimistic message:', msg.id)
+              hasChanges = true
+              return { ...msg, isOptimistic: false }
+            }
+          }
+          return msg
+        })
+        
+        return hasChanges ? cleanedMessages : prev
+      })
+    }, 5000) // Check every 5 seconds
+    
+    return () => clearInterval(cleanupInterval)
+  }, [])
+
   // Main useEffect for initialization
   useEffect(() => {
     if (group.id && user) {
@@ -319,8 +345,9 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     setReplyTo(null)
     scrollToBottom()
 
-    // Fallback: Remove optimistic state after 10 seconds if no real-time update
+    // Immediate fallback: Remove optimistic state after 5 seconds if no real-time update
     const fallbackTimeout = setTimeout(() => {
+      console.log('🔄 Fallback: Removing optimistic state for message:', tempId)
       setMessages(prev => 
         prev.map(msg => 
           msg.id === tempId 
@@ -328,8 +355,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
             : msg
         )
       )
-      console.log('⚠️ Message confirmed via fallback timeout (realtime may be disabled)')
-    }, 10000)
+    }, 5000)
 
     try {
       const sentMessage = await sendGroupMessage(
@@ -341,18 +367,17 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
         replyTo?.id
       )
       
-      // The real-time subscription will handle updating the message
-      console.log('Message sent successfully:', sentMessage.id)
+      console.log('✅ Message sent successfully:', sentMessage.id)
       
       // Clear the fallback timeout since message was sent successfully
       clearTimeout(fallbackTimeout)
       
-      // If realtime didn't trigger within 3 seconds, manually replace optimistic message
+      // Immediate manual replacement if realtime doesn't work within 2 seconds
       setTimeout(() => {
         setMessages(prev => {
           const stillOptimistic = prev.find(msg => msg.id === tempId && msg.isOptimistic)
           if (stillOptimistic) {
-            console.log('🔄 Manually replacing optimistic message (realtime not received)')
+            console.log('🔄 Manually replacing optimistic message (realtime delayed)')
             return prev.map(msg => 
               msg.id === tempId 
                 ? { 
@@ -365,9 +390,11 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
           }
           return prev
         })
-      }, 3000)
+      }, 2000)
+      
     } catch (error: any) {
-      console.error('Error sending message:', error)
+      console.error('❌ Error sending message:', error)
+      clearTimeout(fallbackTimeout)
       // Remove optimistic message on error
       setMessages(prev => prev.filter(msg => msg.id !== tempId))
       setError('Could not send your message. Please try again.')
@@ -570,7 +597,26 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
               hour: '2-digit', 
               minute: '2-digit' 
             })}
-            {isOptimistic && (isUploading ? ' (uploading...)' : ' (sending...)')}
+            {isOptimistic && (
+              <span className="text-orange-400">
+                {isUploading ? ' (uploading...)' : ' (sending...)'}
+                <button 
+                  onClick={() => {
+                    console.log('👆 Manually confirming message:', message.id)
+                    setMessages(prev => 
+                      prev.map(msg => 
+                        msg.id === message.id 
+                          ? { ...msg, isOptimistic: false }
+                          : msg
+                      )
+                    )
+                  }}
+                  className="ml-2 text-xs text-blue-400 hover:text-blue-300 underline"
+                >
+                  confirm
+                </button>
+              </span>
+            )}
           </p>
         </div>
       </div>

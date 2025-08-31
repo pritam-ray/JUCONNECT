@@ -220,20 +220,32 @@ JU_CONNECT/
 ### 🏠 Homepage
 *Modern landing page with feature highlights and easy navigation*
 
+![Homepage Screenshot](https://via.placeholder.com/800x500/4F46E5/FFFFFF?text=JU+CONNECT+Homepage)
+
 ### 🔐 Authentication
 *Secure login and registration with email verification*
+
+![Authentication Screenshot](https://via.placeholder.com/600x400/10B981/FFFFFF?text=Login+%26+Register)
 
 ### 💬 Real-time Chat
 *Instant messaging with file sharing capabilities*
 
+![Chat Interface Screenshot](https://via.placeholder.com/800x600/3B82F6/FFFFFF?text=Real-time+Chat+Interface)
+
 ### 👥 Group Discussions
 *Subject-wise group chats for collaborative learning*
+
+![Group Chat Screenshot](https://via.placeholder.com/800x600/8B5CF6/FFFFFF?text=Group+Discussions)
 
 ### 📚 Resource Library
 *Organized study materials with search and filter options*
 
+![Resource Library Screenshot](https://via.placeholder.com/800x500/F59E0B/FFFFFF?text=Resource+Library)
+
 ### 📱 Mobile Experience
 *Responsive design optimized for mobile devices*
+
+![Mobile Screenshot](https://via.placeholder.com/300x600/EF4444/FFFFFF?text=Mobile+View)
 
 </details>
 

@@ -1,14 +1,38 @@
 -- Enable Realtime for Group Messages
 -- This migration enables real-time functionality for group messaging
 
--- Add group_messages table to realtime publication
-ALTER PUBLICATION supabase_realtime ADD TABLE group_messages;
+-- Add group_messages table to realtime publication if not already added
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables 
+        WHERE pubname = 'supabase_realtime' AND tablename = 'group_messages'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE group_messages;
+    END IF;
+END $$;
 
--- Add group_files table to realtime publication for file sharing
-ALTER PUBLICATION supabase_realtime ADD TABLE group_files;
+-- Add group_files table to realtime publication if not already added
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables 
+        WHERE pubname = 'supabase_realtime' AND tablename = 'group_files'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE group_files;
+    END IF;
+END $$;
 
 -- Add group_members table to realtime publication for member updates
-ALTER PUBLICATION supabase_realtime ADD TABLE group_members;
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables 
+        WHERE pubname = 'supabase_realtime' AND tablename = 'group_members'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE group_members;
+    END IF;
+END $$;
 
 -- Grant necessary permissions for realtime
 GRANT SELECT ON group_messages TO anon, authenticated;
@@ -17,6 +41,7 @@ GRANT SELECT ON group_members TO anon, authenticated;
 
 -- Ensure proper RLS for realtime
 -- Group messages realtime policy
+DROP POLICY IF EXISTS "Realtime group messages" ON group_messages;
 CREATE POLICY "Realtime group messages" ON group_messages
   FOR SELECT USING (
     EXISTS (
@@ -27,7 +52,8 @@ CREATE POLICY "Realtime group messages" ON group_messages
     )
   );
 
--- Group files realtime policy  
+-- Group files realtime policy
+DROP POLICY IF EXISTS "Realtime group files" ON group_files;
 CREATE POLICY "Realtime group files" ON group_files
   FOR SELECT USING (
     EXISTS (

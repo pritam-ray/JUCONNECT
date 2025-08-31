@@ -23,7 +23,10 @@ CREATE TABLE IF NOT EXISTS group_message_reads (
 );
 
 -- 5. Create group_admin_info view for admin functionality
-CREATE OR REPLACE VIEW group_admin_info AS
+-- First drop the existing view if it exists
+DROP VIEW IF EXISTS group_admin_info;
+
+CREATE VIEW group_admin_info AS
 SELECT 
     g.id as group_id,
     g.name as group_name,
@@ -38,31 +41,49 @@ LEFT JOIN group_members members ON g.id = members.group_id AND members.is_active
 WHERE gm.role = 'admin'
 GROUP BY g.id, g.name, gm.user_id, p.username, p.full_name;
 
--- 6. Add foreign key relationships for profiles
+-- 6. Add foreign key relationships for profiles (only if tables exist)
 -- Update group_messages to have proper foreign key to profiles
-ALTER TABLE group_messages 
-ADD CONSTRAINT fk_group_messages_user_id 
-FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE SET NULL;
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_group_messages_user_id'
+    ) THEN
+        ALTER TABLE group_messages 
+        ADD CONSTRAINT fk_group_messages_user_id 
+        FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE SET NULL;
+    END IF;
+END $$;
 
 -- Update group_members to have proper foreign key to profiles  
-ALTER TABLE group_members
-ADD CONSTRAINT fk_group_members_user_id
-FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE;
-
--- Update group_files to have proper foreign key to profiles
-ALTER TABLE group_files
-ADD CONSTRAINT fk_group_files_user_id  
-FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE;
-
--- Update group_announcements to have proper foreign key to profiles
-ALTER TABLE group_announcements
-ADD CONSTRAINT fk_group_announcements_user_id
-FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE;
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_group_members_user_id'
+    ) THEN
+        ALTER TABLE group_members
+        ADD CONSTRAINT fk_group_members_user_id
+        FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE;
+    END IF;
+END $$;
 
 -- 7. Create missing database functions
 
+-- Drop existing functions first to avoid conflicts (except those with dependencies)
+DROP FUNCTION IF EXISTS verify_group_password(UUID, TEXT);
+DROP FUNCTION IF EXISTS set_group_password(UUID, TEXT);
+DROP FUNCTION IF EXISTS promote_to_admin(UUID, UUID, UUID);
+DROP FUNCTION IF EXISTS demote_from_admin(UUID, UUID, UUID);
+DROP FUNCTION IF EXISTS demote_admin(UUID, UUID, UUID);
+DROP FUNCTION IF EXISTS remove_group_member(UUID, UUID, UUID);
+-- Try different possible signatures for update_group_details
+DROP FUNCTION IF EXISTS update_group_details(UUID, TEXT, TEXT, UUID);
+DROP FUNCTION IF EXISTS update_group_details(UUID, TEXT, TEXT, TEXT, TEXT, UUID);
+DROP FUNCTION IF EXISTS delete_group(UUID, UUID);
+
 -- Function to verify group password
-CREATE OR REPLACE FUNCTION verify_group_password(
+CREATE FUNCTION verify_group_password(
     group_id_param UUID,
     password_param TEXT
 ) RETURNS BOOLEAN
@@ -86,7 +107,7 @@ END;
 $$;
 
 -- Function to set group password
-CREATE OR REPLACE FUNCTION set_group_password(
+CREATE FUNCTION set_group_password(
     group_id_param UUID,
     password_param TEXT
 ) RETURNS BOOLEAN
@@ -102,7 +123,7 @@ BEGIN
 END;
 $$;
 
--- Function to check if user is group admin
+-- Function to check if user is group admin (use CREATE OR REPLACE due to policy dependencies)
 CREATE OR REPLACE FUNCTION is_group_admin(
     group_id_param UUID,
     user_id_param UUID
@@ -112,24 +133,18 @@ SECURITY DEFINER
 AS $$
 DECLARE
     is_admin BOOLEAN := false;
-    is_creator BOOLEAN := false;
 BEGIN
-    -- Check if user is creator
-    SELECT (creator_id = user_id_param) INTO is_creator
-    FROM class_groups
-    WHERE id = group_id_param;
-    
     -- Check if user has admin role
     SELECT (role = 'admin') INTO is_admin
     FROM group_members
     WHERE group_id = group_id_param AND user_id = user_id_param AND is_active = true;
     
-    RETURN COALESCE(is_admin, false) OR COALESCE(is_creator, false);
+    RETURN COALESCE(is_admin, false);
 END;
 $$;
 
 -- Function to promote user to admin
-CREATE OR REPLACE FUNCTION promote_to_admin(
+CREATE FUNCTION promote_to_admin(
     group_id_param UUID,
     user_id_param UUID,
     admin_user_id UUID
@@ -142,11 +157,11 @@ BEGIN
     IF NOT is_group_admin(group_id_param, admin_user_id) THEN
         RAISE EXCEPTION 'User is not authorized to promote members';
     END IF;
-    
+
     UPDATE group_members
     SET role = 'admin'
     WHERE group_id = group_id_param AND user_id = user_id_param AND is_active = true;
-    
+
     RETURN FOUND;
 END;
 $$;
@@ -164,11 +179,6 @@ BEGIN
     -- Check if the requesting user is an admin
     IF NOT is_group_admin(group_id_param, admin_user_id) THEN
         RAISE EXCEPTION 'User is not authorized to demote members';
-    END IF;
-    
-    -- Don't allow demoting the creator
-    IF EXISTS (SELECT 1 FROM class_groups WHERE id = group_id_param AND creator_id = user_id_param) THEN
-        RAISE EXCEPTION 'Cannot demote group creator';
     END IF;
     
     UPDATE group_members
@@ -244,7 +254,7 @@ SECURITY DEFINER
 AS $$
 BEGIN
     -- Check if the requesting user is the creator
-    IF NOT EXISTS (SELECT 1 FROM class_groups WHERE id = group_id_param AND creator_id = admin_user_id) THEN
+    IF NOT EXISTS (SELECT 1 FROM class_groups WHERE id = group_id_param AND created_by = admin_user_id) THEN
         RAISE EXCEPTION 'Only group creator can delete the group';
     END IF;
     
@@ -265,12 +275,15 @@ CREATE INDEX IF NOT EXISTS idx_group_message_reads_message_id ON group_message_r
 CREATE INDEX IF NOT EXISTS idx_group_message_reads_user_id ON group_message_reads(user_id);
 CREATE INDEX IF NOT EXISTS idx_group_members_is_active ON group_members(is_active);
 CREATE INDEX IF NOT EXISTS idx_group_members_role ON group_members(role);
-CREATE INDEX IF NOT EXISTS idx_class_groups_creator_id ON class_groups(creator_id);
+CREATE INDEX IF NOT EXISTS idx_class_groups_created_by ON class_groups(created_by);
 
 -- 9. Update RLS policies for new tables and functions
 
 -- RLS for group_message_reads
 ALTER TABLE group_message_reads ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policy if it exists
+DROP POLICY IF EXISTS "Users can manage their own read status" ON group_message_reads;
 
 CREATE POLICY "Users can manage their own read status" ON group_message_reads
     FOR ALL USING (auth.uid() = user_id);

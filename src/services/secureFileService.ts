@@ -50,16 +50,37 @@ const getSecureDownloadUrlDirect = async (
   if (!supabase) throw new Error('Supabase not available')
   
   try {
+    console.log('🔐 Processing file URL:', fileUrl)
+    
     // Extract file path from the full URL
-    const urlParts = fileUrl.split('/storage/v1/object/public/')
-    if (urlParts.length < 2) {
-      throw new Error('Invalid file URL format')
+    // Handle different URL formats from Supabase storage
+    let bucket: string
+    let filePath: string
+    
+    if (fileUrl.includes('/storage/v1/object/public/')) {
+      // Public URL format
+      const urlParts = fileUrl.split('/storage/v1/object/public/')
+      if (urlParts.length < 2) {
+        throw new Error('Invalid public file URL format')
+      }
+      const [bucketName, ...pathParts] = urlParts[1].split('/')
+      bucket = bucketName
+      filePath = pathParts.join('/')
+    } else if (fileUrl.includes('/storage/v1/object/sign/')) {
+      // Already a signed URL - extract original path
+      const urlParts = fileUrl.split('/storage/v1/object/sign/')
+      if (urlParts.length < 2) {
+        throw new Error('Invalid signed file URL format')
+      }
+      const pathWithParams = urlParts[1].split('?')[0] // Remove query parameters
+      const [bucketName, ...pathParts] = pathWithParams.split('/')
+      bucket = bucketName
+      filePath = pathParts.join('/')
+    } else {
+      throw new Error('Unrecognized file URL format')
     }
     
-    const [bucket, ...pathParts] = urlParts[1].split('/')
-    const filePath = pathParts.join('/')
-    
-    console.log('🔐 Generating direct signed URL for:', filePath)
+    console.log('🔐 Extracted - Bucket:', bucket, 'Path:', filePath)
     
     // Verify user has access to this file
     if (groupId) {
@@ -84,14 +105,14 @@ const getSecureDownloadUrlDirect = async (
     
     if (error) {
       console.error('❌ Error generating signed URL:', error)
-      throw new Error('Failed to generate secure download link')
+      throw new Error(`Failed to generate secure download link: ${error.message}`)
     }
     
     if (!data?.signedUrl) {
       throw new Error('No signed URL generated')
     }
     
-    console.log('✅ Direct signed URL generated')
+    console.log('✅ Direct signed URL generated successfully')
     return data.signedUrl
     
   } catch (error: any) {
@@ -130,7 +151,24 @@ export const downloadFileSecurely = async ({
     
   } catch (error: any) {
     console.error('❌ Secure download failed:', error.message)
-    throw new Error(`Download failed: ${error.message}`)
+    
+    // Fallback to direct download if secure download fails
+    console.log('⚠️ Falling back to direct download for:', fileName)
+    try {
+      const link = document.createElement('a')
+      link.href = fileUrl
+      link.download = fileName
+      link.target = '_blank'
+      link.style.display = 'none'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      console.log('✅ Fallback download completed for:', fileName)
+    } catch (fallbackError: any) {
+      console.error('❌ Fallback download also failed:', fallbackError.message)
+      // Try opening the file in a new tab as last resort
+      window.open(fileUrl, '_blank')
+    }
   }
 }
 

@@ -524,11 +524,21 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   const handleFileDownload = async (fileUrl: string, fileName: string) => {
     if (!user) {
       console.error('❌ User not authenticated for download')
+      setError('Please log in to download files')
+      return
+    }
+    
+    if (!group.id) {
+      console.error('❌ Group ID not available for download')
+      setError('Unable to download file: Group not found')
       return
     }
     
     try {
       console.log('🔒 Initiating secure download for:', fileName)
+      console.log('📁 File URL:', fileUrl)
+      console.log('👤 User ID:', user.id)
+      console.log('👥 Group ID:', group.id)
       
       // Use secure download service to hide Supabase URLs
       await downloadFileSecurely({
@@ -538,10 +548,10 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
         groupId: group.id
       })
       
-      console.log('✅ Secure download completed for:', fileName)
+      console.log('✅ Download process completed for:', fileName)
     } catch (error: any) {
       console.error('❌ Download failed:', error.message)
-      // Error handling is done inside downloadFileSecurely with fallback
+      setError(`Failed to download ${fileName}: ${error.message}`)
     }
   }
 

@@ -213,6 +213,11 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
           setChatLoading(true)
           setError(null)
           
+          // Immediately scroll to bottom to prevent flash of old messages
+          if (messagesContainerRef.current) {
+            messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
+          }
+          
           // Try to load messages
           try {
             const messagesData = await getGroupMessages(group.id)
@@ -226,10 +231,10 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
           setMembers([])
           setIsUserAdmin(false)
           
-          // Scroll to bottom after messages are loaded
+          // Instant scroll to bottom after messages are loaded (no animation to prevent flash)
           setTimeout(() => {
-            scrollToBottom()
-          }, 100)
+            scrollToBottom('instant')
+          }, 50)
           
         } catch (error) {
           console.error('Error initializing group data:', error)
@@ -246,9 +251,9 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   useEffect(() => {
     // Only auto-scroll when not loading and we have messages
     if (!chatLoading && messages.length > 0) {
-      // Use setTimeout to ensure DOM is fully rendered
+      // Use setTimeout to ensure DOM is fully rendered, but use instant scroll to prevent flash
       setTimeout(() => {
-        scrollToBottom()
+        scrollToBottom('instant')
       }, 50)
     }
   }, [messages, chatLoading])
@@ -258,8 +263,8 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     if (!chatLoading && messages.length > 0) {
       console.log('Chat loading finished, scrolling to bottom with', messages.length, 'messages')
       setTimeout(() => {
-        scrollToBottom()
-      }, 200) // Longer delay to ensure all messages are rendered
+        scrollToBottom('instant')
+      }, 100) // Still instant to prevent jarring experience
     }
   }, [chatLoading, messages.length])
 
@@ -288,7 +293,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     }
   }
 
-  const scrollToBottom = () => {
+  const scrollToBottom = (behavior: 'smooth' | 'instant' = 'smooth') => {
     if (messagesContainerRef.current) {
       const container = messagesContainerRef.current
       console.log('Scrolling to bottom - ScrollHeight:', container.scrollHeight, 'ClientHeight:', container.clientHeight)
@@ -297,7 +302,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
       requestAnimationFrame(() => {
         container.scrollTo({
           top: container.scrollHeight,
-          behavior: 'smooth'
+          behavior: behavior
         })
       })
     } else {

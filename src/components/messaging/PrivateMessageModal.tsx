@@ -70,10 +70,13 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
     if (element) {
       const container = element.parentElement
       if (container) {
+        // For initial loads or small conversations, scroll instantly to prevent flash
+        const isInitialLoad = currentConversation.length <= 10
+        
         // Scroll within the container only, not the entire page
         container.scrollTo({
           top: container.scrollHeight,
-          behavior: 'smooth'
+          behavior: isInitialLoad ? 'instant' : 'smooth'
         })
       }
     }

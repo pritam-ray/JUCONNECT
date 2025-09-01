@@ -157,22 +157,26 @@ const UnifiedChatInterface: React.FC = () => {
             if (container) {
               const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100
               
-              // Only auto-scroll if user is already near the bottom or it's a new conversation
-              if (isNearBottom || 
+              // For initial load, scroll instantly to bottom
+              const isInitialLoad = (globalMessages.length > 0 && globalMessages.length <= 10 && chatMode === 'global') ||
+                                   (currentConversation && currentConversation.length > 0 && currentConversation.length <= 10 && chatMode === 'private')
+              
+              // Only auto-scroll if user is already near the bottom, it's a new conversation, or initial load
+              if (isNearBottom || isInitialLoad ||
                   (currentConversation && currentConversation.length <= 1) || 
                   (globalMessages.length <= 1)) {
                 
                 // Scroll within the container only, not the entire page
                 container.scrollTo({
                   top: container.scrollHeight,
-                  behavior: 'smooth'
+                  behavior: isInitialLoad ? 'instant' : 'smooth'
                 })
               }
             }
           }
         })
       }
-    }, 100) // 100ms debounce
+    }, 50) // Reduced debounce for faster initial load
     
     // Cleanup timeout on unmount
     return () => {
@@ -187,6 +191,13 @@ const UnifiedChatInterface: React.FC = () => {
     const loadGlobalMessages = async () => {
       try {
         setGlobalLoading(true)
+        
+        // Pre-scroll to bottom to prevent flash of old messages
+        const messagesContainer = messagesEndRef.current?.parentElement
+        if (messagesContainer) {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight
+        }
+        
         const initialMessages = await getChatMessages()
         setGlobalMessages(initialMessages || [])
       } catch (error) {

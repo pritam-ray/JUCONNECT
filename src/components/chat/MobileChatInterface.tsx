@@ -186,10 +186,14 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
     if (element) {
       const container = element.parentElement
       if (container) {
+        // For initial loads, scroll instantly to prevent flash
+        const isInitialLoad = (globalMessages.length > 0 && globalMessages.length <= 10) || 
+                             (currentConversation && currentConversation.length > 0 && currentConversation.length <= 10)
+        
         // Scroll within the container only
         container.scrollTo({
           top: container.scrollHeight,
-          behavior: 'smooth'
+          behavior: isInitialLoad ? 'instant' : 'smooth'
         })
       }
     }
@@ -198,6 +202,11 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
   // Load global messages on mount
   useEffect(() => {
     if (viewMode === 'global-chat') {
+      // Pre-scroll to bottom to prevent flash of old messages
+      const messagesContainer = messagesEndRef.current?.parentElement
+      if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight
+      }
       loadGlobalMessages()
     }
   }, [viewMode])

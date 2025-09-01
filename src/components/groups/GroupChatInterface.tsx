@@ -30,6 +30,7 @@ import { downloadFileSecurely } from '../../services/secureFileService'
 import Button from '../ui/Button'
 import LoadingSpinner from '../ui/LoadingSpinner'
 import GroupAdminPanel from './GroupAdminPanel'
+import { circuitBreaker } from '../../utils/circuitBreaker'
 
 interface OptimisticGroupMessage extends GroupMessageWithProfile {
   isOptimistic?: boolean
@@ -175,8 +176,10 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   )
   */
 
-  // Auto-cleanup optimistic messages that are stuck
+  // Auto-cleanup optimistic messages that are stuck - with mobile-friendly intervals
   useEffect(() => {
+    // Use longer intervals on mobile to reduce API calls
+    const isMobile = window.innerWidth < 768
     const cleanupInterval = setInterval(() => {
       setMessages(prev => {
         const now = Date.now()
@@ -185,7 +188,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
         const cleanedMessages = prev.map(msg => {
           if (msg.isOptimistic) {
             const messageAge = now - new Date(msg.created_at).getTime()
-            if (messageAge > 10000) { // 10 seconds old
+            if (messageAge > 15000) { // Increased to 15 seconds for mobile
               console.log('🧹 Auto-cleaning stuck optimistic message:', msg.id)
               hasChanges = true
               return { ...msg, isOptimistic: false }
@@ -196,7 +199,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
         
         return hasChanges ? cleanedMessages : prev
       })
-    }, 5000) // Check every 5 seconds
+    }, isMobile ? 10000 : 5000) // 10 seconds on mobile, 5 seconds on desktop
     
     return () => clearInterval(cleanupInterval)
   }, [])
@@ -355,7 +358,10 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
       // Clear the fallback timeout since message was sent successfully
       clearTimeout(fallbackTimeout)
       
-      // Immediate manual replacement if realtime doesn't work within 2 seconds
+      // Mobile-optimized manual replacement if realtime doesn't work
+      const isMobile = window.innerWidth < 768
+      const replacementDelay = isMobile ? 3000 : 2000 // Longer delay on mobile
+      
       setTimeout(() => {
         setMessages(prev => {
           const stillOptimistic = prev.find(msg => msg.id === tempId && msg.isOptimistic)
@@ -373,7 +379,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
           }
           return prev
         })
-      }, 2000)
+      }, replacementDelay)
       
     } catch (error: any) {
       console.error('❌ Error sending message:', error)

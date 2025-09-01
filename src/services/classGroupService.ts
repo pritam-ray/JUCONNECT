@@ -509,26 +509,28 @@ export const getGroupMessages = async (
       return []
     }
 
-    // Now fetch profile data separately for each message to avoid the join issue
-    const messagesWithProfiles = await Promise.all(
-      basicMessages.map(async (message) => {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id, username, full_name, avatar_url')
-          .eq('id', message.user_id)
-          .single()
+    // Now fetch profile data separately but in batches to reduce API calls
+    const userIds = [...new Set(basicMessages.map(msg => msg.user_id))]
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, username, full_name, avatar_url')
+      .in('id', userIds)
 
-        return {
-          ...message,
-          profiles: profile || {
-            id: message.user_id,
-            username: 'Unknown User',
-            full_name: 'Unknown User',
-            avatar_url: null
-          }
-        }
-      })
-    )
+    // Create a lookup map for profiles
+    const profileMap = new Map()
+    profiles?.forEach(profile => {
+      profileMap.set(profile.id, profile)
+    })
+
+    const messagesWithProfiles = basicMessages.map(message => ({
+      ...message,
+      profiles: profileMap.get(message.user_id) || {
+        id: message.user_id,
+        username: 'Unknown User',
+        full_name: 'Unknown User',
+        avatar_url: null
+      }
+    }))
     
     return messagesWithProfiles
   } catch (error) {

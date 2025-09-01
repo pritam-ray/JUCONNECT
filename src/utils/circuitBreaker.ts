@@ -6,7 +6,7 @@
 class CircuitBreaker {
   private callCount = 0
   private resetTime = 0
-  private readonly MAX_CALLS_PER_MINUTE = 50 // Very strict limit
+  private readonly MAX_CALLS_PER_MINUTE = 120 // Increased limit for group chat functionality
   private readonly RESET_INTERVAL = 60000 // 1 minute
   private isBlocked = false
   private blockedUntil = 0

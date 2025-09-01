@@ -31,9 +31,12 @@ export const useRealtimeGroupMessages = (
       return
     }
 
-    // Prevent rapid reconnection attempts
+    // Rate limiting: Mobile devices get longer intervals
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+    const minInterval = isMobile ? 2000 : 1000 // 2 seconds on mobile, 1 second on desktop
+    
     const now = Date.now()
-    if (now - lastConnectionTime.current < 1000) {
+    if (now - lastConnectionTime.current < minInterval) {
       return
     }
     lastConnectionTime.current = now

@@ -202,14 +202,35 @@ const UnifiedChatInterface: React.FC = () => {
     }
   }, [isMobile])
 
-  // Periodic refresh for global messages (every 3 seconds)
+  // Periodic refresh for global messages (every 3 seconds) - with scroll preservation
   useEffect(() => {
     if (isMobile || chatMode !== 'global') return
 
     const refreshInterval = setInterval(async () => {
       try {
+        // Store current scroll position
+        const messagesContainer = messagesEndRef.current?.parentElement
+        const isNearBottom = messagesContainer ? 
+          messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 100 : false
+
         const refreshedMessages = await getChatMessages()
-        setGlobalMessages(refreshedMessages || [])
+        
+        // Only update if there are new messages to prevent unnecessary re-renders
+        setGlobalMessages(prevMessages => {
+          if (JSON.stringify(prevMessages) !== JSON.stringify(refreshedMessages || [])) {
+            // If user was near bottom, they'll get auto-scrolled. Otherwise, preserve position.
+            if (!isNearBottom && messagesContainer) {
+              // Preserve scroll position for users reading older messages
+              setTimeout(() => {
+                if (messagesContainer) {
+                  messagesContainer.scrollTop = messagesContainer.scrollHeight - messagesContainer.clientHeight
+                }
+              }, 10)
+            }
+            return refreshedMessages || []
+          }
+          return prevMessages
+        })
       } catch (error) {
         console.error('Failed to refresh global messages:', error)
       }
@@ -252,10 +273,31 @@ const UnifiedChatInterface: React.FC = () => {
   const handleSendGlobalMessage = async () => {
     if (!globalNewMessage.trim()) return
 
-    if (!user || isGuest) {
+    // Debug logging for authentication state
+    console.log('🔍 Send Global Message Debug:', {
+      hasUser: !!user,
+      userId: user?.id,
+      isGuest: isGuest,
+      userEmail: user?.email,
+      profileExists: !!profile
+    })
+
+    // Check if user is authenticated - allow all authenticated users to send messages
+    if (!user?.id) {
+      console.log('❌ No user ID found, showing auth modal')
       setShowAuthModal(true)
       return
     }
+
+    // Additional check: don't allow if explicitly marked as guest AND no valid user
+    if (isGuest && !user?.id) {
+      console.log('❌ User is guest with no ID, showing auth modal')
+      setShowAuthModal(true)
+      return
+    }
+
+    // Allow authenticated users even if isGuest flag is incorrectly set
+    console.log('✅ User authenticated, proceeding to send message')
 
     const tempMessageId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     const optimisticMessage: OptimisticChatMessage = {

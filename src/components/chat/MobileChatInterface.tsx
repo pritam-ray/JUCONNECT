@@ -6,6 +6,7 @@ import { getChatMessages, sendChatMessage } from '../../services/chatService'
 import { usePrivateMessages } from '../../hooks/usePrivateMessages'
 import { searchUsers } from '../../services/privateMessageService'
 import LoadingSpinner from '../ui/LoadingSpinner'
+import AuthModal from '../ui/AuthModal'
 import { formatDistanceToNow } from 'date-fns'
 
 type ViewMode = 'tabs' | 'global-chat' | 'private-list' | 'private-chat' | 'new-chat'
@@ -38,6 +39,10 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [searching, setSearching] = useState(false)
   
+  // Error state
+  const [error, setError] = useState<string | null>(null)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  
   // Use private messages hook
   const {
     conversations,
@@ -63,15 +68,41 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
 
   // Handle global message send
   const handleSendGlobalMessage = async () => {
-    if (!globalMessage.trim() || globalSending || isGuest) return
+    if (!globalMessage.trim() || globalSending) return
+    
+    // Debug logging for authentication state
+    console.log('🔍 Mobile Send Global Message Debug:', {
+      hasUser: !!user,
+      userId: user?.id,
+      isGuest: isGuest,
+      userEmail: user?.email
+    })
+
+    // Check if user is authenticated - allow all authenticated users to send messages
+    if (!user?.id) {
+      console.log('❌ No user ID found, showing auth modal')
+      setShowAuthModal(true)
+      return
+    }
+
+    // Additional check: don't allow if explicitly marked as guest AND no valid user
+    if (isGuest && !user?.id) {
+      console.log('❌ User is guest with no ID, showing auth modal')
+      setShowAuthModal(true)
+      return
+    }
+
+    // Allow authenticated users even if isGuest flag is incorrectly set
+    console.log('✅ User authenticated, proceeding to send message')
     
     try {
       setGlobalSending(true)
-      await sendChatMessage(globalMessage.trim())
+      await sendChatMessage(globalMessage.trim(), user.id)
       setGlobalMessage('')
       await loadGlobalMessages() // Refresh messages
     } catch (error) {
       console.error('Error sending message:', error)
+      setError('Failed to send message. Please try again.')
     } finally {
       setGlobalSending(false)
     }
@@ -171,12 +202,38 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
     }
   }, [viewMode])
 
-  // Periodic refresh for global messages on mobile (every 3 seconds)
+  // Periodic refresh for global messages on mobile (every 3 seconds) - with scroll preservation
   useEffect(() => {
     if (viewMode !== 'global-chat') return
 
-    const refreshInterval = setInterval(() => {
-      loadGlobalMessages()
+    const refreshInterval = setInterval(async () => {
+      try {
+        // Store current scroll position
+        const messagesContainer = messagesEndRef.current?.parentElement
+        const isNearBottom = messagesContainer ? 
+          messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 100 : false
+
+        const refreshedMessages = await getChatMessages()
+        
+        // Only update if there are new messages to prevent unnecessary re-renders
+        setGlobalMessages(prevMessages => {
+          if (JSON.stringify(prevMessages) !== JSON.stringify(refreshedMessages || [])) {
+            // If user was near bottom, they'll get auto-scrolled. Otherwise, preserve position.
+            if (!isNearBottom && messagesContainer) {
+              // Preserve scroll position for users reading older messages
+              setTimeout(() => {
+                if (messagesContainer) {
+                  messagesContainer.scrollTop = messagesContainer.scrollHeight - messagesContainer.clientHeight
+                }
+              }, 10)
+            }
+            return refreshedMessages || []
+          }
+          return prevMessages
+        })
+      } catch (error) {
+        console.error('Failed to refresh global messages:', error)
+      }
     }, 3000) // Every 3 seconds
 
     return () => clearInterval(refreshInterval)

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { X, Send, Search, User, MessageCircle, Clock } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { usePrivateMessages } from '../../hooks/usePrivateMessages'
+import { useRealtimePrivateMessages } from '../../hooks/useRealtime'
 import { searchUsers } from '../../services/privateMessageService'
 import LoadingSpinner from '../ui/LoadingSpinner'
 import { formatDistanceToNow } from 'date-fns'
@@ -33,8 +34,27 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
     sending,
     error,
     loadConversation,
-    sendMessage
+    sendMessage,
+    addMessageToConversation
   } = usePrivateMessages(user?.id || null)
+
+  // Real-time private messages
+  useRealtimePrivateMessages(
+    user?.id || null,
+    (message) => {
+      // Add new message to current conversation
+      addMessageToConversation?.(message)
+    },
+    (message) => {
+      // Handle message updates
+      console.log('Message updated:', message)
+    },
+    (messageId) => {
+      // Handle message deletion
+      console.log('Message deleted:', messageId)
+    },
+    { enabled: isOpen }
+  )
 
   const [activeConversation, setActiveConversation] = useState<string | null>(initialRecipientId || null)
   const [newMessage, setNewMessage] = useState('')

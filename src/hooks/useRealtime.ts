@@ -510,3 +510,102 @@ export const useRealtimeUserStatus = (
     }
   }, [enabled, onUserOnline, onUserOffline, onError])
 }
+
+/**
+ * Hook for real-time private messages
+ */
+export const useRealtimePrivateMessages = (
+  userId: string | null,
+  onMessage: (message: any) => void,
+  onUpdate?: (message: any) => void,
+  onDelete?: (messageId: string) => void,
+  options: RealtimeHookOptions = {}
+) => {
+  const channelRef = useRef<any>(null)
+  const { enabled = true, onError } = options
+
+  useEffect(() => {
+    if (!enabled || !userId || !isSupabaseConfigured() || !supabase) return
+
+    // Clean up existing subscription
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current)
+    }
+
+    const channel = supabase
+      .channel(`private_messages_${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'private_messages',
+          filter: `or(sender_id.eq.${userId},recipient_id.eq.${userId})`
+        },
+        async (payload) => {
+          try {
+            if (!supabase) return
+            // Fetch complete message with sender profile data
+            const { data, error } = await supabase
+              .from('private_messages')
+              .select(`
+                *,
+                sender_profile:profiles!sender_id (
+                  id,
+                  username,
+                  full_name,
+                  avatar_url
+                ),
+                recipient_profile:profiles!recipient_id (
+                  id,
+                  username,
+                  full_name,
+                  avatar_url
+                )
+              `)
+              .eq('id', payload.new.id)
+              .single()
+
+            if (error) throw error
+            if (data) onMessage(data)
+          } catch (error) {
+            console.error('Error fetching new private message:', error)
+            onError?.(error as Error)
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'private_messages',
+          filter: `or(sender_id.eq.${userId},recipient_id.eq.${userId})`
+        },
+        (payload) => {
+          onUpdate?.(payload.new)
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'private_messages',
+          filter: `or(sender_id.eq.${userId},recipient_id.eq.${userId})`
+        },
+        (payload) => {
+          onDelete?.(payload.old.id)
+        }
+      )
+      .subscribe()
+
+    channelRef.current = channel
+
+    return () => {
+      if (channelRef.current && supabase) {
+        supabase.removeChannel(channelRef.current)
+      }
+    }
+  }, [enabled, userId, onMessage, onUpdate, onDelete, onError])
+}

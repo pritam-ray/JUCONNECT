@@ -105,6 +105,20 @@ export const usePrivateMessages = (userId: string | null) => {
     return firstMessage.sender_id === userId ? firstMessage.recipient_id : firstMessage.sender_id
   }, [currentConversation, userId])
 
+  // Periodic refresh for current conversation messages (every 2 seconds)
+  useEffect(() => {
+    if (!userId) return
+    
+    const conversationUserId = getCurrentConversationUserId()
+    if (!conversationUserId) return
+    
+    const refreshInterval = setInterval(() => {
+      loadConversation(conversationUserId)
+    }, 2000) // Every 2 seconds
+    
+    return () => clearInterval(refreshInterval)
+  }, [userId, getCurrentConversationUserId, loadConversation, currentConversation.length])
+
   // Set up minimal real-time subscription for this user's messages
   // ONLY subscribe when user is actively viewing messages
   useEffect(() => {
@@ -171,6 +185,17 @@ export const usePrivateMessages = (userId: string | null) => {
     loadConversations(false) // Don't force reload on mount
   }, [loadConversations])
 
+  // Periodic refresh for conversations (every 3 seconds)
+  useEffect(() => {
+    if (!userId) return
+    
+    const refreshInterval = setInterval(() => {
+      loadConversations(false) // Refresh conversations periodically
+    }, 3000) // Every 3 seconds
+    
+    return () => clearInterval(refreshInterval)
+  }, [userId, loadConversations])
+
   // Clear error after 5 seconds
   useEffect(() => {
     if (error) {
@@ -220,6 +245,39 @@ export const usePrivateMessages = (userId: string | null) => {
     }
   }, [userId, loadConversation, conversations])
 
+  // Add message to current conversation (for real-time updates)
+  const addMessageToConversation = useCallback((message: PrivateMessage) => {
+    // Check if this message belongs to the current conversation
+    const conversationUserId = getCurrentConversationUserId()
+    const isForCurrentConversation = conversationUserId && 
+      (message.sender_id === conversationUserId || message.recipient_id === conversationUserId)
+    
+    if (isForCurrentConversation) {
+      setCurrentConversation(prev => {
+        // Prevent duplicates
+        if (prev.some(msg => msg.id === message.id)) {
+          return prev
+        }
+        return [...prev, message]
+      })
+    }
+    
+    // Update conversations list to reflect new message
+    setConversations(prev => prev.map(conv => {
+      const isConversationMatch = conv.otherUser.id === message.sender_id || 
+                                conv.otherUser.id === message.recipient_id
+      
+      if (isConversationMatch) {
+        return {
+          ...conv,
+          lastMessage: message,
+          unreadCount: message.sender_id !== userId ? conv.unreadCount + 1 : conv.unreadCount
+        }
+      }
+      return conv
+    }))
+  }, [getCurrentConversationUserId, userId])
+
   return {
     conversations,
     currentConversation,
@@ -231,6 +289,7 @@ export const usePrivateMessages = (userId: string | null) => {
     loadConversation,
     sendMessage,
     startNewConversation,
-    setCurrentConversation
+    setCurrentConversation,
+    addMessageToConversation
   }
 }

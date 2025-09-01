@@ -171,6 +171,17 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
     }
   }, [viewMode])
 
+  // Periodic refresh for global messages on mobile (every 3 seconds)
+  useEffect(() => {
+    if (viewMode !== 'global-chat') return
+
+    const refreshInterval = setInterval(() => {
+      loadGlobalMessages()
+    }, 3000) // Every 3 seconds
+
+    return () => clearInterval(refreshInterval)
+  }, [viewMode])
+
   // Load conversations when accessing private messages
   useEffect(() => {
     if (viewMode === 'private-list' && user?.id && loadConversations) {

@@ -202,6 +202,22 @@ const UnifiedChatInterface: React.FC = () => {
     }
   }, [isMobile])
 
+  // Periodic refresh for global messages (every 3 seconds)
+  useEffect(() => {
+    if (isMobile || chatMode !== 'global') return
+
+    const refreshInterval = setInterval(async () => {
+      try {
+        const refreshedMessages = await getChatMessages()
+        setGlobalMessages(refreshedMessages || [])
+      } catch (error) {
+        console.error('Failed to refresh global messages:', error)
+      }
+    }, 3000) // Every 3 seconds
+
+    return () => clearInterval(refreshInterval)
+  }, [isMobile, chatMode])
+
   // Load conversations when switching to private chat mode
   useEffect(() => {
     if (!isMobile && chatMode === 'private' && user?.id && loadConversations) {

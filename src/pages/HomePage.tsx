@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { Search, Filter, BookOpen, FileText, Users, TrendingUp, Sparkles, Star, Zap, Shield } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { Search, Filter, BookOpen, FileText, Users, TrendingUp, Sparkles, Star, Zap, Shield, ArrowRight, Download, Eye, Clock, Globe } from 'lucide-react'
 import { getApprovedContent, getContentStats, ContentWithCategory } from '../services/contentService'
 import { getAllCategories, CategoryWithChildren } from '../services/categoryService'
 import { isSupabaseConfigured } from '../lib/supabase'
@@ -85,12 +85,12 @@ const HomePage: React.FC = () => {
   }, [])
 
   const contentTypes = [
-    { value: '', label: 'All Types', icon: '📚' },
-    { value: 'question_paper', label: 'Question Papers', icon: '📝' },
-    { value: 'notes', label: 'Study Notes', icon: '📖' },
-    { value: 'syllabus', label: 'Syllabus', icon: '📋' },
-    { value: 'assignments', label: 'Assignments', icon: '📄' },
-    { value: 'other', label: 'Other', icon: '📄' },
+    { value: '', label: 'All Types', icon: '📚', color: 'from-blue-500 to-blue-600' },
+    { value: 'question_paper', label: 'Question Papers', icon: '📝', color: 'from-green-500 to-green-600' },
+    { value: 'notes', label: 'Study Notes', icon: '📖', color: 'from-purple-500 to-purple-600' },
+    { value: 'syllabus', label: 'Syllabus', icon: '📋', color: 'from-yellow-500 to-yellow-600' },
+    { value: 'assignments', label: 'Assignments', icon: '📄', color: 'from-pink-500 to-pink-600' },
+    { value: 'other', label: 'Other', icon: '📄', color: 'from-gray-500 to-gray-600' },
   ]
 
   useEffect(() => {
@@ -269,13 +269,13 @@ const HomePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-white to-primary-50 mesh-bg">
+    <div className="min-h-screen mesh-bg">
       {/* Demo Mode Banner */}
       {!isSupabaseConfigured() && <DemoModeBanner />}
       
-      {/* Hero Section */}
+      {/* Premium Hero Section */}
       <div
-        className="hero-gradient text-white relative overflow-hidden min-h-[35vh] sm:min-h-[30vh] md:min-h-[28vh] lg:min-h-[25vh] flex items-center"
+        className="hero-gradient text-white relative overflow-hidden min-h-[60vh] sm:min-h-[55vh] md:min-h-[50vh] lg:min-h-[45vh] flex items-center"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
@@ -283,7 +283,7 @@ const HomePage: React.FC = () => {
         <div className="absolute inset-0 -z-0 overflow-hidden">
           {heroImages.length > 0 ? (
             <div
-              className="flex h-full transition-transform duration-700 ease-out"
+              className="flex h-full transition-transform duration-1000 ease-out"
               style={{ transform: `translateX(-${slide * 100}%)` }}
             >
               {heroImages.map((src, i) => (
@@ -299,114 +299,142 @@ const HomePage: React.FC = () => {
             </div>
           ) : (
             // Fallback if no images yet
-            <div className="w-full h-full" />
+            <div className="w-full h-full bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800" />
           )}
 
-          {/* Red tint + subtle vignette for readability */}
-          <div className="absolute inset-0 bg-red-600/40 mix-blend-multiply" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/25 via-transparent to-black/25" />
+          {/* Enhanced overlay with premium effects */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary-900/60 via-primary-800/70 to-primary-900/80" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30" />
         </div>
 
-        {/* Decorative floating lights (optional, keep as before) */}
-        <div className="absolute top-0 left-1/4 w-48 sm:w-72 md:w-96 h-48 sm:h-72 md:h-96 bg-white/10 rounded-full blur-3xl animate-float pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-48 sm:w-72 md:w-96 h-48 sm:h-72 md:h-96 bg-white/5 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
+        {/* Premium floating elements */}
+        <div className="absolute top-1/4 left-1/4 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 bg-gradient-to-br from-white/20 to-transparent rounded-full blur-3xl animate-float pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-24 sm:w-36 md:w-48 h-24 sm:h-36 md:h-48 bg-gradient-to-br from-accent-500/30 to-transparent rounded-full blur-2xl animate-float pointer-events-none" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 sm:w-[32rem] md:w-[40rem] h-96 sm:h-[32rem] md:h-[40rem] bg-gradient-to-r from-primary-500/10 via-accent-500/10 to-primary-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" />
 
-        {/* Overlay Content (text/buttons) */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8 w-full">
-          <div className="text-center space-y-3 sm:space-y-4 md:space-y-5">
-            <div className="flex items-center justify-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
-              <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-accent-400 animate-bounce-subtle" />
-              <Badge variant="premium" size="lg" glow pulse>
-                The JECRC App
-              </Badge>
-              <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-accent-400 animate-bounce-subtle" />
+        {/* Enhanced Overlay Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-8 sm:py-12 md:py-16 w-full">
+          <div className="text-center space-y-6 sm:space-y-8 md:space-y-10">
+            <div className="flex items-center justify-center space-x-3 sm:space-x-4 mb-4 sm:mb-6">
+              <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-accent-400 animate-bounce-subtle" />
+              <div className="glass-card px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-white/40">
+                <span className="text-sm sm:text-base font-semibold text-white drop-shadow-lg">
+                  🎓 The Premium JECRC Hub
+                </span>
+              </div>
+              <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-accent-400 animate-bounce-subtle" />
             </div>
             
-            <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold mb-3 sm:mb-4 md:mb-5 animate-fade-in-up">
-              <span className="block text-white text-shadow-lg">JU CONNECT</span>
-              <span className="block text-xs sm:text-base md:text-lg lg:text-xl font-medium text-white/90 mt-1 sm:mt-2">
-                Resource Hub
-              </span>
-            </h1>
+            <div className="space-y-4 sm:space-y-6 animate-fade-in-up">
+              <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold text-white text-shadow-lg">
+                <span className="block bg-gradient-to-r from-white via-white to-accent-200 bg-clip-text text-transparent">
+                  JU CONNECT
+                </span>
+                <span className="block text-lg sm:text-2xl md:text-3xl lg:text-4xl font-medium text-white/90 mt-2 sm:mt-4">
+                  Premium Education Hub
+                </span>
+              </h1>
+              
+              <p className="text-sm sm:text-lg md:text-xl lg:text-2xl mb-6 sm:mb-8 md:mb-10 max-w-4xl mx-auto text-white/90 leading-relaxed animate-fade-in-up font-medium drop-shadow-sm" style={{ animationDelay: '0.2s' }}>
+                Access premium study materials, question papers, notes, and connect with fellow students. 
+                <span className="block mt-2 text-accent-200">Elevate your academic journey with our cutting-edge platform.</span>
+              </p>
+            </div>
             
-            <p className="text-xs sm:text-sm md:text-base lg:text-lg mb-4 sm:mb-5 md:mb-6 max-w-3xl mx-auto text-white/90 leading-relaxed animate-fade-in-up px-2 sm:px-4" style={{ animationDelay: '0.2s' }}>
-              Access all the study materials, PYQ'S, Notes and many more. Connect with fellow students, 
-              and elevate your academic journey with this platform
-            </p>
+            {/* Premium Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+              <Button 
+                size="lg" 
+                variant="premium" 
+                className="group shadow-2xl hover:shadow-accent-500/30 px-8 sm:px-12 py-4 sm:py-5 text-base sm:text-lg"
+                onClick={() => !user || isGuest ? setShowAuthModal(true) : null}
+              >
+                <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 mr-3" />
+                Explore Resources
+                <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6 ml-3 group-hover:translate-x-1 transition-transform duration-300" />
+              </Button>
+              
+              <Button 
+                size="lg" 
+                variant="secondary" 
+                className="group glass-card border-white/40 text-white hover:bg-white/20 px-8 sm:px-12 py-4 sm:py-5 text-base sm:text-lg backdrop-blur-xl"
+                onClick={() => document.getElementById('stats-section')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 mr-3" />
+                View Statistics
+              </Button>
+            </div>
             
-            {/* Stats */}
+            {/* Enhanced Stats Grid */}
             {stats && (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 max-w-3xl mx-auto animate-fade-in-up px-2 sm:px-4" style={{ animationDelay: '0.4s' }}>
+              <div 
+                id="stats-section"
+                className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 max-w-5xl mx-auto animate-fade-in-up" 
+                style={{ animationDelay: '0.6s' }}
+              >
                 {[
-                  { label: 'Resources Available', value: stats.approved, icon: BookOpen },
-                  { label: 'Question Papers', value: stats.byType.question_paper, icon: FileText },
-                  { label: 'Study Notes', value: stats.byType.notes, icon: TrendingUp },
-                  { label: 'Subject Areas', value: categories.length, icon: Users },
-                ].map((stat) => (
-                  <div key={stat.label} className="glass p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl text-center group hover:scale-105 transition-all duration-300">
-                    <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-accent-400 mx-auto mb-1 sm:mb-2 group-hover:scale-110 transition-transform duration-300" />
-                    <div className="text-sm sm:text-lg md:text-xl font-bold text-white mb-1">{stat.value}</div>
-                    <div className="text-2xs sm:text-xs text-white/80 font-medium leading-tight">{stat.label}</div>
+                  { label: 'Total Resources', value: stats.approved, icon: BookOpen, color: 'from-blue-500 to-blue-600' },
+                  { label: 'Question Papers', value: stats.byType.question_paper, icon: FileText, color: 'from-green-500 to-green-600' },
+                  { label: 'Study Notes', value: stats.byType.notes, icon: TrendingUp, color: 'from-purple-500 to-purple-600' },
+                  { label: 'Active Categories', value: categories.length, icon: Users, color: 'from-yellow-500 to-yellow-600' },
+                ].map((stat, index) => (
+                  <div 
+                    key={stat.label} 
+                    className="glass-card p-4 sm:p-6 md:p-8 rounded-2xl text-center group hover:scale-105 hover:-translate-y-2 transition-all duration-500 border border-white/40"
+                    style={{ animationDelay: `${0.7 + index * 0.1}s` }}
+                  >
+                    <div className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center group-hover:scale-110 transition-all duration-500 shadow-lg`}>
+                      <stat.icon className="h-6 w-6 sm:h-8 sm:w-8 text-white drop-shadow-lg" />
+                    </div>
+                    <div className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2 group-hover:text-accent-200 transition-colors duration-300 drop-shadow-lg">
+                      {stat.value}
+                    </div>
+                    <div className="text-xs sm:text-sm text-white/80 font-medium leading-tight">
+                      {stat.label}
+                    </div>
                   </div>
                 ))}
               </div>
             )}
             
-            <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-3 md:space-x-4 animate-fade-in-up px-2 sm:px-4" style={{ animationDelay: '0.6s' }}>
-              <Button 
-                size="lg"
-                variant="secondary"
-                className="bg-white/30 backdrop-blur-none border-white/30 text-white hover:bg-white/40 w-full sm:w-auto"
-                onClick={() => document.getElementById('content-section')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                <Zap className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                Explore Content
-              </Button>
-              
-              {(!user || isGuest) && (
-                <Button 
-                  size="lg"
-                  variant="outline"
-                  className="border-white/50 text-white hover:bg-white hover:text-primary-600 w-full sm:w-auto"
-                  onClick={() => setShowAuthModal(true)}
-                >
-                  <Star className="mr-2 h-5 w-5" />
-                  Join JU CONNECT
-                </Button>
-              )}
+            {/* Scroll Indicator */}
+            <div className="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce text-white/60" style={{ animationDelay: '1s' }}>
+              <div className="w-1 h-8 sm:h-12 bg-gradient-to-b from-white/60 to-transparent rounded-full mx-auto mb-2" />
+              <span className="text-xs sm:text-sm font-medium">Scroll to explore</span>
             </div>
           </div>
         </div>
 
-        {/* Manual Controls */}
+        {/* Enhanced Manual Controls */}
         {heroImages.length > 1 && (
           <>
             <button
               aria-label="Previous"
               onClick={prev}
-              className="absolute left-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-none"
+              className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-10 p-3 sm:p-4 rounded-2xl glass-card border border-white/40 hover:bg-white/30 text-white backdrop-blur-xl transition-all duration-500 hover:scale-110 active:scale-95"
             >
-              ‹
+              <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6 rotate-180" />
             </button>
             <button
               aria-label="Next"
               onClick={next}
-              className="absolute right-3 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-none"
+              className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-10 p-3 sm:p-4 rounded-2xl glass-card border border-white/40 hover:bg-white/30 text-white backdrop-blur-xl transition-all duration-500 hover:scale-110 active:scale-95"
             >
-              ›
+              <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
 
-            {/* Dots - Desktop only */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 hidden sm:flex items-center gap-1">
+            {/* Premium Dots Indicator */}
+            <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-10 hidden sm:flex items-center gap-2 glass-card px-4 py-2 rounded-full border border-white/40">
               {heroImages.map((_, i) => (
                 <button
                   key={i}
                   aria-label={`Go to slide ${i + 1}`}
                   onClick={() => { goto(i); pauseTemporarily() }}
-                  className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${
+                  className={`h-2 w-2 rounded-full transition-all duration-500 ${
                     slide === i 
-                      ? 'bg-red-500 scale-125' 
-                      : 'bg-white/60 hover:bg-white/90 hover:scale-110'
+                      ? 'bg-white scale-150 shadow-lg' 
+                      : 'bg-white/50 hover:bg-white/80 hover:scale-125'
                   }`}
                 />
               ))}
@@ -415,29 +443,34 @@ const HomePage: React.FC = () => {
         )}
       </div>
 
-      {/* Search and Filters */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12" id="content-section">
-        <div className="card-premium p-4 sm:p-6 md:p-8 mb-8 sm:mb-12 animate-fade-in-up">
-          <div className="text-center mb-6 sm:mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-secondary-900 mb-2 text-gradient">
+      {/* Premium Search and Filters Section */}
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-8 sm:py-12 md:py-16" id="content-section">
+        <div className="glass-card p-6 sm:p-8 md:p-12 mb-8 sm:mb-12 animate-fade-in-up border border-white/60">
+          <div className="text-center mb-8 sm:mb-12">
+            <div className="inline-flex items-center space-x-2 mb-4">
+              <Search className="h-6 w-6 text-primary-600" />
+              <span className="text-sm font-medium text-primary-600 uppercase tracking-wider">Discovery Center</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-secondary-900 mb-4 text-gradient">
               Find Your Perfect Study Material
             </h2>
-            <p className="text-sm sm:text-base text-secondary-600">
-              Use our advanced filters to discover exactly what you need
+            <p className="text-base sm:text-lg text-secondary-600 max-w-2xl mx-auto">
+              Use our advanced filters and intelligent search to discover exactly what you need for academic excellence
             </p>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
-            <div className="lg:col-span-2 order-1">
-              <div className="flex flex-col sm:flex-row gap-2">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
+            {/* Search Input */}
+            <div className="lg:col-span-6 order-1">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative group flex-1">
-                  <Search className="absolute left-3 sm:left-4 top-3 sm:top-4 h-4 w-4 sm:h-5 sm:w-5 text-secondary-400 group-focus-within:text-primary-500 transition-colors duration-300" />
+                  <Search className="absolute left-4 sm:left-6 top-1/2 transform -translate-y-1/2 h-5 w-5 sm:h-6 sm:w-6 text-secondary-400 group-focus-within:text-primary-500 transition-all duration-500" />
                   <input
                     type="text"
                     placeholder="Search resources, notes, question papers..."
                     value={searchInput}
                     onChange={(e) => handleSearchInputChange(e.target.value)}
-                    className="input-premium pl-10 sm:pl-12 pr-3 sm:pr-4 text-base sm:text-lg w-full h-12 sm:h-14"
+                    className="input-premium pl-12 sm:pl-16 pr-4 text-base sm:text-lg w-full h-14 sm:h-16"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         handleManualSearch()
@@ -445,7 +478,7 @@ const HomePage: React.FC = () => {
                       }
                     }}
                   />
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/10 to-primary-600/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary-500/10 to-primary-600/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none" />
                 </div>
                 <Button
                   onClick={handleManualSearch}

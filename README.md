@@ -140,14 +140,49 @@ Before you begin, ensure you have the following installed:
 
 ### 🗄️ Database Setup
 
-If you're setting up your own instance, you'll need to:
+### Supabase Backend Setup
 
+The application uses a comprehensive Supabase backend with the following components:
+
+#### **Database Schema:**
+- **User Management**: Profiles, roles, and authentication
+- **Content System**: Categories, file uploads, and content management
+- **Class Groups**: Group creation, membership, and administration
+- **Messaging**: Global chat, private messages, and group chat
+- **File Storage**: Secure file uploads with 5MB limit
+- **Monitoring**: Activity logs, error tracking, and analytics
+
+#### **Real-time Features:**
+- Live messaging across all chat types
+- Real-time member presence indicators
+- Instant file sharing notifications
+- Live group membership updates
+
+#### **Security Features:**
+- Row Level Security (RLS) on all tables
+- File upload validation and scanning
+- User blocking and content reporting
+- Admin moderation tools
+
+#### **Setup Instructions:**
 1. **Create a Supabase project** at [supabase.com](https://supabase.com)
-2. **Apply database migrations** located in `supabase/migrations/`
-3. **Configure Row Level Security (RLS)** policies
-4. **Set up file storage buckets**
+2. **Apply migrations** in order from `supabase/migrations/`
+3. **Configure environment variables** in `.env`
+4. **Enable real-time** in your Supabase dashboard
+5. **Set up storage buckets** (automatically created by migrations)
 
-For detailed database setup instructions, see the [Database Setup Guide](database/README.md).
+#### **Migration Files:**
+- `01_create_profiles_table.sql` - User profiles and authentication
+- `02_create_categories_table.sql` - Content categorization system
+- `03_create_content_table.sql` - File and content management
+- `04_create_class_groups_system.sql` - Group collaboration features
+- `05_create_messaging_system.sql` - Comprehensive messaging
+- `06_create_file_management.sql` - File upload and security
+- `07_create_admin_functions.sql` - Administrative functions
+- `08_create_storage_buckets.sql` - File storage configuration
+- `09_create_realtime_setup.sql` - Real-time subscriptions
+- `10_create_sample_data.sql` - Development sample data
+- `11_create_enhanced_features.sql` - Analytics and monitoring
 
 ---
 
@@ -222,56 +257,32 @@ JU_CONNECT/
 ### 🏠 Homepage
 *Modern landing page with feature highlights and easy navigation*
 
-<<<<<<< HEAD
-![Homepage Screenshot](https://mnycotjmvsairaqgjaux.supabase.co/storage/v1/object/sign/gitimages/Screenshot%202025-08-31%20223759.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMDQyMzRjNy05NTk3LTRiYzktOTk1Ni04OGJjZThiZWFiYTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJnaXRpbWFnZXMvU2NyZWVuc2hvdCAyMDI1LTA4LTMxIDIyMzc1OS5wbmciLCJpYXQiOjE3NTY2NjAzMjIsImV4cCI6MTkxNDM0MDMyMn0.AzmJxzcEW18i9E_NGDlSbZup-0b8HsSYcktalO4BMDE)
-=======
 ![Homepage Screenshot](https://via.placeholder.com/800x500/4F46E5/FFFFFF?text=JU+CONNECT+Homepage)
->>>>>>> 7e5a935 (docs: add placeholder screenshots to README)
 
 ### 🔐 Authentication
 *Secure login and registration with email verification*
 
-<<<<<<< HEAD
-![Authentication Screenshot](https://mnycotjmvsairaqgjaux.supabase.co/storage/v1/object/sign/gitimages/Screenshot%202025-08-31%20224703.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMDQyMzRjNy05NTk3LTRiYzktOTk1Ni04OGJjZThiZWFiYTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJnaXRpbWFnZXMvU2NyZWVuc2hvdCAyMDI1LTA4LTMxIDIyNDcwMy5wbmciLCJpYXQiOjE3NTY2NjA2NTMsImV4cCI6MTkxNDM0MDY1M30.cnpgF0Ob0_G77nELSpoeKCjJE_xH5ssu5833hQrTOEI)
-=======
 ![Authentication Screenshot](https://via.placeholder.com/600x400/10B981/FFFFFF?text=Login+%26+Register)
->>>>>>> 7e5a935 (docs: add placeholder screenshots to README)
 
 ### 💬 Real-time Chat
 *Instant messaging with file sharing capabilities*
 
-<<<<<<< HEAD
-![Chat Interface Screenshot](https://mnycotjmvsairaqgjaux.supabase.co/storage/v1/object/sign/gitimages/Screenshot%202025-08-31%20223935.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMDQyMzRjNy05NTk3LTRiYzktOTk1Ni04OGJjZThiZWFiYTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJnaXRpbWFnZXMvU2NyZWVuc2hvdCAyMDI1LTA4LTMxIDIyMzkzNS5wbmciLCJpYXQiOjE3NTY2NjA3NTMsImV4cCI6MTkxNDM0MDc1M30.09LamMNN3sSXVqXUj62RUf3fHplvbjvsuQxe-bn-CmQ)
-=======
 ![Chat Interface Screenshot](https://via.placeholder.com/800x600/3B82F6/FFFFFF?text=Real-time+Chat+Interface)
->>>>>>> 7e5a935 (docs: add placeholder screenshots to README)
 
 ### 👥 Group Discussions
 *Subject-wise group chats for collaborative learning*
 
-<<<<<<< HEAD
-![Group Chat Screenshot](https://mnycotjmvsairaqgjaux.supabase.co/storage/v1/object/sign/gitimages/Screenshot%202025-08-31%20223852.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMDQyMzRjNy05NTk3LTRiYzktOTk1Ni04OGJjZThiZWFiYTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJnaXRpbWFnZXMvU2NyZWVuc2hvdCAyMDI1LTA4LTMxIDIyMzg1Mi5wbmciLCJpYXQiOjE3NTY2NjA3OTQsImV4cCI6MTkxNDM0MDc5NH0.2_4jvB-42UwNoO_ntnEJ1S8DdycY6Qe1NouYR3aU4uE)
-=======
 ![Group Chat Screenshot](https://via.placeholder.com/800x600/8B5CF6/FFFFFF?text=Group+Discussions)
->>>>>>> 7e5a935 (docs: add placeholder screenshots to README)
 
 ### 📚 Resource Library
 *Organized study materials with search and filter options*
 
-<<<<<<< HEAD
-![Resource Library Screenshot](https://mnycotjmvsairaqgjaux.supabase.co/storage/v1/object/sign/gitimages/Screenshot%202025-08-31%20223819.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMDQyMzRjNy05NTk3LTRiYzktOTk1Ni04OGJjZThiZWFiYTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJnaXRpbWFnZXMvU2NyZWVuc2hvdCAyMDI1LTA4LTMxIDIyMzgxOS5wbmciLCJpYXQiOjE3NTY2NjA4NjYsImV4cCI6MTkxNDM0MDg2Nn0.UHn_Hv0wguip3QV2-HixXxLu2-EhbNey3moh2iglf5w)
-=======
 ![Resource Library Screenshot](https://via.placeholder.com/800x500/F59E0B/FFFFFF?text=Resource+Library)
->>>>>>> 7e5a935 (docs: add placeholder screenshots to README)
 
 ### 📱 Mobile Experience
 *Responsive design optimized for mobile devices*
 
-<<<<<<< HEAD
-![Mobile Screenshot](https://mnycotjmvsairaqgjaux.supabase.co/storage/v1/object/sign/gitimages/Screenshot%202025-08-31%20224011.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMDQyMzRjNy05NTk3LTRiYzktOTk1Ni04OGJjZThiZWFiYTgiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJnaXRpbWFnZXMvU2NyZWVuc2hvdCAyMDI1LTA4LTMxIDIyNDAxMS5wbmciLCJpYXQiOjE3NTY2NjA2OTgsImV4cCI6MTkxNDM0MDY5OH0.Fom7NwQskDgIQWOXiO3SqgOjNverT0M1vYQ8SkzDfCY)
-=======
 ![Mobile Screenshot](https://via.placeholder.com/300x600/EF4444/FFFFFF?text=Mobile+View)
->>>>>>> 7e5a935 (docs: add placeholder screenshots to README)
 
 </details>
 
@@ -449,10 +460,3 @@ Built with ❤️ for the JECRC University community
 [🔝 Back to Top](#-ju-connect---jecrc-university-resource-hub)
 
 </div>
-
-
-<<<<<<< HEAD
-
-
-=======
->>>>>>> 7e5a935 (docs: add placeholder screenshots to README)

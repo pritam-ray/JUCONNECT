@@ -28,16 +28,12 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
     )
   }
 
-  console.log('AuthGuard: user:', !!user, 'isGuest:', isGuest, 'loading:', loading)
-
   // Only allow access if user is authenticated AND not a guest
   if (user && !isGuest) {
-    console.log('AuthGuard: Allowing access - authenticated user')
     return <>{children}</>
   }
 
   // Block all other cases (guests, unauthenticated users, etc.)
-  console.log('AuthGuard: Blocking access - showing auth screen')
   
   // If there's a custom fallback, use it
   if (fallback) {

@@ -285,9 +285,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     if (!group.id) return
     
     try {
-      console.log('Loading members for group:', group.id)
       const groupMembers = await getGroupMembers(group.id)
-      console.log('Loaded members:', groupMembers.length)
       setMembers(groupMembers)
     } catch (error: any) {
       console.error('Error loading members:', error)
@@ -527,17 +525,11 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     }
     
     if (!group.id) {
-      console.error('❌ Group ID not available for download')
       setError('Unable to download file: Group not found')
       return
     }
     
     try {
-      console.log('🔒 Initiating secure download for:', fileName)
-      console.log('📁 File URL:', fileUrl)
-      console.log('👤 User ID:', user.id)
-      console.log('👥 Group ID:', group.id)
-      
       // Use secure download service to hide Supabase URLs
       await downloadFileSecurely({
         fileUrl,

@@ -9,8 +9,6 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 // Create a fallback client configuration for development/demo mode
 const createSupabaseClient = () => {
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('Supabase environment variables not found. Running in demo mode.')
-    console.warn('Required variables: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY')
     return null
   }
 
@@ -27,7 +25,6 @@ const createSupabaseClient = () => {
     client.from = (table: any) => {
       // Track the API call
       if (!apiTracker.logCall('SELECT', table)) {
-        console.error('🚨 API call blocked due to rate limiting')
         // Return a mock that throws an error
         return {
           select: () => Promise.reject(new Error('Rate limit exceeded')),
@@ -42,7 +39,6 @@ const createSupabaseClient = () => {
     
     return client
   } catch (error) {
-    console.error('Failed to create Supabase client:', error)
     return null
   }
 }

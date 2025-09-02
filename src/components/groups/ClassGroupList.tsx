@@ -59,8 +59,6 @@ const ClassGroupList: React.FC<ClassGroupListProps> = ({ onGroupSelect }) => {
     }
     sessionStorage.setItem('last-groups-fetch', now.toString())
     
-    console.log('ClassGroupList: Starting fetchGroups with userId:', stableUserId, 'isGuest:', stableIsGuest, 'authLoading:', stableAuthLoading)
-
     try {
       setLoading(true)
       setError(null)

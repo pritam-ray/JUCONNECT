@@ -33,7 +33,6 @@ class APICache {
       return null
     }
     
-    console.log(`📦 Cache HIT: ${key}`)
     return entry.data as T
   }
 
@@ -51,8 +50,6 @@ class APICache {
       timestamp: Date.now(),
       expiry: ttl
     })
-    
-    console.log(`💾 Cache SET: ${key}`)
   }
 
   async getOrFetch<T>(
@@ -68,12 +65,10 @@ class APICache {
 
     // Check if there's already a pending request for this key
     if (this.pendingRequests.has(key)) {
-      console.log(`⏳ Waiting for pending request: ${key}`)
       return this.pendingRequests.get(key)!
     }
 
     // Create new request
-    console.log(`🌐 Cache MISS, fetching: ${key}`)
     const fetchPromise = fetchFn().then(data => {
       this.set(key, data, ttl)
       this.pendingRequests.delete(key)
@@ -90,7 +85,6 @@ class APICache {
   clear(): void {
     this.cache.clear()
     this.pendingRequests.clear()
-    console.log('🗑️ Cache cleared')
   }
 
   invalidate(pattern: string): void {
@@ -101,7 +95,6 @@ class APICache {
       }
     }
     keysToDelete.forEach(key => this.cache.delete(key))
-    console.log(`🔄 Invalidated ${keysToDelete.length} cache entries matching: ${pattern}`)
   }
 
   getStats() {
@@ -118,7 +111,6 @@ export const apiCache = new APICache()
 setInterval(() => {
   const stats = apiCache.getStats()
   if (stats.cacheSize > 0) {
-    console.log(`🧹 Cleaning cache, current size: ${stats.cacheSize}`)
     apiCache.clear()
   }
 }, 5 * 60 * 1000)

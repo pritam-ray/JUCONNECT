@@ -28,16 +28,12 @@ class RequestDeduplicator {
     const key = this.generateKey(url, options)
     this.requestCount++
     
-    // Log every request for monitoring
-    console.log(`🌐 API Call #${this.requestCount}: ${key.substring(0, 100)}...`)
-    
     // Clean up expired requests
     this.cleanupExpiredRequests()
     
     // Check if there's already a pending request for this exact call
     const existing = this.pendingRequests.get(key)
     if (existing) {
-      console.log(`🔄 Deduplicating request: ${key.substring(0, 50)}...`)
       return existing.promise
     }
 
@@ -101,7 +97,5 @@ globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
 // Monitor and report stats every 10 seconds
 setInterval(() => {
   const stats = requestDeduplicator.getStats()
-  if (stats.totalRequests > 0) {
-    console.log(`📊 Request Stats: ${stats.totalRequests} total, ${stats.pendingRequests} pending`)
-  }
+  // Stats monitoring without logging
 }, 10000)

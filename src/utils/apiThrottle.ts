@@ -14,7 +14,6 @@ export const throttleApiCall = (key: string, minInterval: number = THROTTLE_WIND
   const lastCall = throttleMap.get(key)
   
   if (lastCall && (now - lastCall) < minInterval) {
-    console.log(`🚫 API call throttled: ${key}`)
     return false
   }
   

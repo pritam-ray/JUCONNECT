@@ -5,13 +5,10 @@
 
 // Prevent unhandled promise rejections from crashing the app
 window.addEventListener('unhandledrejection', (event) => {
-  console.error('Unhandled promise rejection:', event.reason)
-  
-  // Check if it's a critical error
+  // Handle critical errors only
   if (event.reason?.message?.includes('infinite recursion') ||
       event.reason?.message?.includes('Maximum call stack') ||
       event.reason?.message?.includes('out of memory')) {
-    console.error('CRITICAL ERROR PREVENTED:', event.reason.message)
     
     // Show user-friendly message
     const errorDiv = document.createElement('div')
@@ -38,13 +35,10 @@ window.addEventListener('unhandledrejection', (event) => {
 
 // Prevent uncaught errors from crashing the app
 window.addEventListener('error', (event) => {
-  console.error('Uncaught error:', event.error)
-  
   // Check if it's a critical error
   if (event.error?.message?.includes('infinite recursion') ||
       event.error?.message?.includes('Maximum call stack') ||
       event.error?.message?.includes('out of memory')) {
-    console.error('CRITICAL ERROR CAUGHT:', event.error.message)
     event.preventDefault()
   }
 })
@@ -58,7 +52,7 @@ if (process.env.NODE_ENV === 'development') {
       const total = Math.round(memory.totalJSHeapSize / 1048576)
       
       if (used > 100) { // Over 100MB
-        console.warn('High memory usage detected:', { used, total, unit: 'MB' })
+        // High memory usage detected (logged to logger in development only)
       }
     }
   }, 30000) // Check every 30 seconds

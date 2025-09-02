@@ -94,7 +94,7 @@ export const errorLoggingService = {
   ): Promise<string | null> {
     try {
       if (!supabase) {
-        console.error('Supabase not available for error logging:', errorMessage)
+        logger.error('Supabase not available for error logging:', errorMessage)
         return null
       }
 
@@ -108,13 +108,13 @@ export const errorLoggingService = {
       })
 
       if (error) {
-        console.error('Failed to log error to database:', error)
+        logger.error('Failed to log error to database:', error)
         return null
       }
 
       return data
     } catch (error) {
-      console.error('Error in error logging service:', error)
+      logger.error('Error in error logging service:', error)
       return null
     }
   },
@@ -427,7 +427,7 @@ export const enhancedErrorReporting = {
     
     // Check rate limit to prevent spam
     if (!errorRateLimiter.shouldLogError(errorKey)) {
-      console.warn('Error logging rate limit exceeded for:', errorKey)
+      logger.warn('Error logging rate limit exceeded for:', errorKey)
       return
     }
     

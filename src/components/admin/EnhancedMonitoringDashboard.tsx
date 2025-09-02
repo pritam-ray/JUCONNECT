@@ -77,7 +77,7 @@ export const EnhancedMonitoringDashboard: React.FC = () => {
       })
 
     } catch (error) {
-      console.error('Error loading dashboard data:', error)
+      // Error handled silently
     } finally {
       setLoading(false)
     }

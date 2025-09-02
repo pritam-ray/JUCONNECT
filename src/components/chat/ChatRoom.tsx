@@ -52,7 +52,6 @@ const ChatRoom: React.FC = () => {
         const initialMessages = await getChatMessages()
         setMessages((initialMessages || []) as OptimisticChatMessage[])
       } catch (error) {
-        console.error('Failed to load messages:', error)
         setError('Could not load chat messages. Please refresh the page.')
       } finally {
         setLoading(false)
@@ -110,7 +109,6 @@ const ChatRoom: React.FC = () => {
     {
       enabled: true,
       onError: (error) => {
-        console.error('Real-time subscription error:', error)
         setError('Real-time updates unavailable')
       }
     }
@@ -162,7 +160,6 @@ const ChatRoom: React.FC = () => {
       await sendChatMessage(optimisticMessage.message, user.id)
 
     } catch (error) {
-      console.error('Failed to send message:', error)
       // Remove the optimistic message on error
       setMessages(prev => prev.filter(msg => msg.id !== tempMessageId))
       // Restore the message text
@@ -193,7 +190,6 @@ const ChatRoom: React.FC = () => {
       await reportChatMessage(messageId, user.id, reason)
       alert('Message reported successfully')
     } catch (error) {
-      console.error('Failed to report message:', error)
       alert('Failed to report message')
     }
   }
@@ -206,7 +202,6 @@ const ChatRoom: React.FC = () => {
         await deleteChatMessage(messageId)
         setMessages(prev => prev.filter(msg => msg.id !== messageId))
       } catch (error) {
-        console.error('Failed to delete message:', error)
         alert('Failed to delete message')
       }
     }

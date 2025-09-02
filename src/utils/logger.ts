@@ -25,13 +25,17 @@ export const logger = {
   },
   
   error: (message: string, ...args: any[]) => {
-    // Always log errors, even in production
-    console.error(`[ERROR] ${message}`, ...args)
+    // Only log errors in development
+    if (isDevelopment) {
+      console.error(`[ERROR] ${message}`, ...args)
+    }
   },
   
-  // For demo mode warnings that should always show
+  // For demo mode warnings that should only show in development
   demoMode: (message: string, ...args: any[]) => {
-    console.warn(`[DEMO MODE] ${message}`, ...args)
+    if (isDevelopment) {
+      console.warn(`[DEMO MODE] ${message}`, ...args)
+    }
   }
 }
 

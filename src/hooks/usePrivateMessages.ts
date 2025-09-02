@@ -38,7 +38,6 @@ export const usePrivateMessages = (userId: string | null) => {
     const now = Date.now()
     const lastLoad = parseInt(sessionStorage.getItem(`last-conversations-load-${userId}`) || '0')
     if (!forceReload && now - lastLoad < 2000) {
-      console.log('Conversations load rate limited')
       return
     }
     sessionStorage.setItem(`last-conversations-load-${userId}`, now.toString())
@@ -48,7 +47,6 @@ export const usePrivateMessages = (userId: string | null) => {
       const convs = await getUserConversations(userId)
       setConversations(convs)
     } catch (error) {
-      console.error('Failed to load conversations:', error)
       setError('Failed to load conversations')
     } finally {
       setLoading(false)
@@ -64,7 +62,6 @@ export const usePrivateMessages = (userId: string | null) => {
       const messages = await getConversation(userId, otherUserId)
       setCurrentConversation(messages as PrivateMessage[])
     } catch (error) {
-      console.error('Failed to load conversation:', error)
       setError('Failed to load conversation')
     } finally {
       setLoading(false)
@@ -90,7 +87,6 @@ export const usePrivateMessages = (userId: string | null) => {
       
       return newMessage
     } catch (error) {
-      console.error('Failed to send message:', error)
       setError(error instanceof Error ? error.message : 'Failed to send message')
       throw error
     } finally {
@@ -134,7 +130,6 @@ export const usePrivateMessages = (userId: string | null) => {
 
     // Only subscribe if we have active conversations loaded
     if (conversations.length === 0) {
-      console.log('No conversations loaded, skipping real-time subscription')
       return
     }
 
@@ -153,7 +148,6 @@ export const usePrivateMessages = (userId: string | null) => {
           const newMessage = payload.new as PrivateMessage
           
           // Simple notification without immediate reload
-          console.log('New private message received from:', newMessage.sender_id)
           
           // Only refresh if this is for an active conversation
           const isActiveConversation = conversations.some(conv => 

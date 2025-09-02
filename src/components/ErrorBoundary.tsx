@@ -58,7 +58,7 @@ class ErrorBoundary extends Component<Props, State> {
         }
       })
     }).catch(reportingError => {
-      console.warn('Failed to log to enhanced error reporting:', reportingError)
+      // Error reporting failed silently
     })
 
     // Auto-reload on critical errors
@@ -73,7 +73,7 @@ class ErrorBoundary extends Component<Props, State> {
     if (error.message.includes('infinite recursion') || 
         error.message.includes('Maximum call stack') ||
         error.message.includes('out of memory')) {
-      console.error('CRITICAL ERROR:', error.message)
+      // Critical error detected
     }
   }
 

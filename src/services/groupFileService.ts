@@ -29,13 +29,11 @@ export const uploadGroupFile = async ({
   if (!supabase) throw new Error('Supabase not available')
   
   try {
-    console.log('📁 Uploading file to group:', groupId, 'File:', file.name)
     
     // Upload file to Supabase storage in group-specific folder
     const folder = `group-files/${groupId}`
     const { fileUrl } = await uploadFile(file, userId, folder)
     
-    console.log('✅ File uploaded to storage:', fileUrl)
     
     // Create group message with file data
     const messageData = {
@@ -63,11 +61,9 @@ export const uploadGroupFile = async ({
       .single()
     
     if (messageError) {
-      console.error('❌ Failed to create group message:', messageError)
       throw new Error(`Failed to send file: ${messageError.message}`)
     }
     
-    console.log('✅ Group file message created:', messageRecord.id)
     
     return {
       id: messageRecord.id,
@@ -81,7 +77,6 @@ export const uploadGroupFile = async ({
     }
     
   } catch (error: any) {
-    console.error('❌ Error uploading group file:', error)
     throw new Error(`Failed to upload file: ${error.message || 'Unknown error'}`)
   }
 }
@@ -117,13 +112,11 @@ export const getGroupFiles = async (groupId: string): Promise<GroupFileRecord[]>
       .order('created_at', { ascending: false })
     
     if (error) {
-      console.error('Error fetching group files:', error)
       return []
     }
     
     return data || []
   } catch (error) {
-    console.error('Error in getGroupFiles:', error)
     return []
   }
 }
@@ -160,7 +153,7 @@ export const deleteGroupFile = async (messageId: string, userId: string): Promis
         .remove([filePath])
       
       if (storageError) {
-        console.warn('Failed to delete file from storage:', storageError)
+        // Storage deletion failed silently
       }
     }
     
@@ -174,10 +167,7 @@ export const deleteGroupFile = async (messageId: string, userId: string): Promis
       throw new Error(`Failed to delete file message: ${deleteError.message}`)
     }
     
-    console.log('✅ File deleted successfully:', messageId)
-    
   } catch (error: any) {
-    console.error('❌ Error deleting group file:', error)
     throw error
   }
 }
@@ -189,7 +179,6 @@ export const cleanupOldGroupFiles = async (): Promise<{ deletedCount: number }> 
   if (!supabase) throw new Error('Supabase not available')
   
   try {
-    console.log('🧹 Starting cleanup of files older than 2 weeks...')
     
     // Calculate 2 weeks ago
     const twoWeeksAgo = new Date()

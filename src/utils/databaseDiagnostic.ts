@@ -21,7 +21,6 @@ export const runDatabaseDiagnostic = async (): Promise<DatabaseDiagnostic[]> => 
 
   const checkTable = async (tableName: string) => {
     try {
-      console.log(`Checking table: ${tableName}`)
       
       if (!supabase) {
         return {
@@ -38,14 +37,12 @@ export const runDatabaseDiagnostic = async (): Promise<DatabaseDiagnostic[]> => 
         .limit(1)
 
       if (error) {
-        console.error(`Error checking ${tableName}:`, error)
         return {
           table: tableName,
           exists: false,
           error: error.message
         }
       } else {
-        console.log(`✅ ${tableName} exists with ${count} rows`)
         return {
           table: tableName,
           exists: true,
@@ -53,7 +50,6 @@ export const runDatabaseDiagnostic = async (): Promise<DatabaseDiagnostic[]> => 
         }
       }
     } catch (error: any) {
-      console.error(`Exception checking ${tableName}:`, error)
       return {
         table: tableName,
         exists: false,
@@ -78,17 +74,7 @@ export const runDatabaseDiagnostic = async (): Promise<DatabaseDiagnostic[]> => 
 }
 
 export const logDatabaseDiagnostic = async () => {
-  console.log('🔍 Running Database Diagnostic...')
   const results = await runDatabaseDiagnostic()
-  
-  console.table(results)
-  
-  const missingTables = results.filter(r => !r.exists)
-  if (missingTables.length > 0) {
-    console.error('❌ Missing tables:', missingTables.map(t => t.table))
-  } else {
-    console.log('✅ All tables exist!')
-  }
   
   return results
 }

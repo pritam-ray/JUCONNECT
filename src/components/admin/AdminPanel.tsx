@@ -52,7 +52,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
       setChatReports(chatReportsData)
       setStatistics(statsData)
     } catch (error) {
-      console.error('Failed to fetch admin data:', error)
+      // Error handled silently
     } finally {
       setLoading(false)
     }
@@ -85,7 +85,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
       await fetchData()
       setSelectedReport(null)
     } catch (error: any) {
-      console.error('Failed to update report:', error)
       alert(error.message || 'Failed to update report')
     } finally {
       setActionLoading(false)
@@ -119,7 +118,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
       await fetchData()
       setSelectedReport(null)
     } catch (error: any) {
-      console.error('Failed to update report:', error)
       alert(error.message || 'Failed to update report')
     } finally {
       setActionLoading(false)

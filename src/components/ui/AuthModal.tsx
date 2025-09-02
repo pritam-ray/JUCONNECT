@@ -100,7 +100,6 @@ const AuthModal: React.FC<AuthModalProps> = ({
     setLoading(true)
 
     try {
-      console.log('🔐 Starting authentication process...')
       
       if (mode === 'signup') {
         await signUp(
@@ -114,11 +113,8 @@ const AuthModal: React.FC<AuthModalProps> = ({
         await signIn(formData.email, formData.password)
       }
 
-      console.log('✅ Authentication successful, waiting for auth state update...')
-      
       // Force an immediate page reload to ensure auth state is properly reflected
       // This is a more reliable approach than waiting for state propagation
-      console.log('🔄 Forcing page reload to update auth state...')
       
       // Small delay to ensure the sign-in request completes
       await new Promise(resolve => setTimeout(resolve, 1000))
@@ -127,7 +123,6 @@ const AuthModal: React.FC<AuthModalProps> = ({
       window.location.reload()
       
     } catch (err: any) {
-      console.error('❌ Authentication failed:', err)
       const friendlyError = err.message || 'Something went wrong. Please try again.'
       setError(friendlyError)
     } finally {

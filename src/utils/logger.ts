@@ -1,9 +1,37 @@
 /**
- * Logger utility that respects production environment
- * In production, only errors are logged to console
+ * Logger utility that completely disables console output in production
+ * NO console output will be shown in production builds
  */
 
 const isDevelopment = import.meta.env.DEV
+
+// Completely disable ALL console output in production
+if (!isDevelopment) {
+  const noop = () => {}
+  window.console = {
+    ...window.console,
+    log: noop,
+    debug: noop,
+    info: noop,
+    warn: noop,
+    error: noop,
+    table: noop,
+    group: noop,
+    groupEnd: noop,
+    trace: noop,
+    time: noop,
+    timeEnd: noop,
+    count: noop,
+    clear: noop,
+    assert: noop,
+    dir: noop,
+    dirxml: noop,
+    profile: noop,
+    profileEnd: noop,
+    timeStamp: noop,
+    exception: noop
+  }
+}
 
 export const logger = {
   debug: (message: string, ...args: any[]) => {
@@ -25,7 +53,7 @@ export const logger = {
   },
   
   error: (message: string, ...args: any[]) => {
-    // Only log errors in development
+    // No console output in production
     if (isDevelopment) {
       console.error(`[ERROR] ${message}`, ...args)
     }

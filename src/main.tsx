@@ -1,4 +1,7 @@
-// FIRST: Import circuit breaker to prevent excessive API calls
+// FIRST: Disable ALL console output in production
+import './utils/logger';
+
+// Import circuit breaker to prevent excessive API calls
 import './utils/circuitBreaker';
 
 import { createRoot } from 'react-dom/client';

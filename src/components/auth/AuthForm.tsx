@@ -86,8 +86,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         await signIn(formData.email, formData.password)
       }
 
-      console.log('✅ Authentication successful, reloading page to update UI...')
-      
       // Force page reload to ensure proper auth state
       await new Promise(resolve => setTimeout(resolve, 1000))
       window.location.reload()

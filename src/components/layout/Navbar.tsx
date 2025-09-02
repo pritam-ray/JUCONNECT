@@ -23,7 +23,6 @@ const Navbar: React.FC = () => {
 
   // Debug auth state changes
   useEffect(() => {
-    console.log('🔍 Navbar: Auth state changed')
     debugAuthState()
   }, [user, isGuest, debugAuthState])
 

@@ -115,6 +115,23 @@ export interface GroupMemberWithProfile extends GroupMember {
   } | null
 }
 
+export interface CreateClassGroupData {
+  name: string
+  description?: string
+  year: number
+  section: string
+  subject?: string
+  created_by: string
+  password?: string
+}
+
+export interface GroupMessage extends GroupMessage {
+  message_type?: string
+  file_url?: string | null
+  file_name?: string | null
+  file_size?: number | null
+}
+
 // Get all available class groups
 export const getAllClassGroups = async (): Promise<ClassGroupWithDetails[]> => {
   if (!supabase) {

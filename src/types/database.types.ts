@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type UserRole = 'student' | 'admin' | 'super_admin'
-export type ContentType = 'notes' | 'previous_papers' | 'assignments' | 'study_materials' | 'other'
+export type ContentType = 'notes' | 'question_paper' | 'syllabus' | 'assignments' | 'educational_link' | 'other'
 export type FileType = 'pdf' | 'image' | 'document' | 'video' | 'audio' | 'other'
 export type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed'
 export type RequestStatus = 'pending' | 'approved' | 'rejected'
@@ -24,6 +24,9 @@ export interface Database {
           avatar_url: string | null
           role: UserRole
           is_verified: boolean
+          is_admin: boolean
+          is_online: boolean
+          last_seen: string
           bio: string | null
           year: number | null
           section: string | null
@@ -39,6 +42,8 @@ export interface Database {
           avatar_url?: string | null
           role?: UserRole
           is_verified?: boolean
+          is_online?: boolean
+          last_seen?: string
           bio?: string | null
           year?: number | null
           section?: string | null
@@ -54,6 +59,8 @@ export interface Database {
           avatar_url?: string | null
           role?: UserRole
           is_verified?: boolean
+          is_online?: boolean
+          last_seen?: string
           bio?: string | null
           year?: number | null
           section?: string | null
@@ -71,6 +78,7 @@ export interface Database {
           description: string | null
           icon: string | null
           color: string
+          parent_id: string | null
           is_active: boolean
           sort_order: number
           created_at: string
@@ -83,6 +91,7 @@ export interface Database {
           description?: string | null
           icon?: string | null
           color?: string
+          parent_id?: string | null
           is_active?: boolean
           sort_order?: number
           created_at?: string
@@ -95,12 +104,20 @@ export interface Database {
           description?: string | null
           icon?: string | null
           color?: string
+          parent_id?: string | null
           is_active?: boolean
           sort_order?: number
           created_at?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "categories_parent_id_fkey"
+            columns: ["parent_id"]
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       content: {
         Row: {
@@ -109,12 +126,16 @@ export interface Database {
           description: string | null
           content_type: ContentType
           category_id: string | null
-          author_id: string | null
-          tags: string[] | null
+          uploaded_by: string | null
           file_url: string | null
           file_name: string | null
           file_size: number | null
-          file_type: FileType | null
+          file_type: string | null
+          external_url: string | null
+          tags: string[] | null
+          year: number | null
+          semester: number | null
+          view_count: number
           download_count: number
           is_approved: boolean
           is_featured: boolean
@@ -129,12 +150,16 @@ export interface Database {
           description?: string | null
           content_type: ContentType
           category_id?: string | null
-          author_id?: string | null
-          tags?: string[] | null
+          uploaded_by?: string | null
           file_url?: string | null
           file_name?: string | null
           file_size?: number | null
-          file_type?: FileType | null
+          file_type?: string | null
+          external_url?: string | null
+          tags?: string[] | null
+          year?: number | null
+          semester?: number | null
+          view_count?: number
           download_count?: number
           is_approved?: boolean
           is_featured?: boolean
@@ -149,12 +174,16 @@ export interface Database {
           description?: string | null
           content_type?: ContentType
           category_id?: string | null
-          author_id?: string | null
-          tags?: string[] | null
+          uploaded_by?: string | null
           file_url?: string | null
           file_name?: string | null
           file_size?: number | null
-          file_type?: FileType | null
+          file_type?: string | null
+          external_url?: string | null
+          tags?: string[] | null
+          year?: number | null
+          semester?: number | null
+          view_count?: number
           download_count?: number
           is_approved?: boolean
           is_featured?: boolean
@@ -171,8 +200,8 @@ export interface Database {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "content_author_id_fkey"
-            columns: ["author_id"]
+            foreignKeyName: "content_uploaded_by_fkey"
+            columns: ["uploaded_by"]
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -180,6 +209,175 @@ export interface Database {
             foreignKeyName: "content_approved_by_fkey"
             columns: ["approved_by"]
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      class_groups: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          year: number
+          section: string
+          subject: string | null
+          semester: string
+          is_private: boolean
+          password_hash: string | null
+          is_password_protected: boolean
+          max_members: number
+          member_count: number
+          creator_id: string
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          year: number
+          section: string
+          subject?: string | null
+          semester?: string
+          is_private?: boolean
+          password_hash?: string | null
+          max_members?: number
+          member_count?: number
+          creator_id: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          year?: number
+          section?: string
+          subject?: string | null
+          semester?: string
+          is_private?: boolean
+          password_hash?: string | null
+          max_members?: number
+          member_count?: number
+          creator_id?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_groups_creator_id_fkey"
+            columns: ["creator_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      group_members: {
+        Row: {
+          id: string
+          group_id: string
+          user_id: string
+          role: string
+          is_active: boolean
+          joined_at: string
+        }
+        Insert: {
+          id?: string
+          group_id: string
+          user_id: string
+          role?: string
+          is_active?: boolean
+          joined_at?: string
+        }
+        Update: {
+          id?: string
+          group_id?: string
+          user_id?: string
+          role?: string
+          is_active?: boolean
+          joined_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            referencedRelation: "class_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_members_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      group_messages: {
+        Row: {
+          id: string
+          group_id: string
+          user_id: string
+          message: string
+          message_type: string
+          file_url: string | null
+          file_name: string | null
+          file_size: number | null
+          file_type: string | null
+          reply_to: string | null
+          is_announcement: boolean
+          is_pinned: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          group_id: string
+          user_id: string
+          message: string
+          message_type?: string
+          file_url?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          reply_to?: string | null
+          is_announcement?: boolean
+          is_pinned?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          group_id?: string
+          user_id?: string
+          message?: string
+          message_type?: string
+          file_url?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          reply_to?: string | null
+          is_announcement?: boolean
+          is_pinned?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_messages_group_id_fkey"
+            columns: ["group_id"]
+            referencedRelation: "class_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_messages_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_messages_reply_to_fkey"
+            columns: ["reply_to"]
+            referencedRelation: "group_messages"
             referencedColumns: ["id"]
           }
         ]
@@ -194,6 +392,7 @@ export interface Database {
           reply_to: string | null
           is_edited: boolean
           is_reported: boolean
+          is_flagged: boolean
           edited_at: string | null
           created_at: string
         }
@@ -206,6 +405,7 @@ export interface Database {
           reply_to?: string | null
           is_edited?: boolean
           is_reported?: boolean
+          is_flagged?: boolean
           edited_at?: string | null
           created_at?: string
         }
@@ -218,6 +418,7 @@ export interface Database {
           reply_to?: string | null
           is_edited?: boolean
           is_reported?: boolean
+          is_flagged?: boolean
           edited_at?: string | null
           created_at?: string
         }
@@ -245,6 +446,8 @@ export interface Database {
           file_url: string | null
           file_name: string | null
           is_read: boolean
+          is_deleted_by_sender: boolean
+          is_deleted_by_recipient: boolean
           read_at: string | null
           created_at: string
         }
@@ -256,6 +459,8 @@ export interface Database {
           file_url?: string | null
           file_name?: string | null
           is_read?: boolean
+          is_deleted_by_sender?: boolean
+          is_deleted_by_recipient?: boolean
           read_at?: string | null
           created_at?: string
         }
@@ -267,6 +472,8 @@ export interface Database {
           file_url?: string | null
           file_name?: string | null
           is_read?: boolean
+          is_deleted_by_sender?: boolean
+          is_deleted_by_recipient?: boolean
           read_at?: string | null
           created_at?: string
         }
@@ -285,238 +492,69 @@ export interface Database {
           }
         ]
       }
-      class_groups: {
+      file_uploads: {
         Row: {
           id: string
-          name: string
-          description: string | null
-          year: number
-          section: string
-          subject: string | null
-          password_hash: string | null
-          is_public: boolean
-          max_members: number
-          member_count: number
-          created_by: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          description?: string | null
-          year: number
-          section: string
-          subject?: string | null
-          password_hash?: string | null
-          is_public?: boolean
-          max_members?: number
-          member_count?: number
-          created_by: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          description?: string | null
-          year?: number
-          section?: string
-          subject?: string | null
-          password_hash?: string | null
-          is_public?: boolean
-          max_members?: number
-          member_count?: number
-          created_by?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "class_groups_created_by_fkey"
-            columns: ["created_by"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      group_members: {
-        Row: {
-          id: string
-          group_id: string
           user_id: string
-          role: string
-          joined_at: string
-        }
-        Insert: {
-          id?: string
-          group_id: string
-          user_id: string
-          role?: string
-          joined_at?: string
-        }
-        Update: {
-          id?: string
-          group_id?: string
-          user_id?: string
-          role?: string
-          joined_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_members_group_id_fkey"
-            columns: ["group_id"]
-            referencedRelation: "class_groups"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "group_members_user_id_fkey"
-            columns: ["user_id"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      group_messages: {
-        Row: {
-          id: string
-          group_id: string
-          user_id: string
-          message: string
-          file_url: string | null
-          file_name: string | null
-          reply_to: string | null
-          is_announcement: boolean
-          is_pinned: boolean
+          original_filename: string
+          stored_filename: string
+          file_size: number
+          file_type: string
+          upload_path: string
+          content_id: string | null
+          group_id: string | null
+          upload_purpose: string
+          is_processed: boolean
+          processing_error: string | null
           created_at: string
         }
         Insert: {
           id?: string
-          group_id: string
           user_id: string
-          message: string
-          file_url?: string | null
-          file_name?: string | null
-          reply_to?: string | null
-          is_announcement?: boolean
-          is_pinned?: boolean
+          original_filename: string
+          stored_filename: string
+          file_size: number
+          file_type: string
+          upload_path: string
+          content_id?: string | null
+          group_id?: string | null
+          upload_purpose?: string
+          is_processed?: boolean
+          processing_error?: string | null
           created_at?: string
         }
         Update: {
           id?: string
-          group_id?: string
           user_id?: string
-          message?: string
-          file_url?: string | null
-          file_name?: string | null
-          reply_to?: string | null
-          is_announcement?: boolean
-          is_pinned?: boolean
+          original_filename?: string
+          stored_filename?: string
+          file_size?: number
+          file_type?: string
+          upload_path?: string
+          content_id?: string | null
+          group_id?: string | null
+          upload_purpose?: string
+          is_processed?: boolean
+          processing_error?: string | null
           created_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "group_messages_group_id_fkey"
-            columns: ["group_id"]
-            referencedRelation: "class_groups"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "group_messages_user_id_fkey"
+            foreignKeyName: "file_uploads_user_id_fkey"
             columns: ["user_id"]
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "group_messages_reply_to_fkey"
-            columns: ["reply_to"]
-            referencedRelation: "group_messages"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      group_message_reads: {
-        Row: {
-          id: string
-          message_id: string
-          user_id: string
-          read_at: string
-        }
-        Insert: {
-          id?: string
-          message_id: string
-          user_id: string
-          read_at?: string
-        }
-        Update: {
-          id?: string
-          message_id?: string
-          user_id?: string
-          read_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_message_reads_message_id_fkey"
-            columns: ["message_id"]
-            referencedRelation: "group_messages"
+            foreignKeyName: "file_uploads_content_id_fkey"
+            columns: ["content_id"]
+            referencedRelation: "content"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "group_message_reads_user_id_fkey"
-            columns: ["user_id"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      group_files: {
-        Row: {
-          id: string
-          group_id: string
-          uploaded_by: string
-          file_name: string
-          file_url: string
-          file_size: number | null
-          file_type: FileType | null
-          description: string | null
-          download_count: number
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          group_id: string
-          uploaded_by: string
-          file_name: string
-          file_url: string
-          file_size?: number | null
-          file_type?: FileType | null
-          description?: string | null
-          download_count?: number
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          group_id?: string
-          uploaded_by?: string
-          file_name?: string
-          file_url?: string
-          file_size?: number | null
-          file_type?: FileType | null
-          description?: string | null
-          download_count?: number
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_files_group_id_fkey"
+            foreignKeyName: "file_uploads_group_id_fkey"
             columns: ["group_id"]
             referencedRelation: "class_groups"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "group_files_uploaded_by_fkey"
-            columns: ["uploaded_by"]
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           }
         ]
@@ -526,40 +564,49 @@ export interface Database {
           id: string
           user_id: string
           content_id: string | null
+          content_type: ContentType
           title: string | null
           description: string | null
-          requested_changes: string
+          issue_description: string
+          suggested_changes: string | null
           status: RequestStatus
           admin_notes: string | null
           reviewed_by: string | null
           reviewed_at: string | null
           created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
           user_id: string
           content_id?: string | null
+          content_type?: ContentType
           title?: string | null
           description?: string | null
-          requested_changes: string
+          issue_description: string
+          suggested_changes?: string | null
           status?: RequestStatus
           admin_notes?: string | null
           reviewed_by?: string | null
           reviewed_at?: string | null
           created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
           user_id?: string
           content_id?: string | null
+          content_type?: ContentType
           title?: string | null
           description?: string | null
-          requested_changes?: string
+          issue_description?: string
+          suggested_changes?: string | null
           status?: RequestStatus
           admin_notes?: string | null
           reviewed_by?: string | null
           reviewed_at?: string | null
           created_at?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -778,49 +825,6 @@ export interface Database {
           }
         ]
       }
-      file_uploads: {
-        Row: {
-          id: string
-          user_id: string
-          file_name: string
-          file_url: string
-          file_size: number | null
-          file_type: FileType | null
-          upload_purpose: string | null
-          related_id: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          file_name: string
-          file_url: string
-          file_size?: number | null
-          file_type?: FileType | null
-          upload_purpose?: string | null
-          related_id?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          file_name?: string
-          file_url?: string
-          file_size?: number | null
-          file_type?: FileType | null
-          upload_purpose?: string | null
-          related_id?: string | null
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "file_uploads_user_id_fkey"
-            columns: ["user_id"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
       file_security_scans: {
         Row: {
           id: string
@@ -950,25 +954,131 @@ export interface Database {
         }
         Returns: boolean
       }
-      approve_content: {
+      is_group_admin: {
         Args: {
-          content_id: string
+          group_id_param: string
+          user_id_param: string
         }
         Returns: boolean
       }
-      reject_content: {
+      promote_to_admin: {
         Args: {
-          content_id: string
+          group_id_param: string
+          target_user_id_param: string
+          requesting_user_id_param: string
+        }
+        Returns: Json
+      }
+      demote_admin: {
+        Args: {
+          group_id_param: string
+          target_user_id_param: string
+          requesting_user_id_param: string
+        }
+        Returns: Json
+      }
+      remove_group_member: {
+        Args: {
+          group_id_param: string
+          target_user_id_param: string
+          requesting_user_id_param: string
+        }
+        Returns: Json
+      }
+      update_group_details: {
+        Args: {
+          group_id_param: string
+          new_name?: string
+          new_description?: string
+          requesting_user_id_param?: string
+        }
+        Returns: Json
+      }
+      delete_group: {
+        Args: {
+          group_id_param: string
+          requesting_user_id_param: string
+        }
+        Returns: Json
+      }
+      verify_group_password: {
+        Args: {
+          group_id_param: string
+          password_param: string
         }
         Returns: boolean
       }
-      get_secure_download_url: {
+      set_group_password: {
         Args: {
-          file_path: string
+          group_id_param: string
+          password_param: string
+          user_id_param: string
+        }
+        Returns: boolean
+      }
+      log_user_activity: {
+        Args: {
+          p_user_id: string
+          p_activity_type: string
+          p_activity_data?: Json
+          p_ip_address?: string
+          p_user_agent?: string
         }
         Returns: string
       }
-      refresh_popular_content: {
+      log_error: {
+        Args: {
+          p_user_id?: string
+          p_error_type?: string
+          p_error_message?: string
+          p_error_stack?: string
+          p_context?: Json
+          p_severity?: string
+        }
+        Returns: string
+      }
+      update_user_engagement: {
+        Args: {
+          p_user_id: string
+          p_page_views?: number
+          p_messages_sent?: number
+          p_files_uploaded?: number
+          p_files_downloaded?: number
+          p_groups_joined?: number
+          p_session_duration?: number
+        }
+        Returns: undefined
+      }
+      increment_view_count: {
+        Args: {
+          content_id: string
+        }
+        Returns: undefined
+      }
+      increment_download_count: {
+        Args: {
+          content_id: string
+        }
+        Returns: undefined
+      }
+      update_user_online_status: {
+        Args: {
+          user_id: string
+          is_online: boolean
+        }
+        Returns: undefined
+      }
+      get_content_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_user_engagement_stats: {
+        Args: {
+          user_id_param: string
+        }
+        Returns: Json
+      }
+      cleanup_old_messages: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
@@ -983,514 +1093,6 @@ export interface Database {
       file_type: FileType
       report_status: ReportStatus
       request_status: RequestStatus
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
-          is_flagged: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id?: string | null
-          message: string
-          is_reported?: boolean
-          is_flagged?: boolean
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string | null
-          message?: string
-          is_reported?: boolean
-          is_flagged?: boolean
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "chat_messages_user_id_fkey"
-            columns: ["user_id"]
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      private_messages: {
-        Row: {
-          id: string
-          sender_id: string
-          recipient_id: string
-          message: string
-          is_read: boolean
-          is_deleted_by_sender: boolean
-          is_deleted_by_recipient: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          sender_id: string
-          recipient_id: string
-          message: string
-          is_read?: boolean
-          is_deleted_by_sender?: boolean
-          is_deleted_by_recipient?: boolean
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          sender_id?: string
-          recipient_id?: string
-          message?: string
-          is_read?: boolean
-          is_deleted_by_sender?: boolean
-          is_deleted_by_recipient?: boolean
-          created_at?: string
-        }
-        Relationships: []
-      }
-      class_groups: {
-        Row: {
-          id: string
-          name: string
-          description: string | null
-          subject: string
-          year: number
-          section: string
-          semester: string
-          is_private: boolean
-          password_hash: string | null
-          max_members: number | null
-          creator_id: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          description?: string | null
-          subject: string
-          year: number
-          section: string
-          semester: string
-          is_private?: boolean
-          password_hash?: string | null
-          max_members?: number | null
-          creator_id: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          description?: string | null
-          subject?: string
-          year?: number
-          section?: string
-          semester?: string
-          is_private?: boolean
-          password_hash?: string | null
-          max_members?: number | null
-          creator_id?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      group_members: {
-        Row: {
-          id: string
-          group_id: string
-          user_id: string
-          role: string
-          is_active: boolean
-          joined_at: string
-        }
-        Insert: {
-          id?: string
-          group_id: string
-          user_id: string
-          role?: string
-          is_active?: boolean
-          joined_at?: string
-        }
-        Update: {
-          id?: string
-          group_id?: string
-          user_id?: string
-          role?: string
-          is_active?: boolean
-          joined_at?: string
-        }
-        Relationships: []
-      }
-      group_messages: {
-        Row: {
-          id: string
-          group_id: string
-          user_id: string
-          message: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          group_id: string
-          user_id: string
-          message: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          group_id?: string
-          user_id?: string
-          message?: string
-          created_at?: string
-        }
-        Relationships: []
-      }
-      group_message_reads: {
-        Row: {
-          id: string
-          message_id: string
-          user_id: string
-          read_at: string
-        }
-        Insert: {
-          id?: string
-          message_id: string
-          user_id: string
-          read_at?: string
-        }
-        Update: {
-          id?: string
-          message_id?: string
-          user_id?: string
-          read_at?: string
-        }
-        Relationships: []
-      }
-      group_files: {
-        Row: {
-          id: string
-          group_id: string
-          user_id: string
-          file_name: string
-          file_path: string
-          file_size: number
-          file_type: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          group_id: string
-          user_id: string
-          file_name: string
-          file_path: string
-          file_size: number
-          file_type: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          group_id?: string
-          user_id?: string
-          file_name?: string
-          file_path?: string
-          file_size?: number
-          file_type?: string
-          created_at?: string
-        }
-        Relationships: []
-      }
-      group_announcements: {
-        Row: {
-          id: string
-          group_id: string
-          user_id: string
-          title: string
-          content: string
-          is_pinned: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          group_id: string
-          user_id: string
-          title: string
-          content: string
-          is_pinned?: boolean
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          group_id?: string
-          user_id?: string
-          title?: string
-          content?: string
-          is_pinned?: boolean
-          created_at?: string
-        }
-        Relationships: []
-      }
-      categories: {
-        Row: {
-          id: string
-          name: string
-          slug: string
-          description: string | null
-          color: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          slug: string
-          description?: string | null
-          color?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          slug?: string
-          description?: string | null
-          color?: string | null
-          created_at?: string
-        }
-        Relationships: []
-      }
-      content: {
-        Row: {
-          id: string
-          title: string
-          description: string | null
-          content_type: string
-          category_id: string | null
-          file_path: string | null
-          file_size: number | null
-          uploader_id: string | null
-          is_approved: boolean
-          download_count: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          title: string
-          description?: string | null
-          content_type: string
-          category_id?: string | null
-          file_path?: string | null
-          file_size?: number | null
-          uploader_id?: string | null
-          is_approved?: boolean
-          download_count?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          title?: string
-          description?: string | null
-          content_type?: string
-          category_id?: string | null
-          file_path?: string | null
-          file_size?: number | null
-          uploader_id?: string | null
-          is_approved?: boolean
-          download_count?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      chat_reports: {
-        Row: {
-          id: string
-          message_id: string
-          reporter_id: string
-          reason: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          message_id: string
-          reporter_id: string
-          reason: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          message_id?: string
-          reporter_id?: string
-          reason?: string
-          created_at?: string
-        }
-        Relationships: []
-      }
-      content_reports: {
-        Row: {
-          id: string
-          content_id: string
-          reporter_id: string
-          reason: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          content_id: string
-          reporter_id: string
-          reason: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          content_id?: string
-          reporter_id?: string
-          reason?: string
-          created_at?: string
-        }
-        Relationships: []
-      }
-      user_activity_logs: {
-        Row: {
-          id: string
-          user_id: string | null
-          activity_type: string
-          activity_data: Json
-          ip_address: string | null
-          user_agent: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id?: string | null
-          activity_type: string
-          activity_data?: Json
-          ip_address?: string | null
-          user_agent?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string | null
-          activity_type?: string
-          activity_data?: Json
-          ip_address?: string | null
-          user_agent?: string | null
-          created_at?: string
-        }
-        Relationships: []
-      }
-      error_logs: {
-        Row: {
-          id: string
-          user_id: string | null
-          error_type: string
-          error_message: string
-          error_stack: string | null
-          context: Json
-          severity: string
-          resolved: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id?: string | null
-          error_type: string
-          error_message: string
-          error_stack?: string | null
-          context?: Json
-          severity?: string
-          resolved?: boolean
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string | null
-          error_type?: string
-          error_message?: string
-          error_stack?: string | null
-          context?: Json
-          severity?: string
-          resolved?: boolean
-          created_at?: string
-        }
-        Relationships: []
-      }
-      cleanup_logs: {
-        Row: {
-          id: string
-          cleanup_type: string
-          records_affected: number
-          status: string
-          error_message: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          cleanup_type: string
-          records_affected?: number
-          status?: string
-          error_message?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          cleanup_type?: string
-          records_affected?: number
-          status?: string
-          error_message?: string | null
-          created_at?: string
-        }
-        Relationships: []
-      }
-      user_engagement_metrics: {
-        Row: {
-          id: string
-          user_id: string
-          total_uploads: number
-          total_downloads: number
-          total_messages: number
-          total_groups_joined: number
-          last_activity: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          total_uploads?: number
-          total_downloads?: number
-          total_messages?: number
-          total_groups_joined?: number
-          last_activity?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          total_uploads?: number
-          total_downloads?: number
-          total_messages?: number
-          total_groups_joined?: number
-          last_activity?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      [_ in never]: never
-    }
-    Enums: {
-      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never

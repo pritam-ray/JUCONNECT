@@ -37,7 +37,7 @@ const PrivacyPolicyPage: React.FC = () => {
               Introduction
             </h2>
             <p className="text-gray-600 leading-relaxed">
-              JU Connect ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our educational content sharing platform. By using JU Connect, you agree to the collection and use of information in accordance with this policy.
+              JU CONNECTS ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our educational content sharing platform. By using JU CONNECTS, you agree to the collection and use of information in accordance with this policy.
             </p>
           </section>
 
@@ -181,7 +181,7 @@ const PrivacyPolicyPage: React.FC = () => {
           <section>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Children's Privacy</h2>
             <p className="text-gray-600 leading-relaxed">
-              JU Connect is designed for university students and educators (18+). We do not knowingly collect personal information from children under 18. If we discover that a child under 18 has provided personal information, we will delete it immediately.
+              JU CONNECTS is designed for university students and educators (18+). We do not knowingly collect personal information from children under 18. If we discover that a child under 18 has provided personal information, we will delete it immediately.
             </p>
           </section>
 
@@ -192,7 +192,7 @@ const PrivacyPolicyPage: React.FC = () => {
               Updates to This Policy
             </h2>
             <p className="text-gray-600 leading-relaxed">
-              We may update this Privacy Policy periodically. We will notify you of significant changes via email or platform notification. Your continued use of JU Connect after changes indicates acceptance of the updated policy.
+              We may update this Privacy Policy periodically. We will notify you of significant changes via email or platform notification. Your continued use of JU CONNECTS after changes indicates acceptance of the updated policy.
             </p>
           </section>
 
@@ -203,9 +203,10 @@ const PrivacyPolicyPage: React.FC = () => {
               If you have questions about this Privacy Policy or how we handle your information, please contact us:
             </p>
             <div className="space-y-2 text-gray-600">
-              <p><strong>Email:</strong> privacy@juconnect.edu</p>
+              <p><strong>Email:</strong> jecrcuconnects@gmail.com</p>
               <p><strong>Support:</strong> Visit our <Link to="/contact" className="text-primary-600 hover:underline">Contact Us</Link> page</p>
               <p><strong>Address:</strong> JECRC University, Jaipur, Rajasthan 302022, India</p>
+              <p><strong>Made by:</strong> Pritam Ray (@impritamray)</p>
             </div>
           </section>
         </div>

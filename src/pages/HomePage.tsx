@@ -323,7 +323,7 @@ const HomePage: React.FC = () => {
             </div>
             
             <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold mb-3 sm:mb-4 md:mb-5 animate-fade-in-up">
-              <span className="block text-white text-shadow-lg">JU CONNECT</span>
+              <span className="block text-white text-shadow-lg">JU CONNECTS</span>
               <span className="block text-xs sm:text-base md:text-lg lg:text-xl font-medium text-white/90 mt-1 sm:mt-2">
                 Resource Hub
               </span>
@@ -371,7 +371,7 @@ const HomePage: React.FC = () => {
                   onClick={() => setShowAuthModal(true)}
                 >
                   <Star className="mr-2 h-5 w-5" />
-                  Join JU CONNECT
+                  Join JU CONNECTS
                 </Button>
               )}
             </div>

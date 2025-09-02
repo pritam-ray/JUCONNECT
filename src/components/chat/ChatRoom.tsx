@@ -217,7 +217,7 @@ const ChatRoom: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           <div className="p-6 bg-gradient-to-r from-primary-500 to-primary-600">
-            <h1 className="text-2xl font-bold text-white">JU Connect Chat</h1>
+            <h1 className="text-2xl font-bold text-white">JU CONNECTS Chat</h1>
             <p className="text-primary-100">Loading chat messages...</p>
           </div>
           <div className="p-8 flex justify-center">
@@ -237,7 +237,7 @@ const ChatRoom: React.FC = () => {
             <div>
               <h1 className="text-2xl font-bold text-white flex items-center gap-2">
                 <MessageCircle className="h-6 w-6" />
-                JU Connect Chat
+                JU CONNECTS Chat
               </h1>
               <p className="text-primary-100">
                 Chat disabled real-time for better app performance

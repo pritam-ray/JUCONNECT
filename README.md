@@ -1,13 +1,15 @@
-# 🎓 JU CONNECT - JECRC University Resource Hub
+# 🎓 JU CONNECTS - JECRC University Resource Hub
 
 <div align="center">
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Visit_Site-blue?style=for-the-badge)](https://pritam-ray.github.io/JUCONNECT/)
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Visit_Site-blue?style=for-the-badge)](https://juconnects.netlify.app/)
 [![React](https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5.4-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-Backend-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com/)
 
 *A modern, real-time platform for JECRC University students to share resources, collaborate, and connect with their academic community.*
+
+*Made by **Pritam Ray** (@impritamray)*
 
 [🚀 Quick Start](#-quick-start) • [✨ Features](#-features) • [🛠️ Tech Stack](#️-tech-stack) • [📱 Screenshots](#-screenshots) • [🤝 Contributing](#-contributing)
 
@@ -17,9 +19,9 @@
 
 ## 🌟 Overview
 
-JU CONNECT is a comprehensive web application designed specifically for JECRC University students. It serves as a centralized hub for academic resource sharing, real-time communication, and community building. Whether you're looking for study materials, want to share your notes, or need to collaborate with classmates, JU CONNECT has you covered.
+JU CONNECTS is a comprehensive web application designed specifically for JECRC University students. It serves as a centralized hub for academic resource sharing, real-time communication, and community building. Whether you're looking for study materials, want to share your notes, or need to collaborate with classmates, JU CONNECTS has you covered.
 
-### 🎯 Why JU CONNECT?
+### 🎯 Why JU CONNECTS?
 
 - **🎓 University-Focused**: Built specifically for JECRC University students
 - **📚 Academic Resource Hub**: Centralized access to study materials, notes, and previous year questions
@@ -123,7 +125,7 @@ Before you begin, ensure you have the following installed:
    ```env
    VITE_SUPABASE_URL=your_supabase_project_url
    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   VITE_APP_NAME=JU CONNECT
+   VITE_APP_NAME=JU CONNECTS
    VITE_APP_VERSION=1.0.0
    ```
 

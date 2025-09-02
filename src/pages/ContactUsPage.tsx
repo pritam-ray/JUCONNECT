@@ -60,7 +60,7 @@ const ContactUsPage: React.FC = () => {
       icon: Mail,
       title: 'Email Support',
       description: 'Get help via email',
-      contact: 'support@juconnect.edu',
+      contact: 'jecrcuconnects@gmail.com',
       response: 'Response within 24 hours'
     },
     {
@@ -275,8 +275,8 @@ const ContactUsPage: React.FC = () => {
                 Our Office
               </h3>
               <div className="space-y-3 text-gray-600">
-                <p><strong>JU Connect Support Center</strong></p>
-                <p>JECRC University<br />Plot No. IS-2036 to IS-2039 Ramchandrapura Industrial Area<br />Jaipur, Sitapura, Vidhani, Rajasthan 302022<br />India</p>
+                <p><strong>JU CONNECTS Support Center</strong></p>
+                <p>Made by Pritam Ray (@impritamray)<br />JECRC University<br />Plot No. IS-2036 to IS-2039 Ramchandrapura Industrial Area<br />Jaipur, Sitapura, Vidhani, Rajasthan 302022<br />India</p>
                 
                 <div className="pt-4 border-t border-gray-200">
                   <div className="flex items-center gap-2 mb-2">

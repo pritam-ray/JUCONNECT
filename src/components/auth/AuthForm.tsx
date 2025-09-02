@@ -119,7 +119,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         <p className="mt-2 text-gray-600">
           {isSignUp 
             ? 'Join our exam preparation community'
-            : 'Welcome back to JU CONNECT'
+            : 'Welcome back to JU CONNECTS'
           }
         </p>
       </div>

@@ -159,19 +159,19 @@ const AuthModal: React.FC<AuthModalProps> = ({
           <div className="flex items-center justify-center space-x-2">
             <Sparkles className="h-6 w-6 text-primary-500 animate-bounce-subtle" />
             <Badge variant="premium" glow pulse>
-              JU CONNECT
+              JU CONNECTS
             </Badge>
             <Sparkles className="h-6 w-6 text-primary-500 animate-bounce-subtle" />
           </div>
           
           <h2 className="text-2xl md:text-3xl font-display font-bold text-secondary-900 text-gradient">
-            {mode === 'signup' ? 'Join JU CONNECT' : 'Welcome Back'}
+            {mode === 'signup' ? 'Join JU CONNECTS' : 'Welcome Back'}
           </h2>
           
           <p className="text-secondary-600 text-base md:text-lg">
             {mode === 'signup' 
-              ? 'Create your JU CONNECT account and unlock exclusive features'
-              : 'Sign in to access your JU CONNECT dashboard'
+              ? 'Create your JU CONNECTS account and unlock exclusive features'
+              : 'Sign in to access your JU CONNECTS dashboard'
             }
           </p>
           
@@ -291,7 +291,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
             disabled={loading}
             glow
           >
-            {mode === 'signup' ? 'Create JU CONNECT Account' : 'Sign In to JU CONNECT'}
+            {mode === 'signup' ? 'Create JU CONNECTS Account' : 'Sign In to JU CONNECTS'}
           </Button>
 
           <div className="text-center">
@@ -303,7 +303,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
             >
               {mode === 'signup' 
                 ? 'Already have an account? Sign in'
-                : "Don't have an account? Join JU CONNECT"
+                : "Don't have an account? Join JU CONNECTS"
               }
             </button>
           </div>

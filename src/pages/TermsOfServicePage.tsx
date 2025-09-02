@@ -37,7 +37,7 @@ const TermsOfServicePage: React.FC = () => {
               Agreement to Terms
             </h2>
             <p className="text-gray-600 leading-relaxed">
-              By accessing and using JU Connect ("the Platform"), you accept and agree to be bound by the terms and provision of this agreement. These Terms of Service ("Terms") govern your use of our educational content sharing platform operated by JECRC University Connect ("we," "us," or "our").
+              By accessing and using JU CONNECTS ("the Platform"), you accept and agree to be bound by the terms and provision of this agreement. These Terms of Service ("Terms") govern your use of our educational content sharing platform operated by JECRC University Connect ("we," "us," or "our").
             </p>
             <div className="mt-4 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
               <p className="text-blue-700 font-medium">
@@ -53,7 +53,7 @@ const TermsOfServicePage: React.FC = () => {
               Eligibility
             </h2>
             <p className="text-gray-600 leading-relaxed mb-4">
-              JU Connect is intended for educational purposes and is available to:
+              JU CONNECTS is intended for educational purposes and is available to:
             </p>
             <ul className="list-disc list-inside text-gray-600 space-y-2">
               <li>Current students of JECRC University and affiliated institutions</li>
@@ -95,7 +95,7 @@ const TermsOfServicePage: React.FC = () => {
           <section>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Acceptable Use Policy</h2>
             <div className="space-y-4">
-              <p className="text-gray-600 font-medium">You may use JU Connect to:</p>
+              <p className="text-gray-600 font-medium">You may use JU CONNECTS to:</p>
               <ul className="list-disc list-inside text-green-600 space-y-1">
                 <li>Share educational content and academic resources</li>
                 <li>Collaborate on educational projects and research</li>
@@ -104,7 +104,7 @@ const TermsOfServicePage: React.FC = () => {
                 <li>Connect with fellow students and educators</li>
               </ul>
               
-              <p className="text-gray-600 font-medium mt-6">You may NOT use JU Connect to:</p>
+              <p className="text-gray-600 font-medium mt-6">You may NOT use JU CONNECTS to:</p>
               <ul className="list-disc list-inside text-red-600 space-y-1">
                 <li>Upload copyrighted material without permission</li>
                 <li>Share inappropriate, offensive, or harmful content</li>
@@ -147,12 +147,12 @@ const TermsOfServicePage: React.FC = () => {
             <div className="space-y-4">
               <h3 className="font-semibold text-gray-900">Your Content</h3>
               <p className="text-gray-600">
-                You retain ownership of content you create and upload to JU Connect. By uploading content, you grant us a non-exclusive, worldwide license to host, display, and distribute your content on the platform for educational purposes.
+                You retain ownership of content you create and upload to JU CONNECTS. By uploading content, you grant us a non-exclusive, worldwide license to host, display, and distribute your content on the platform for educational purposes.
               </p>
               
               <h3 className="font-semibold text-gray-900">Platform Content</h3>
               <p className="text-gray-600">
-                The JU Connect platform, including its design, features, and functionality, is owned by us and protected by copyright and other intellectual property laws.
+                The JU CONNECTS platform, including its design, features, and functionality, is owned by us and protected by copyright and other intellectual property laws.
               </p>
               
               <h3 className="font-semibold text-gray-900">Respect for Others' Rights</h3>
@@ -166,7 +166,7 @@ const TermsOfServicePage: React.FC = () => {
           <section>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Privacy and Data Usage</h2>
             <p className="text-gray-600 leading-relaxed">
-              Your privacy is important to us. Our collection and use of personal information is governed by our <Link to="/privacy" className="text-primary-600 hover:underline">Privacy Policy</Link>, which is incorporated into these Terms by reference. By using JU Connect, you also consent to our Privacy Policy.
+              Your privacy is important to us. Our collection and use of personal information is governed by our <Link to="/privacy" className="text-primary-600 hover:underline">Privacy Policy</Link>, which is incorporated into these Terms by reference. By using JU CONNECTS, you also consent to our Privacy Policy.
             </p>
           </section>
 
@@ -228,7 +228,7 @@ const TermsOfServicePage: React.FC = () => {
           <section>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Disclaimers and Limitations</h2>
             <div className="space-y-4">
-              <p className="text-gray-600">JU Connect is provided "as is" without warranties of any kind. We do not guarantee:</p>
+              <p className="text-gray-600">JU CONNECTS is provided "as is" without warranties of any kind. We do not guarantee:</p>
               <ul className="list-disc list-inside text-gray-600 space-y-2">
                 <li>Uninterrupted or error-free service</li>
                 <li>Accuracy or reliability of content</li>
@@ -236,7 +236,7 @@ const TermsOfServicePage: React.FC = () => {
                 <li>Compatibility with all devices or browsers</li>
               </ul>
               <p className="text-gray-600 mt-4">
-                Your use of the platform is at your own risk. We are not liable for any damages arising from your use of JU Connect.
+                Your use of the platform is at your own risk. We are not liable for any damages arising from your use of JU CONNECTS.
               </p>
             </div>
           </section>
@@ -264,9 +264,10 @@ const TermsOfServicePage: React.FC = () => {
               If you have questions about these Terms of Service, please contact us:
             </p>
             <div className="space-y-2 text-gray-600">
-              <p><strong>Email:</strong> legal@juconnect.edu</p>
+              <p><strong>Email:</strong> jecrcuconnects@gmail.com</p>
               <p><strong>Support:</strong> Visit our <Link to="/contact" className="text-primary-600 hover:underline">Contact Us</Link> page</p>
               <p><strong>Address:</strong> JECRC University, Jaipur, Rajasthan 302022, India</p>
+              <p><strong>Made by:</strong> Pritam Ray (@impritamray)</p>
             </div>
           </section>
         </div>

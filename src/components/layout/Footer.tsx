@@ -28,7 +28,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                 <div className="absolute inset-0 bg-primary-500 rounded-full blur-lg opacity-0 group-hover:opacity-30 transition-opacity duration-300" />
               </div>
               <span className="font-display font-bold text-2xl text-gradient">
-                JU CONNECT
+                JU CONNECTS
               </span>
               <Sparkles className="h-5 w-5 text-accent-400 animate-bounce-subtle" />
             </div>
@@ -131,7 +131,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
         <div className="border-t border-secondary-700/50 pt-8 mt-12">
           <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
             <p className="text-secondary-400 text-sm">
-              © 2025 JU CONNECT. All rights reserved.
+              © 2025 JU CONNECTS. All rights reserved. | Made by Pritam Ray (@impritamray)
             </p>
             
             <div className="flex items-center space-x-6">

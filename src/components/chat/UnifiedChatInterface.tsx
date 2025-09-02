@@ -894,7 +894,7 @@ const UnifiedChatInterface: React.FC = () => {
                   <MessageCircle className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-white">JU Connect Chat</h1>
+                  <h1 className="text-xl font-bold text-white">JU CONNECTS Chat</h1>
                   <p className="text-white/80 text-sm">Connect with your community</p>
                 </div>
               </div>

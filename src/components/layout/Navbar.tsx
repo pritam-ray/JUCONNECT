@@ -76,7 +76,7 @@ const Navbar: React.FC = () => {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-display font-bold text-xl sm:text-2xl text-gradient animate-gradient-text hidden xs:block">
-                    JU CONNECT
+                    JU CONNECTS
                   </span>
                   <span className="font-display font-bold text-xl sm:text-2xl text-gradient animate-gradient-text xs:hidden">
                     JU

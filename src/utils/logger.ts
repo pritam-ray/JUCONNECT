@@ -9,6 +9,9 @@ const isDevelopment = import.meta.env.DEV
 if (!isDevelopment) {
   const noop = () => {}
   
+  // Store original console methods
+  const originalConsole = window.console
+  
   // Override all console methods immediately
   window.console = {
     ...window.console,
@@ -32,18 +35,42 @@ if (!isDevelopment) {
     profileEnd: noop,
   }
   
-  // Also intercept global error events to prevent WebSocket errors from showing
+  // Also override console on all global objects to catch external libraries
+  if (typeof globalThis !== 'undefined') {
+    globalThis.console = window.console
+  }
+  if (typeof global !== 'undefined') {
+    global.console = window.console
+  }
+  
+  // Intercept global error events to prevent WebSocket errors from showing
   window.addEventListener('error', (event) => {
     event.preventDefault()
     event.stopPropagation()
     return false
-  })
+  }, { capture: true })
   
   window.addEventListener('unhandledrejection', (event) => {
     event.preventDefault()
     event.stopPropagation()
     return false
-  })
+  }, { capture: true })
+  
+  // Additional intercept for console calls from external libraries
+  const interceptConsole = (obj: any) => {
+    if (obj && typeof obj === 'object' && obj.console) {
+      obj.console = window.console
+    }
+  }
+  
+  // Monitor for dynamic console usage
+  setInterval(() => {
+    interceptConsole(window)
+    interceptConsole(globalThis)
+    if (typeof global !== 'undefined') {
+      interceptConsole(global)
+    }
+  }, 1000)
 }
 
 export const logger = {

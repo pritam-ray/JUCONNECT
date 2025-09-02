@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import React from 'react'
-import { BookOpen, Github, Heart, Sparkles, Star } from 'lucide-react'
+import { BookOpen, Heart, Sparkles, Star } from 'lucide-react'
 import { cn } from '../../utils/cn'
 
 interface FooterProps {
@@ -135,15 +135,6 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
             </p>
             
             <div className="flex items-center space-x-6">
-              <a
-                href="https://github.com/pritam-ray/JUCONNECT"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-secondary-400 hover:text-primary-400 transition-all duration-300 hover:scale-110"
-              >
-                <Github className="h-5 w-5" />
-              </a>
-              
               <div className="flex items-center space-x-2 px-3 py-1 bg-gradient-to-r from-primary-500/20 to-primary-600/20 rounded-full border border-primary-500/30">
                 <div className="w-2 h-2 bg-success-500 rounded-full animate-pulse" />
                 <span className="text-xs text-secondary-300 font-medium">v1.0.0</span>

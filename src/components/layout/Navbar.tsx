@@ -81,7 +81,7 @@ const Navbar: React.FC = () => {
                   <span className="font-display font-bold text-xl sm:text-2xl text-gradient animate-gradient-text xs:hidden">
                     JU
                   </span>
-                  <span className="text-xs text-secondary-500 font-medium hidden sm:block">Premium Education Hub</span>
+                  <span className="text-xs text-secondary-500 font-medium hidden sm:block">Education Hub</span>
                 </div>
                 <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-accent-500 animate-bounce-subtle" />
               </Link>

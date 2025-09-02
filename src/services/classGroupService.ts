@@ -498,7 +498,7 @@ export const getGroupMessages = async (
       .from('group_messages')
       .select('*')
       .eq('group_id', groupId)
-      .order('created_at', { ascending: true })
+      .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
     if (basicError) {
@@ -532,7 +532,8 @@ export const getGroupMessages = async (
       }
     }))
     
-    return messagesWithProfiles
+    // Reverse the array so newest messages appear at the bottom
+    return messagesWithProfiles.reverse()
   } catch (error) {
     console.error('Error fetching group messages:', error)
     

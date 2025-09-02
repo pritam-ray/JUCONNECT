@@ -192,14 +192,16 @@ const UnifiedChatInterface: React.FC = () => {
       try {
         setGlobalLoading(true)
         
-        // Pre-scroll to bottom to prevent flash of old messages
-        const messagesContainer = messagesEndRef.current?.parentElement
-        if (messagesContainer) {
-          messagesContainer.scrollTop = messagesContainer.scrollHeight
-        }
-        
         const initialMessages = await getChatMessages()
         setGlobalMessages(initialMessages || [])
+        
+        // Scroll to bottom after messages are loaded and rendered
+        setTimeout(() => {
+          const messagesContainer = messagesEndRef.current?.parentElement
+          if (messagesContainer) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight
+          }
+        }, 100) // Give time for DOM to update
       } catch (error) {
         console.error('Failed to load global messages:', error)
         setError('Failed to load chat messages')
@@ -213,7 +215,7 @@ const UnifiedChatInterface: React.FC = () => {
     }
   }, [isMobile])
 
-  // Periodic refresh for global messages (every 3 seconds) - with scroll preservation
+  // Periodic refresh for global messages - reduced frequency to prevent API spam
   useEffect(() => {
     if (isMobile || chatMode !== 'global') return
 
@@ -245,7 +247,7 @@ const UnifiedChatInterface: React.FC = () => {
       } catch (error) {
         console.error('Failed to refresh global messages:', error)
       }
-    }, 3000) // Every 3 seconds
+    }, 30000) // Changed from 3 seconds to 30 seconds - 90% reduction in API calls
 
     return () => clearInterval(refreshInterval)
   }, [isMobile, chatMode])
@@ -257,6 +259,25 @@ const UnifiedChatInterface: React.FC = () => {
       loadConversations(true)
     }
   }, [chatMode, user?.id, isMobile, loadConversations])
+
+  // Scroll to bottom when switching to different chat modes or opening conversations
+  useEffect(() => {
+    if (chatMode === 'global' && globalMessages.length > 0) {
+      setTimeout(() => {
+        const messagesContainer = messagesEndRef.current?.parentElement
+        if (messagesContainer) {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight
+        }
+      }, 100)
+    } else if (chatMode === 'private' && activeConversation && currentConversation && currentConversation.length > 0) {
+      setTimeout(() => {
+        const messagesContainer = messagesEndRef.current?.parentElement
+        if (messagesContainer) {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight
+        }
+      }, 100)
+    }
+  }, [chatMode, activeConversation, globalMessages.length, currentConversation?.length])
 
   // Clear error after 5 seconds
   useEffect(() => {
@@ -654,7 +675,7 @@ const UnifiedChatInterface: React.FC = () => {
                       </p>
                       {conversation.lastMessage && (
                         <p className="text-sm text-gray-600 truncate mt-1">
-                          {conversation.lastMessage.message}
+                          {conversation.lastMessage.message.split(' ').slice(0, 4).join(' ')}{conversation.lastMessage.message.split(' ').length > 4 ? '...' : ''}
                         </p>
                       )}
                     </div>

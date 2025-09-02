@@ -122,11 +122,12 @@ export const getConversation = async (
     .or(`and(sender_id.eq.${userId},recipient_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},recipient_id.eq.${userId})`)
     .eq('is_deleted_by_sender', false)
     .eq('is_deleted_by_recipient', false)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
 
   if (error) throw error
-  return data || []
+  // Reverse the array so newest messages appear at the bottom
+  return (data || []).reverse()
 }
 
 // Get all conversations for a user

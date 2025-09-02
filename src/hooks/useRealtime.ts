@@ -31,12 +31,13 @@ export const useRealtimeGroupMessages = (
       return
     }
 
-    // Rate limiting: Mobile devices get longer intervals
+    // Rate limiting: Significantly increased intervals to prevent API spam
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
-    const minInterval = isMobile ? 2000 : 1000 // 2 seconds on mobile, 1 second on desktop
+    const minInterval = isMobile ? 10000 : 5000 // 10 seconds on mobile, 5 seconds on desktop - MAJOR reduction
     
     const now = Date.now()
     if (now - lastConnectionTime.current < minInterval) {
+      console.log('🚫 Rate limited: Skipping connection attempt')
       return
     }
     lastConnectionTime.current = now
@@ -297,9 +298,10 @@ export const useRealtimeGroups = (
   useEffect(() => {
     if (!enabled || !isSupabaseConfigured() || !supabase || isSubscribedRef.current) return
 
-    // Rate limiting: only allow one subscription every 5 seconds
+    // Rate limiting: only allow one subscription every 30 seconds - MAJOR reduction
     const now = Date.now()
-    if (now - lastCallRef.current < 5000) {
+    if (now - lastCallRef.current < 30000) { // Increased from 5 seconds to 30 seconds
+      console.log('🚫 Rate limited: Skipping group subscription attempt')
       return
     }
     lastCallRef.current = now

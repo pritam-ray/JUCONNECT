@@ -63,7 +63,7 @@ const Navbar: React.FC = () => {
 
   return (
     <>
-      <nav className="glass-card sticky top-0 z-40 border-b border-white/30 backdrop-blur-2xl bg-white/50">
+      <nav className="glass-card sticky top-0 z-40 border-b border-white/30 backdrop-blur-2xl bg-white/80 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 sm:h-20">
             {/* Logo and Desktop Navigation */}
@@ -100,7 +100,7 @@ const Navbar: React.FC = () => {
                         'relative px-5 xl:px-7 py-3 rounded-2xl text-sm font-semibold transition-all duration-500 flex items-center space-x-3 group overflow-hidden hover:scale-105 active:scale-95',
                         isActive(item.href)
                           ? 'text-white bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 shadow-xl shadow-primary-500/50'
-                          : 'text-secondary-700 hover:text-primary-600 hover:bg-white/70 backdrop-blur-lg'
+                          : 'text-gray-700 hover:text-primary-600 hover:bg-white/80 backdrop-blur-lg'
                       )}
                     >
                       {isActive(item.href) && (
@@ -113,7 +113,7 @@ const Navbar: React.FC = () => {
                         'h-5 w-5 transition-all duration-500',
                         isActive(item.href) 
                           ? 'text-white drop-shadow-lg' 
-                          : 'text-secondary-500 group-hover:text-primary-500 group-hover:scale-110'
+                          : 'text-gray-600 group-hover:text-primary-500 group-hover:scale-110'
                       )} />
                       <span className="relative z-10 hidden xl:block">{item.name}</span>
                       <span className="relative z-10 xl:hidden">{item.shortName}</span>
@@ -133,7 +133,7 @@ const Navbar: React.FC = () => {
               {isGuest ? (
                 <div className="flex items-center space-x-4">
                   <div className="glass px-4 py-2 rounded-2xl border border-white/50">
-                    <span className="text-sm text-secondary-600 font-medium">
+                    <span className="text-sm text-gray-700 font-medium">
                       👋 Browsing as Guest
                     </span>
                   </div>
@@ -147,7 +147,7 @@ const Navbar: React.FC = () => {
                   {/* Messages Button */}
                   <button
                     onClick={() => navigate('/chat?tab=private')}
-                    className="relative p-3 text-secondary-600 hover:text-primary-600 rounded-2xl hover:bg-white/60 transition-all duration-500 hover:scale-110 active:scale-95 backdrop-blur-lg"
+                    className="relative p-3 text-gray-600 hover:text-primary-600 rounded-2xl hover:bg-white/60 transition-all duration-500 hover:scale-110 active:scale-95 backdrop-blur-lg"
                     title="Messages"
                   >
                     <Mail className="h-5 w-5" />
@@ -162,7 +162,7 @@ const Navbar: React.FC = () => {
                   {profile.is_admin && (
                     <button
                       onClick={() => setShowAdminPanel(true)}
-                      className="p-3 text-secondary-600 hover:text-primary-600 rounded-2xl hover:bg-white/60 transition-all duration-500 hover:scale-110 active:scale-95 backdrop-blur-lg"
+                      className="p-3 text-gray-600 hover:text-primary-600 rounded-2xl hover:bg-white/60 transition-all duration-500 hover:scale-110 active:scale-95 backdrop-blur-lg"
                       title="Admin Panel"
                     >
                       <Shield className="h-5 w-5" />
@@ -180,7 +180,7 @@ const Navbar: React.FC = () => {
                       to={`/profile/${user.id}`}
                       className="flex flex-col hover:text-primary-600 transition-all duration-300 group"
                     >
-                      <span className="text-sm font-semibold text-secondary-700 group-hover:text-primary-600">@{profile.username}</span>
+                      <span className="text-sm font-semibold text-gray-700 group-hover:text-primary-600">@{profile.username}</span>
                       {profile.is_admin && (
                         <span className="text-xs text-primary-600 font-medium flex items-center">
                           <Shield className="h-3 w-3 mr-1" />
@@ -192,7 +192,7 @@ const Navbar: React.FC = () => {
                   
                   <button
                     onClick={handleSignOut}
-                    className="p-3 text-secondary-600 hover:text-red-600 rounded-2xl hover:bg-red-50/80 transition-all duration-500 hover:scale-110 active:scale-95 backdrop-blur-lg"
+                    className="p-3 text-gray-600 hover:text-red-600 rounded-2xl hover:bg-red-50/80 transition-all duration-500 hover:scale-110 active:scale-95 backdrop-blur-lg"
                     title="Sign Out"
                   >
                     <LogOut className="h-5 w-5" />
@@ -200,7 +200,7 @@ const Navbar: React.FC = () => {
                 </div>
               ) : (
                 <div className="flex items-center space-x-4">
-                  <span className="text-sm text-secondary-600 hidden xl:block">👋 Guest</span>
+                  <span className="text-sm text-gray-600 hidden xl:block">👋 Guest</span>
                   <Button size="sm" variant="premium" onClick={() => setShowAuthModal(true)}>
                     <User className="h-4 w-4 mr-2" />
                     Sign In
@@ -213,7 +213,7 @@ const Navbar: React.FC = () => {
             <div className="lg:hidden flex items-center">
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="p-3 rounded-2xl text-secondary-600 hover:text-primary-600 hover:bg-white/60 transition-all duration-500 hover:scale-110 active:scale-95 backdrop-blur-lg"
+                className="p-3 rounded-2xl text-gray-600 hover:text-primary-600 hover:bg-white/60 transition-all duration-500 hover:scale-110 active:scale-95 backdrop-blur-lg"
                 aria-label={isOpen ? 'Close menu' : 'Open menu'}
               >
                 {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -224,7 +224,7 @@ const Navbar: React.FC = () => {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="lg:hidden border-t border-white/30 glass-card backdrop-blur-2xl bg-white/70 animate-fade-in-down">
+          <div className="lg:hidden border-t border-white/30 glass-card backdrop-blur-2xl bg-white/80 animate-fade-in-down">
             <div className="px-6 pt-6 pb-8 space-y-4">
               {navigation.map((item) => {
                 const requiresAuth = ['/upload', '/my-requests', '/groups', '/chat'].includes(item.href)
@@ -238,7 +238,7 @@ const Navbar: React.FC = () => {
                       'flex items-center space-x-4 px-6 py-4 rounded-2xl text-base font-semibold transition-all duration-500 group hover:scale-105 active:scale-95',
                       isActive(item.href)
                         ? 'text-white bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 shadow-xl shadow-primary-500/40'
-                        : 'text-secondary-700 hover:text-primary-600 hover:bg-white/80'
+                        : 'text-gray-700 hover:text-primary-600 hover:bg-white/80'
                     )}
                   >
                     <div className="relative">
@@ -246,7 +246,7 @@ const Navbar: React.FC = () => {
                         'h-6 w-6 transition-all duration-500',
                         isActive(item.href) 
                           ? 'text-white drop-shadow-lg' 
-                          : 'text-secondary-500 group-hover:text-primary-500 group-hover:scale-110'
+                          : 'text-gray-600 group-hover:text-primary-500 group-hover:scale-110'
                       )} />
                       {isActive(item.href) && (
                         <div className="absolute inset-0 bg-white/30 rounded-full blur-sm animate-pulse" />
@@ -267,7 +267,7 @@ const Navbar: React.FC = () => {
                 {isGuest ? (
                   <div className="space-y-4">
                     <div className="glass px-4 py-3 rounded-2xl border border-white/50 text-center">
-                      <span className="text-sm text-secondary-600 font-medium">
+                      <span className="text-sm text-gray-700 font-medium">
                         👋 Browsing as Guest
                       </span>
                     </div>
@@ -290,7 +290,7 @@ const Navbar: React.FC = () => {
                         <div className="status-online absolute -bottom-1 -right-1" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-base font-semibold text-secondary-700">@{profile.username}</p>
+                        <p className="text-base font-semibold text-gray-700">@{profile.username}</p>
                         {profile.is_admin && (
                           <p className="text-sm text-primary-600 font-medium flex items-center">
                             <Shield className="h-3 w-3 mr-1" />

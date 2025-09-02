@@ -27,11 +27,12 @@ export const getChatMessages = async (
       )
     `)
     .eq('is_reported', false)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
 
   if (error) throw error
-  return data || []
+  // Reverse the array so newest messages appear at the bottom
+  return (data || []).reverse()
 }
 
 export const sendChatMessage = async (message: string, userId: string): Promise<ChatMessage> => {

@@ -8,6 +8,7 @@ import { searchUsers } from '../../services/privateMessageService'
 import LoadingSpinner from '../ui/LoadingSpinner'
 import AuthModal from '../ui/AuthModal'
 import { formatDistanceToNow } from 'date-fns'
+import { throttleApiCall, isDocumentVisible } from '../../utils/apiThrottle'
 
 type ViewMode = 'tabs' | 'global-chat' | 'private-list' | 'private-chat' | 'new-chat'
 
@@ -19,6 +20,8 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
   const location = useLocation()
   const { user, isGuest } = useAuth()
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const globalScrollContainerRef = useRef<HTMLDivElement>(null)
   
   // Core state
   const [viewMode, setViewMode] = useState<ViewMode>('tabs')
@@ -59,6 +62,13 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
       setGlobalLoading(true)
       const messages = await getChatMessages()
       setGlobalMessages(messages || [])
+      
+      // Force scroll to bottom after messages are loaded
+      setTimeout(() => {
+        if (globalScrollContainerRef.current) {
+          globalScrollContainerRef.current.scrollTop = globalScrollContainerRef.current.scrollHeight
+        }
+      }, 200) // Give time for DOM to update
     } catch (error) {
       console.error('Error loading global messages:', error)
     } finally {
@@ -180,43 +190,57 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
     }
   }
 
-  // Auto-scroll to bottom - only scroll within container, not the entire page
-  useEffect(() => {
-    const element = messagesEndRef.current
-    if (element) {
-      const container = element.parentElement
-      if (container) {
-        // For initial loads, scroll instantly to prevent flash
-        const isInitialLoad = (globalMessages.length > 0 && globalMessages.length <= 10) || 
-                             (currentConversation && currentConversation.length > 0 && currentConversation.length <= 10)
-        
-        // Scroll within the container only
-        container.scrollTo({
-          top: container.scrollHeight,
-          behavior: isInitialLoad ? 'instant' : 'smooth'
-        })
-      }
-    }
-  }, [globalMessages, currentConversation])
-
-  // Load global messages on mount
+  // Load global messages on mount and ensure scroll to bottom
   useEffect(() => {
     if (viewMode === 'global-chat') {
-      // Pre-scroll to bottom to prevent flash of old messages
-      const messagesContainer = messagesEndRef.current?.parentElement
-      if (messagesContainer) {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight
-      }
       loadGlobalMessages()
     }
   }, [viewMode])
 
-  // Periodic refresh for global messages on mobile (every 3 seconds) - with scroll preservation
+  // Auto-scroll when new messages arrive
+  useEffect(() => {
+    if (viewMode === 'global-chat' && globalMessages.length > 0) {
+      setTimeout(() => {
+        if (globalScrollContainerRef.current) {
+          globalScrollContainerRef.current.scrollTop = globalScrollContainerRef.current.scrollHeight
+        }
+      }, 50)
+    }
+  }, [globalMessages])
+
+  // Auto-scroll when private conversation changes
+  useEffect(() => {
+    if (viewMode === 'private-chat' && currentConversation && currentConversation.length > 0) {
+      setTimeout(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight
+        }
+      }, 50)
+    }
+  }, [currentConversation])
+
+  // Ensure scroll to bottom when switching to global chat view
+  useEffect(() => {
+    if (viewMode === 'global-chat' && globalMessages.length > 0) {
+      setTimeout(() => {
+        const messagesContainer = messagesEndRef.current?.parentElement
+        if (messagesContainer) {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight
+        }
+      }, 200) // Longer delay to ensure messages are rendered
+    }
+  }, [viewMode, globalMessages.length])
+
+  // Periodic refresh for global messages - REDUCED frequency to prevent API spam
   useEffect(() => {
     if (viewMode !== 'global-chat') return
 
+    // Increased interval from 3 seconds to 30 seconds to reduce API calls
     const refreshInterval = setInterval(async () => {
       try {
+        // Only refresh if user is actively viewing (document is visible) and API call is not throttled
+        if (!isDocumentVisible() || !throttleApiCall('global-chat-refresh', 25000)) return
+
         // Store current scroll position
         const messagesContainer = messagesEndRef.current?.parentElement
         const isNearBottom = messagesContainer ? 
@@ -243,7 +267,7 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
       } catch (error) {
         console.error('Failed to refresh global messages:', error)
       }
-    }, 3000) // Every 3 seconds
+    }, 30000) // Changed from 3 seconds to 30 seconds - 90% reduction in API calls
 
     return () => clearInterval(refreshInterval)
   }, [viewMode])
@@ -255,12 +279,48 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
     }
   }, [viewMode, user?.id, loadConversations])
 
-  // Load conversation messages when selecting a conversation
+  // Load conversation messages when selecting a conversation and scroll to bottom
   useEffect(() => {
     if (viewMode === 'private-chat' && activeConversation && user?.id && loadConversation) {
       loadConversation(activeConversation)
+      
+      // Scroll to bottom after conversation loads
+      setTimeout(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight
+        }
+      }, 300) // Allow time for conversation to load and render
     }
   }, [viewMode, activeConversation, user?.id, loadConversation])
+
+  // Additional scroll effect for when currentConversation messages are loaded
+  useEffect(() => {
+    if (viewMode === 'private-chat' && currentConversation && currentConversation.length > 0) {
+      setTimeout(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight
+        }
+      }, 100)
+    }
+  }, [viewMode, currentConversation])
+
+  // Scroll to bottom for global chat when messages load
+  useEffect(() => {
+    if (viewMode === 'global-chat' && globalMessages.length > 0) {
+      setTimeout(() => {
+        if (globalScrollContainerRef.current) {
+          globalScrollContainerRef.current.scrollTop = globalScrollContainerRef.current.scrollHeight
+        }
+      }, 100)
+    }
+  }, [viewMode, globalMessages.length])
+
+  // Load global messages on mount and ensure scroll to bottom
+  useEffect(() => {
+    if (viewMode === 'global-chat') {
+      loadGlobalMessages()
+    }
+  }, [viewMode])
 
   // Parse URL parameters
   useEffect(() => {
@@ -327,8 +387,8 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
   // GLOBAL CHAT VIEW
   if (viewMode === 'global-chat') {
     return (
-      <div className="h-screen w-full bg-white flex flex-col">
-        {/* Header */}
+      <div className="h-screen w-full bg-white flex flex-col relative">
+        {/* Header - Fixed */}
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 shadow-lg flex-shrink-0">
           <div className="flex items-center space-x-3">
             <button onClick={goBack} className="p-2 hover:bg-white/20 rounded-lg">
@@ -343,8 +403,12 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
           </div>
         </div>
 
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto bg-gray-50 p-4">
+        {/* Messages Area - Takes remaining space between header and input */}
+        <div 
+          ref={globalScrollContainerRef}
+          className="flex-1 overflow-y-auto bg-gray-50 p-4 pb-24" 
+          style={{height: 'calc(100vh - 140px)'}}
+        >
           {globalLoading ? (
             <div className="flex justify-center py-12">
               <LoadingSpinner />
@@ -395,8 +459,8 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
           )}
         </div>
 
-        {/* Input Area - Fixed at bottom */}
-        <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
+        {/* Input Area - Absolutely positioned at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
           <div className="flex items-center space-x-3">
             <input
               type="text"
@@ -428,8 +492,8 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
   if (viewMode === 'private-list') {
     return (
       <div className="h-screen w-full bg-white flex flex-col">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 shadow-lg flex-shrink-0">
+        {/* Header - Fixed/Sticky */}
+        <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 shadow-lg flex-shrink-0 sticky top-0 z-40">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <button onClick={goBack} className="p-2 hover:bg-white/20 rounded-lg">
@@ -480,7 +544,7 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
                       <p className="text-sm text-gray-500">@{conversation.otherUser.username}</p>
                       {conversation.lastMessage && (
                         <p className="text-sm text-gray-600 truncate mt-1">
-                          {conversation.lastMessage.message}
+                          {conversation.lastMessage.message.split(' ').slice(0, 4).join(' ')}{conversation.lastMessage.message.split(' ').length > 4 ? '...' : ''}
                         </p>
                       )}
                     </div>
@@ -503,8 +567,8 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
   if (viewMode === 'new-chat') {
     return (
       <div className="h-screen w-full bg-white flex flex-col">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 shadow-lg flex-shrink-0">
+        {/* Header - Fixed/Sticky */}
+        <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 shadow-lg flex-shrink-0 sticky top-0 z-40">
           <div className="flex items-center space-x-3">
             <button onClick={goBack} className="p-2 hover:bg-white/20 rounded-lg">
               <ArrowLeft className="h-5 w-5" />
@@ -582,8 +646,8 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
     if (!conversation) return null
 
     return (
-      <div className="h-screen w-full bg-white flex flex-col">
-        {/* Header */}
+      <div className="h-screen w-full bg-white flex flex-col relative">
+        {/* Header - Fixed/Sticky */}
         <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 shadow-lg flex-shrink-0">
           <div className="flex items-center space-x-3">
             <button onClick={goBack} className="p-2 hover:bg-white/20 rounded-lg">
@@ -599,10 +663,14 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
           </div>
         </div>
 
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto bg-gray-50 p-4">
+        {/* Messages Area - Takes remaining space between header and input */}
+        <div 
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto bg-gray-50 p-4 pb-24" 
+          style={{height: 'calc(100vh - 140px)'}}
+        >
           {currentConversation ? (
-            <div className="space-y-3 pb-20">
+            <div className="space-y-3">
               {currentConversation.map((message) => {
                 const isOwn = message.sender_id === user?.id
                 return (
@@ -634,8 +702,8 @@ const MobileChatInterface: React.FC<MobileChatInterfaceProps> = ({ onClose }) =>
           )}
         </div>
 
-        {/* Input Area - Fixed at bottom */}
-        <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
+        {/* Input Area - Absolutely positioned at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
           <div className="flex items-center space-x-3">
             <input
               type="text"

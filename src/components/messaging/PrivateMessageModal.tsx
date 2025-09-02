@@ -283,7 +283,7 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
                         {conversation.lastMessage && (
                           <div className="flex items-center justify-between">
                             <p className="text-sm text-gray-500 truncate">
-                              {conversation.lastMessage.message}
+                              {conversation.lastMessage.message.split(' ').slice(0, 4).join(' ')}{conversation.lastMessage.message.split(' ').length > 4 ? '...' : ''}
                             </p>
                             <span className="text-xs text-gray-400 flex items-center gap-1">
                               <Clock className="h-3 w-3" />

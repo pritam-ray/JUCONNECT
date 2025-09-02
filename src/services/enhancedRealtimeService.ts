@@ -75,12 +75,12 @@ class EnhancedRealtimeService {
       return
     }
 
-    // Monitor connection status with proper cleanup
+    // Monitor connection status with proper cleanup - REDUCED frequency
     this.healthCheckInterval = setInterval(() => {
       if (!this.isDestroyed) {
         this.checkConnectionHealth()
       }
-    }, 30000) // Check every 30 seconds
+    }, 120000) // Increased from 30 seconds to 2 minutes - 75% reduction in API calls
   }
 
   /**

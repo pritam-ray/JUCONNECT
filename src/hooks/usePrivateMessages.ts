@@ -113,8 +113,10 @@ export const usePrivateMessages = (userId: string | null) => {
     if (!conversationUserId) return
     
     const refreshInterval = setInterval(() => {
-      loadConversation(conversationUserId)
-    }, 2000) // Every 2 seconds
+      if (document.visibilityState === 'visible') {
+        loadConversation(conversationUserId)
+      }
+    }, 30000) // Every 30 seconds
     
     return () => clearInterval(refreshInterval)
   }, [userId, getCurrentConversationUserId, loadConversation, currentConversation.length])
@@ -190,8 +192,10 @@ export const usePrivateMessages = (userId: string | null) => {
     if (!userId) return
     
     const refreshInterval = setInterval(() => {
-      loadConversations(false) // Refresh conversations periodically
-    }, 3000) // Every 3 seconds
+      if (document.visibilityState === 'visible') {
+        loadConversations(false) // Refresh conversations periodically
+      }
+    }, 30000) // Every 30 seconds
     
     return () => clearInterval(refreshInterval)
   }, [userId, loadConversations])

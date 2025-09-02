@@ -3,14 +3,16 @@ import {
   Send, 
   Paperclip, 
   Users, 
-  ArrowLeft,
-  Crown,
+  ArrowLeft, 
+  Crown, 
+  LogOut, 
+  X, 
+  File, 
+  FileText, 
+  Image, 
   Download,
-  FileText,
-  Image,
-  File,
-  LogOut,
-  X
+  MoreVertical,
+  MessageCircle
 } from 'lucide-react'
 import { 
   getGroupMessages, 
@@ -176,10 +178,9 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
   )
   */
 
-  // Auto-cleanup optimistic messages that are stuck - with mobile-friendly intervals
+  // Auto-cleanup optimistic messages that are stuck - REDUCED frequency to prevent API spam
   useEffect(() => {
-    // Use longer intervals on mobile to reduce API calls
-    const isMobile = window.innerWidth < 768
+    // Significantly longer intervals to reduce resource usage
     const cleanupInterval = setInterval(() => {
       setMessages(prev => {
         const now = Date.now()
@@ -188,7 +189,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
         const cleanedMessages = prev.map(msg => {
           if (msg.isOptimistic) {
             const messageAge = now - new Date(msg.created_at).getTime()
-            if (messageAge > 15000) { // Increased to 15 seconds for mobile
+            if (messageAge > 30000) { // Increased to 30 seconds
               console.log('🧹 Auto-cleaning stuck optimistic message:', msg.id)
               hasChanges = true
               return { ...msg, isOptimistic: false }
@@ -199,7 +200,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
         
         return hasChanges ? cleanedMessages : prev
       })
-    }, isMobile ? 10000 : 5000) // 10 seconds on mobile, 5 seconds on desktop
+    }, 60000) // Increased from 5-10 seconds to 60 seconds - 80% reduction
     
     return () => clearInterval(cleanupInterval)
   }, [])
@@ -561,23 +562,23 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
     return (
       <div
         key={message.id}
-        className={`flex mb-4 ${isOwn ? 'justify-end' : 'justify-start'}`}
+        className={`flex mb-3 sm:mb-4 ${isOwn ? 'justify-end' : 'justify-start'}`}
       >
-        <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg break-words overflow-hidden ${
+        <div className={`max-w-[85%] sm:max-w-xs lg:max-w-md px-3 sm:px-4 py-2 sm:py-3 rounded-2xl break-words overflow-hidden shadow-sm ${
           isOwn 
-            ? `bg-blue-600 text-white ${isOptimistic ? 'opacity-70' : ''}` 
-            : 'bg-gray-200 text-gray-800'
+            ? `bg-blue-500 text-white ${isOptimistic ? 'opacity-70' : ''}` 
+            : 'bg-white text-gray-800 border border-gray-200'
         }`}>
           {!isOwn && (
-            <p className="text-xs font-semibold mb-1">
+            <p className="text-xs font-semibold mb-1 opacity-75">
               {message.profiles?.full_name || message.profiles?.username || 'Unknown User'}
             </p>
           )}
           
           {isFileMessage ? (
             <div className="space-y-2">
-              <div className={`flex items-center space-x-2 p-2 rounded-md ${
-                isOwn ? 'bg-white bg-opacity-10' : 'bg-gray-100'
+              <div className={`flex items-center space-x-2 p-2 sm:p-3 rounded-lg ${
+                isOwn ? 'bg-white bg-opacity-10' : 'bg-gray-50'
               }`}>
                 {getFileIcon(message.file_name || '')}
                 <div className="flex-1 min-w-0">
@@ -592,7 +593,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
                 {!isUploading && (
                   <button
                     onClick={() => handleFileDownload(message.file_url!, message.file_name!)}
-                    className={`p-1 rounded-full hover:bg-white hover:bg-opacity-20 transition-colors ${
+                    className={`p-2 rounded-full hover:bg-white hover:bg-opacity-20 transition-colors touch-manipulation ${
                       isOwn ? 'text-white' : 'text-gray-600'
                     }`}
                     title="Download file"
@@ -606,16 +607,18 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
               )}
             </div>
           ) : (
-            <p className="text-sm break-words">{message.message}</p>
+            <p className="text-sm sm:text-base break-words leading-relaxed">{message.message}</p>
           )}
           
-          <p className="text-xs opacity-75 mt-1">
-            {new Date(message.created_at).toLocaleTimeString([], { 
-              hour: '2-digit', 
-              minute: '2-digit' 
-            })}
+          <p className="text-xs opacity-75 mt-2 flex items-center justify-between">
+            <span>
+              {new Date(message.created_at).toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+              })}
+            </span>
             {isOptimistic && (
-              <span className="text-orange-400">
+              <span className="text-orange-400 ml-2">
                 {isUploading ? ' (uploading...)' : ' (sending...)'}
                 <button 
                   onClick={() => {
@@ -628,7 +631,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
                       )
                     )
                   }}
-                  className="ml-2 text-xs text-blue-400 hover:text-blue-300 underline"
+                  className="ml-2 text-xs text-blue-400 hover:text-blue-300 underline touch-manipulation"
                 >
                   confirm
                 </button>
@@ -651,57 +654,81 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
 
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
-        <div className="flex items-center space-x-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onBack}
-            className="p-2"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">{group.name}</h2>
-            <p className="text-sm text-gray-500">
-              {group.year ? `Year ${group.year} - ${group.semester}` : ''}
-              {group.subject ? ` • ${group.subject}` : ''}
-            </p>
-          </div>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowMembers(!showMembers)}
-            className="p-2"
-          >
-            <Users className="w-5 h-5" />
-            <span className="ml-1 text-sm">{members.length}</span>
-          </Button>
-          
-          {isUserAdmin && (
+      {/* Mobile-First Header */}
+      <div className="mobile-group-header sticky top-0 z-20 backdrop-blur-xl bg-white/90 border-b border-gray-200/50 p-3 sm:p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowAdminPanel(!showAdminPanel)}
-              className="p-2 text-yellow-600 hover:text-yellow-700"
+              onClick={onBack}
+              className="p-2 hover:bg-gray-100 rounded-full flex-shrink-0"
             >
-              <Crown className="w-5 h-5" />
+              <ArrowLeft className="w-5 h-5" />
             </Button>
-          )}
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900 truncate">{group.name}</h2>
+              <p className="text-xs sm:text-sm text-gray-500 truncate">
+                {group.year ? `Year ${group.year} - ${group.semester}` : ''}
+                {group.subject ? ` • ${group.subject}` : ''}
+              </p>
+            </div>
+          </div>
           
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLeaveGroup}
-            disabled={leavingGroup}
-            className="p-2 text-red-600 hover:text-red-700"
-          >
-            <LogOut className="w-5 h-5" />
-          </Button>
+          {/* Mobile-optimized action buttons */}
+          <div className="flex items-center space-x-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowMembers(!showMembers)}
+              className="p-2 hover:bg-gray-100 rounded-full flex-shrink-0"
+              title="Members"
+            >
+              <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="ml-1 text-xs sm:text-sm">{members.length}</span>
+            </Button>
+            
+            {/* Dropdown menu for admin/leave actions on mobile */}
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowAdminPanel(!showAdminPanel)}
+                className="p-2 hover:bg-gray-100 rounded-full flex-shrink-0"
+                title="More options"
+              >
+                <MoreVertical className="w-4 h-4 sm:w-5 sm:h-5" />
+              </Button>
+              
+              {showAdminPanel && (
+                <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-30 min-w-[160px]">
+                  {isUserAdmin && (
+                    <button
+                      onClick={() => {
+                        setShowAdminPanel(false)
+                        // Handle admin panel toggle
+                      }}
+                      className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
+                    >
+                      <Crown className="w-4 h-4 text-yellow-600" />
+                      <span>Admin Panel</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setShowAdminPanel(false)
+                      handleLeaveGroup()
+                    }}
+                    disabled={leavingGroup}
+                    className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 flex items-center space-x-2 text-red-600"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Leave Group</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -735,32 +762,38 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
         </div>
       )}
 
-      {/* Members Panel */}
+      {/* Mobile-Optimized Members Panel */}
       {showMembers && (
-        <div className="border-b border-gray-200 bg-gray-50 p-4 max-h-48 overflow-y-auto">
-          <h3 className="text-sm font-semibold text-gray-900 mb-2">
-            Members ({members.length})
-          </h3>
-          <div className="space-y-2">
+        <div className="border-b border-gray-200 bg-gray-50/50 backdrop-blur-sm p-3 sm:p-4 max-h-48 sm:max-h-60 overflow-y-auto">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-gray-900">
+              Members ({members.length})
+            </h3>
+            <button
+              onClick={() => setShowMembers(false)}
+              className="p-1 hover:bg-gray-200 rounded-full"
+            >
+              <X className="w-4 h-4 text-gray-500" />
+            </button>
+          </div>
+          <div className="space-y-3">
             {members.map((member) => (
-              <div key={member.id} className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-medium text-gray-600">
-                      {member.profiles?.full_name?.charAt(0) || 'U'}
+              <div key={member.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-white/60">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs sm:text-sm font-medium text-white">
+                    {member.profiles?.full_name?.charAt(0) || 'U'}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {member.profiles?.full_name || member.profiles?.username || 'Unknown User'}
+                  </p>
+                  {member.role === 'admin' && (
+                    <span className="text-xs text-yellow-600 flex items-center">
+                      <Crown className="w-3 h-3 mr-1" />
+                      Admin
                     </span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {member.profiles?.full_name || member.profiles?.username || 'Unknown User'}
-                    </p>
-                    {member.role === 'admin' && (
-                      <span className="text-xs text-yellow-600 flex items-center">
-                        <Crown className="w-3 h-3 mr-1" />
-                        Admin
-                      </span>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -768,17 +801,17 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
         </div>
       )}
 
-      {/* Messages */}
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Mobile-Optimized Messages Area */}
+      <div ref={messagesContainerRef} className="mobile-group-messages flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50/30">
         {chatLoading ? (
           <div className="flex items-center justify-center h-full">
             <LoadingSpinner />
           </div>
         ) : error ? (
           <div className="flex items-center justify-center h-full text-red-500">
-            <div className="text-center">
-              <p className="text-lg font-medium">Error Loading Messages</p>
-              <p className="text-sm mb-4">{error}</p>
+            <div className="text-center p-4">
+              <p className="text-base sm:text-lg font-medium mb-2">Error Loading Messages</p>
+              <p className="text-sm mb-4 text-gray-600">{error}</p>
               <Button 
                 onClick={() => {
                   setError(null)
@@ -786,7 +819,7 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
                   // Trigger a reload by changing a dependency
                   window.location.reload()
                 }}
-                className="text-sm"
+                className="text-sm px-4 py-2"
               >
                 Try Again
               </Button>
@@ -794,8 +827,9 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
           </div>
         ) : messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-500">
-            <div className="text-center">
-              <p className="text-lg font-medium">No messages yet</p>
+            <div className="text-center p-4">
+              <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p className="text-base sm:text-lg font-medium mb-2">No messages yet</p>
               <p className="text-sm">Start the conversation!</p>
             </div>
           </div>
@@ -807,9 +841,9 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
 
       {/* Reply Banner */}
       {replyTo && (
-        <div className="p-3 bg-gray-100 border-t border-gray-200 flex items-center justify-between">
-          <div className="flex-1">
-            <p className="text-xs text-gray-500">
+        <div className="p-3 bg-blue-50 border-t border-blue-200 flex items-center justify-between">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-blue-600 font-medium">
               Replying to {replyTo.profiles?.full_name || 'Unknown User'}
             </p>
             <p className="text-sm text-gray-700 truncate">
@@ -818,16 +852,16 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
           </div>
           <button
             onClick={() => setReplyTo(null)}
-            className="text-gray-400 hover:text-gray-600 ml-2"
+            className="text-blue-400 hover:text-blue-600 ml-2 p-1 rounded-full hover:bg-blue-100"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
-      {/* Message Input */}
-      <div className="p-4 border-t border-gray-200 bg-white mb-16 md:mb-0">
-        <div className="flex items-center space-x-2">
+      {/* Mobile-First Message Input */}
+      <div className="mobile-group-input sticky bottom-0 backdrop-blur-xl bg-white/90 border-t border-gray-200/50 p-3 sm:p-4 pb-safe">
+        <div className="flex items-end space-x-2 sm:space-x-3">
           <input
             type="file"
             ref={fileInputRef}
@@ -840,9 +874,10 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
             size="sm"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploadingFile}
-            className="p-2"
+            className="p-2 sm:p-3 hover:bg-gray-100 rounded-full flex-shrink-0"
+            title="Attach file"
           >
-            <Paperclip className="w-5 h-5" />
+            <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
           
           <div className="flex-1 relative">
@@ -851,23 +886,33 @@ const GroupChatInterface: React.FC<GroupChatInterfaceProps> = ({
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type a message..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm sm:text-base leading-relaxed bg-white/80 backdrop-blur-sm"
               rows={1}
               disabled={sending}
+              style={{
+                minHeight: '40px',
+                maxHeight: '120px',
+                scrollbarWidth: 'thin'
+              }}
             />
           </div>
           
           <Button
             onClick={handleSendMessage}
             disabled={!newMessage.trim() || sending}
-            className="p-2"
+            className="p-2 sm:p-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 rounded-full flex-shrink-0 transition-all touch-manipulation"
+            title="Send message"
           >
-            <Send className="w-5 h-5" />
+            {sending ? (
+              <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white"></div>
+            ) : (
+              <Send className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            )}
           </Button>
         </div>
         
         {uploadingFile && (
-          <div className="mt-2 text-sm text-gray-500 flex items-center">
+          <div className="mt-3 text-sm text-blue-600 flex items-center bg-blue-50 p-2 rounded-lg">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
             Uploading file...
           </div>

@@ -135,7 +135,7 @@ class EnhancedRealtimeService {
         })
       }
     } catch (error) {
-      console.warn('Connection health check failed:', error)
+      logger.warn('Connection health check failed:', error)
     }
   }
 
@@ -176,7 +176,7 @@ class EnhancedRealtimeService {
         // Recreate channel with same configuration
         this.createChannel(channelId, channelData.config)
       } catch (error) {
-        console.error(`Failed to reconnect channel ${channelId}:`, error)
+        logger.error(`Failed to reconnect channel ${channelId}:`, error)
       }
     })
   }
@@ -190,7 +190,7 @@ class EnhancedRealtimeService {
       try {
         callback(status)
       } catch (error) {
-        console.error('Error in status callback:', error)
+        logger.error('Error in status callback:', error)
       }
     })
   }

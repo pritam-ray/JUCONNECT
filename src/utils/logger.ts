@@ -8,6 +8,8 @@ const isDevelopment = import.meta.env.DEV
 // Completely disable ALL console output in production
 if (!isDevelopment) {
   const noop = () => {}
+  
+  // Override all console methods immediately
   window.console = {
     ...window.console,
     log: noop,
@@ -28,9 +30,20 @@ if (!isDevelopment) {
     dirxml: noop,
     profile: noop,
     profileEnd: noop,
-    timeStamp: noop,
-    exception: noop
   }
+  
+  // Also intercept global error events to prevent WebSocket errors from showing
+  window.addEventListener('error', (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    return false
+  })
+  
+  window.addEventListener('unhandledrejection', (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    return false
+  })
 }
 
 export const logger = {

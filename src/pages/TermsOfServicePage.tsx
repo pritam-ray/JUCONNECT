@@ -267,7 +267,7 @@ const TermsOfServicePage: React.FC = () => {
               <p><strong>Email:</strong> jecrcuconnects@gmail.com</p>
               <p><strong>Support:</strong> Visit our <Link to="/contact" className="text-primary-600 hover:underline">Contact Us</Link> page</p>
               <p><strong>Address:</strong> JECRC University, Jaipur, Rajasthan 302022, India</p>
-              <p><strong>Made by:</strong> Pritam Ray (@impritamray)</p>
+              <p><strong>Made by:</strong> Pritam Ray (@impritamray@gmail.com)</p>
             </div>
           </section>
         </div>

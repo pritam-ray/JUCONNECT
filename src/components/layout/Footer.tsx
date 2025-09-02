@@ -10,7 +10,7 @@ interface FooterProps {
 const Footer: React.FC<FooterProps> = ({ className }) => {
   return (
     <footer className={cn(
-      "relative bg-gradient-to-br from-secondary-900 via-secondary-800 to-primary-900 text-white overflow-hidden",
+      "relative bg-gradient-to-br from-secondary-900 via-secondary-800 to-primary-900 text-white overflow-hidden z-0",
       className
     )}>
       {/* Background decorations */}
@@ -18,7 +18,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent-500/5 rounded-full blur-3xl" />
       
-      <div className="relative max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+      <div className="relative max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8 pb-24 md:pb-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           {/* Brand */}
           <div className="col-span-1 md:col-span-2 space-y-6">
@@ -131,7 +131,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
         <div className="border-t border-secondary-700/50 pt-8 mt-12">
           <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
             <p className="text-secondary-400 text-sm">
-              © 2025 JU CONNECTS. All rights reserved. | Made by Pritam Ray (@impritamray)
+              © 2025 JU CONNECTS. All rights reserved. | Made by Pritam Ray (@impritamray@gmail.com)
             </p>
             
             <div className="flex items-center space-x-6">
@@ -146,7 +146,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
               
               <div className="flex items-center space-x-2 px-3 py-1 bg-gradient-to-r from-primary-500/20 to-primary-600/20 rounded-full border border-primary-500/30">
                 <div className="w-2 h-2 bg-success-500 rounded-full animate-pulse" />
-                <span className="text-xs text-secondary-300 font-medium">v2.0.0</span>
+                <span className="text-xs text-secondary-300 font-medium">v1.0.0</span>
               </div>
             </div>
           </div>
